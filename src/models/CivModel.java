@@ -10,11 +10,13 @@ import java.util.Observable;
 @SuppressWarnings("deprecation")
 public class CivModel extends Observable {
 
+  private CivBoard board;
+
   /**
    * Initialize a new model.
    */
   public CivModel() {
-    // todo
+    this.board = new CivBoard(10);
   }
 
 }
