@@ -109,14 +109,14 @@ public class Tile {
 	/**
 	 * Found a city on this tile. Returns false if failed.
 	 * 
-	 * @param player
-	 * @return
+	 * @param city city created by a settler attempting to be made on this tile.
+	 * @return boolean representing whether city founding was a success
 	 */
-	public boolean foundCity(String player) {
+	public boolean foundCity(City city) {
 		if (this.ownerCity == null) { // && this.unitHere instanceOf Settler?
 			this.terrainType = "City";
-			this.ownerCity = new City(); // TODO: Expand this
-			this.movementBonus = 0; // subject to change
+			this.ownerCity = city;
+			this.movementBonus = 0; // TODO: figure out bonuses for units in cities
 			this.attackMult = 1; // subject to change
 			return true;
 		}
