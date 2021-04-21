@@ -14,10 +14,10 @@ package components;
 public class City {
 
 	private String owner;
-	private float production;
+	private double production;
 	private int population; // population can represent city level
 	// garrison is handled by tile.
-	private float cityHP;
+	private double cityHP;
 
 	public City(String playerName) {
 		this.owner = playerName;
@@ -32,7 +32,7 @@ public class City {
 	 * 
 	 * @return boolean representing production per turn.
 	 */
-	public float getProduction() {
+	public double getProduction() {
 		return this.production;
 	}
 
@@ -51,7 +51,7 @@ public class City {
 	 * @param damage attack value of unit hitting the city
 	 * @return boolean representing city hp
 	 */
-	public float takeAttack(float damage) {
+	public double takeAttack(double damage) {
 		this.cityHP -= damage;
 		return this.cityHP;
 	}
