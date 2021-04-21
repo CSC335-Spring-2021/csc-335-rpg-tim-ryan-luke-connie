@@ -10,17 +10,17 @@ import models.CivModel;
  */
 public class CivController {
 
-  private final CivModel model;
+	private final CivModel model;
 
 
-  /**
-   * Constructor for controller
-   *
-   * @param model model that the controller will interact with to store the results of the
-   *              operations it performs
-   */
-  public CivController(CivModel model) {
-    this.model = model;
-  }
+	/**
+	 * Constructor for controller
+	 *
+	 * @param model model that the controller will interact with to store the results of the
+	 *              operations it performs
+	 */
+	public CivController(CivModel model) {
+		this.model = model;
+	}
 
 }

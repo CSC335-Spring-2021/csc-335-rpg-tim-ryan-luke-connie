@@ -10,7 +10,7 @@ import views.CivView;
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  */
 public class Civ {
-  public static void main(String[] args) {
-    Application.launch(CivView.class, args);
-  }
+	public static void main(String[] args) {
+		Application.launch(CivView.class, args);
+	}
 }

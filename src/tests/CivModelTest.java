@@ -12,10 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 public class CivModelTest {
 
-  @Test
-  void testBasics() {
-    CivModel model = new CivModel();
+	@Test
+	void testBasics() {
+		CivModel model = new CivModel();
 
-    assertNotNull(model);
-  }
+		assertNotNull(model);
+	}
 }
