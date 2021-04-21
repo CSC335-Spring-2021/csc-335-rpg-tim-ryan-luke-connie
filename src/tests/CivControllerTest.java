@@ -13,12 +13,12 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class CivControllerTest {
 
-  @Test
-  void testBasics() {
-    CivModel model = new CivModel();
-    CivController controller = new CivController(model);
+	@Test
+	void testBasics() {
+		CivModel model = new CivModel();
+		CivController controller = new CivController(model);
 
-    assertNotNull(controller);
-  }
+		assertNotNull(controller);
+	}
 
 }
