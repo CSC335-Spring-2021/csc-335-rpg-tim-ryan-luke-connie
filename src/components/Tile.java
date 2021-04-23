@@ -5,13 +5,21 @@ import java.util.List;
 
 /**
  * Class representing a single tile within our board.
- * 
+ *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
  */
 public class Tile {
 
-	private String terrainType = null;
+	public enum terrainTypes {
+		CITY,
+		FIELD,
+		HILL,
+		SWAMP,
+		WATER
+	}
+
+	private terrainTypes terrainType;
 	private int movementBonus;
 	private double attackMult;
 	private String resourceType = null;
@@ -24,16 +32,16 @@ public class Tile {
 	 * When initially making a game, create every tile with a terrain type in mind.
 	 * This will allow for map creation.
 	 */
-	public Tile(String terrainType) {
+	public Tile(terrainTypes terrainType) {
 		this.terrainType = terrainType;
 
-		if (terrainType.equals("Hill")) {
+		if (terrainType.equals(terrainTypes.HILL)) {
 			this.movementBonus = -1;
 			this.attackMult = 1.4;
-		} else if (terrainType.equals("Swamp")) {
+		} else if (terrainType.equals(terrainTypes.SWAMP)) {
 			this.movementBonus = -1;
 			this.attackMult = .5;
-		} else if (terrainType.equals("Grassland")) {
+		} else if (terrainType.equals(terrainTypes.FIELD)) {
 			this.movementBonus = 0;
 			this.attackMult = 1;
 		} else {
@@ -47,11 +55,11 @@ public class Tile {
 	/**
 	 * Get movement reduction or bonus to be *added* to unit movement depending on
 	 * tile type.
-	 * 
+	 *
 	 * NOTE: I currently think 'City' should be a terrain type, and the controller
 	 * can call getOwnerCity to retrieve the city object. This makes it easy to
 	 * differentiate a tile owned by a city from the city itself.
-	 * 
+	 *
 	 * @return int representing terrain bonus to be added, terrain type doesnt have
 	 *         to be a string if something else works better, terrain types also
 	 *         dont have to be those I included.
@@ -63,7 +71,7 @@ public class Tile {
 	/**
 	 * Get attack reduction or bonus to be *multiplied* by unit attack depending on
 	 * tile type.
-	 * 
+	 *
 	 * @return double representing multiplier.
 	 */
 	public double getAttackModifier() {
@@ -73,11 +81,10 @@ public class Tile {
 	/**
 	 * Not sure why this method might be necessary but I'm including it for
 	 * convenience.
-	 * 
-	 * @return String representing terrain type here. Will be 'City' if this
-	 *         specific tile is a city.
+	 *
+	 * @return The terrainType assigned to this tile
 	 */
-	public String getTerrainType() {
+	public terrainTypes getTerrainType() {
 		return this.terrainType;
 	}
 
@@ -86,7 +93,7 @@ public class Tile {
 	 * Return type of resource on this tile, of null if there is no resource. For
 	 * the average tile this should be null, but we have yet to figure out how
 	 * resources are going to work exactly so this is still a TODO
-	 * 
+	 *
 	 * @return String represeting the resource type on the tile, or null if there is
 	 *         no resrource. We can make a resource class later if that seems like a
 	 *         good idea.
@@ -99,7 +106,7 @@ public class Tile {
 	 * Return the city object that owns this tile, that does not mean that the tile
 	 * is a city, per se, but that some city's area of influence has reached this
 	 * tile.
-	 * 
+	 *
 	 * @return City object representing the city located on this tile object
 	 */
 	public City getOwnerCity() {
@@ -108,13 +115,13 @@ public class Tile {
 
 	/**
 	 * Found a city on this tile. Returns false if failed.
-	 * 
+	 *
 	 * @param city city created by a settler attempting to be made on this tile.
 	 * @return boolean representing whether city founding was a success
 	 */
 	public boolean foundCity(City city) {
 		if (this.ownerCity == null) { // && this.unitHere instanceOf Settler?
-			this.terrainType = "City";
+			this.terrainType = terrainTypes.CITY;
 			this.ownerCity = city;
 			this.movementBonus = 0; // TODO: figure out bonuses for units in cities
 			this.attackMult = 1; // subject to change
@@ -126,7 +133,7 @@ public class Tile {
 	/**
 	 * Return unit stationed on this tile. This method will be necessary for attack
 	 * and movement logic, but how that will be implemented is still a TODO
-	 * 
+	 *
 	 * @return Unit on this tile object, or null if the tile contains no unit.
 	 */
 	public Unit getUnit() {
@@ -135,7 +142,7 @@ public class Tile {
 
 	/**
 	 * Figure out if current player is allowed to see the current tile.
-	 * 
+	 *
 	 * @param player String representing player name
 	 * @return boolean representing whether the player passed in can see the tile
 	 */
@@ -145,7 +152,7 @@ public class Tile {
 
 	/**
 	 * reveal this tile to the player passed in.
-	 * 
+	 *
 	 * @param player String representing player name
 	 */
 	public void revealTile(String player) {
