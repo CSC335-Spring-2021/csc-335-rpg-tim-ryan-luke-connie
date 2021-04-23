@@ -1,10 +1,11 @@
 package tests;
 
-import controllers.CivController;
-import models.CivModel;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import controllers.CivController;
+import models.CivModel;
 
 /**
  * Tests the methods of CivController.
