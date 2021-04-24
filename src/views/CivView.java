@@ -32,6 +32,9 @@ public class CivView extends Application implements Observer {
 	private CivController controller;
 	private CivModel model;
 
+	// ui hooks
+	private ScrollPane mapContainer;
+
 	// viz constants
 	private static final int WINDOW_WIDTH = 800;
 	private static final int WINDOW_HEIGHT = 600;
@@ -87,7 +90,7 @@ public class CivView extends Application implements Observer {
 	 * @param window The main pane that will contain all UI elements
 	 */
 	private void buildUI(StackPane window) {
-		ScrollPane mapContainer = new ScrollPane();
+		mapContainer = new ScrollPane();
 		mapContainer.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 		mapContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 		mapContainer.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -114,6 +117,23 @@ public class CivView extends Application implements Observer {
 		}
 
 		mapContainer.setContent(mapGridContainer);
+
+		focusMap(model.getSize() / 2, model.getSize() / 2);
+	}
+
+
+	/**
+	 * Center the map on a particular board index.
+	 *
+	 * @param x The x index of the board grid to center on
+	 * @param y The y index of the board grid to center on
+	 */
+	private void focusMap(int x, int y) {
+		int[] coords = gridToIso(x, y);
+
+		// ScrollPane scroll values are percentages (0 through 1), not raw pixel values
+		mapContainer.setHvalue((coords[0] + TILE_SIZE / 2.0) / (double) isoBoardWidth);
+		mapContainer.setVvalue((coords[1] + TILE_SIZE * ISO_FACTOR / 2.0) / (double) isoBoardHeight);
 	}
 
 
