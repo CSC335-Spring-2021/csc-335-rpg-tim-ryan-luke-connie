@@ -1,0 +1,10 @@
+/*
+ * Styling for the application window and elements.
+ */
+
+.ui {
+  -fx-background: #000;
+}
+.map > .viewport {
+  -fx-background-color: transparent;
+}

@@ -1,5 +1,7 @@
 package models;
+
 import components.Tile;
+
 import java.util.Observable;
 
 /**
@@ -43,6 +45,8 @@ public class CivModel extends Observable {
 			curPlayer.next = head; // have it wrap around
 		}
 	}
+  
+  
 	/**
 	 * getter method for the tile held at row, col in our Board
 	 * @param row integer representing the outer index into our 2D array board
@@ -52,6 +56,8 @@ public class CivModel extends Observable {
 	public Tile getTileAt(int row, int col) {
 		return this.board.getTile(row,  col);
 	}
+  
+  
 	/**
 	 * getter method for the size of the board for move validity checking 
 	 * @return integer specifying the height and width of our board
@@ -59,6 +65,8 @@ public class CivModel extends Observable {
 	public int getSize() {
 		return this.board.getSize();
 	}
+  
+  
 	/**
 	 * Set the state of the model to changed and notify Observers that the model has
 	 * been updated. Pass the current game state (board) to all Observers.
@@ -67,8 +75,8 @@ public class CivModel extends Observable {
 		this.setChanged();
 		this.notifyObservers(this.board);
 	}
-	
-
+  
+  
 	/**
 	 * getter for Model's current player
 	 * @return Player object whose turn it is
@@ -76,6 +84,8 @@ public class CivModel extends Observable {
 	public Player getCurPlayer() {
 		return this.curPlayer.getPlayer();
 	}
+  
+  
 	/**
 	 * void function allowing turn logic control. Sets cur player 
 	 * 	to next player. 
@@ -138,6 +148,5 @@ public class CivModel extends Observable {
 		private Player getPlayer() {
 			return this.player;
 		}
-		
 	}
 }
