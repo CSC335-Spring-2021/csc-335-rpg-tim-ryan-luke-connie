@@ -69,6 +69,7 @@ public class CivController {
 
 	public void computerTurn() {
 		// TODO AI logic
+		model.changeAndNotify();
 		endTurn();
 	}
 
