@@ -2,11 +2,13 @@ package views;
 
 import controllers.CivController;
 import javafx.application.Application;
-import javafx.scene.Group;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import models.CivModel;
@@ -35,7 +37,7 @@ public class CivView extends Application implements Observer {
 	private static final int WINDOW_HEIGHT = 600;
 	private static final int TILE_SIZE = 120;
 	private static final double ISO_FACTOR = 0.6;
-	private static final int SCROLL_GUTTER = 20;
+	private static final int SCROLL_GUTTER = 240;
 
 	// viz derived constants (for convenience)
 	private int isoBoardWidth;
@@ -50,7 +52,7 @@ public class CivView extends Application implements Observer {
 		model.addObserver(this);
 
 		// calculate derived constants (less spaghetti later on)
-		isoBoardWidth = (int) (Math.sqrt(2 * Math.pow(model.getSize(), 2)) * TILE_SIZE);
+		isoBoardWidth = model.getSize() * TILE_SIZE;
 		isoBoardHeight = (int) (isoBoardWidth * ISO_FACTOR);
 
 		// assemble ui
@@ -92,16 +94,20 @@ public class CivView extends Application implements Observer {
 		mapContainer.setPannable(true);
 		window.getChildren().add(mapContainer);
 
-		Group mapGridContainer = new Group();
+		Pane mapGridContainer = new Pane();
+		mapGridContainer.setPadding(new Insets(0, SCROLL_GUTTER, SCROLL_GUTTER, 0));
+
+		Canvas canvas = new Canvas(isoBoardWidth, isoBoardHeight);
+		mapGridContainer.getChildren().add(canvas);
+		canvas.setLayoutX(SCROLL_GUTTER);
+		canvas.setLayoutY(SCROLL_GUTTER);
+		GraphicsContext context = canvas.getGraphicsContext2D();
 
 		for (int[] coords : getDrawTraversal()) {
 			try {
 				Image tileImage = new Image(new FileInputStream("src/assets/tiles/field-1.png"));
-				ImageView tileImageView = new ImageView(tileImage);
 				int[] isoCoords = gridToIso(coords[0], coords[1]);
-				tileImageView.setX(isoCoords[0]);
-				tileImageView.setY(isoCoords[1]);
-				mapGridContainer.getChildren().add(tileImageView);
+				context.drawImage(tileImage, isoCoords[0], isoCoords[1], TILE_SIZE, TILE_SIZE * ISO_FACTOR);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
