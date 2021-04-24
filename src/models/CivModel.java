@@ -20,7 +20,7 @@ public class CivModel extends Observable {
 	public CivModel() {
 		this.board = new CivBoard(20);
 	}
-	
+
 
 
 	/**
@@ -31,5 +31,10 @@ public class CivModel extends Observable {
 	 */
 	public int getSize() {
 		return board.size;
+	}
+
+
+	public Tile getTileAt(int x, int y) {
+		return board.tiles[x][y];
 	}
 }
