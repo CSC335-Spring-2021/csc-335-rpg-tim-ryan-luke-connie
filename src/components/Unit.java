@@ -9,6 +9,8 @@ import models.Player;
  * Unit superclass.
  * 
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
+ * 
+ *         TODO: arraylist of producable units TODO: if tile is city
  *
  */
 public class Unit {
@@ -20,15 +22,17 @@ public class Unit {
 		// add more as we add different types of Units
 	}
 
-	private String owner;
+	// TODO: Row and col, set row and col
+	private Player owner;
 
 	protected double HP;
-	protected int movement;
+	protected int maxMovement;
+	protected int remainingMovement;
 	protected double cost;
 	protected int sight;
-	protected double attackValue; // need to add to all units!
+	protected double attackValue;
 
-	public Unit(String player) {
+	public Unit(Player player) {
 		this.owner = player;
 	}
 
@@ -44,27 +48,47 @@ public class Unit {
 	}
 
 	/**
-	 * Return unit's base move speed
+	 * Return the amount of tiles a unit can still move.
 	 * 
 	 * @return int representing move speed
 	 */
 	public int getMovement() {
-		return this.movement;
+		return this.remainingMovement;
 	}
 
+
+	/**
+	 * Unit is done moving, reset its movement for next turn.
+	 */
 	public void resetMovement() {
-		// reset to original max movement value
+		this.remainingMovement = this.maxMovement;
 	}
 
+	/**
+	 * Decrement the amount this unit can still move this turn
+	 * 
+	 * @param cost integer representing the movement cost of this move.
+	 * @return boolean representing whether the move was a success.
+	 */
 	public void move(int cost) {
-		// decrease current movement by cost of movement
+		this.remainingMovement -= cost;
 	}
 
-
+	/**
+	 * Getter for this unit's attack value
+	 * 
+	 * @return double representing the damage inflicted upon enemy units or cities.
+	 */
 	public double getAttackValue() {
 		return attackValue;
 	}
 	
+	/**
+	 * Getter for this unit's remaining health
+	 * 
+	 * @return double representing health, if it is any value above 0 they are still
+	 *         alive.
+	 */
 	public double getHP() {
 		return HP;
 	}
@@ -87,9 +111,14 @@ public class Unit {
 		return this.sight;
 	}
 
+	/**
+	 * returns String representing the owner, can also be represented as a Player
+	 * object if we decide that is a better implementation.
+	 * 
+	 * @return String representing owner's name
+	 */
 	public Player getOwner() {
-		// return owner
-		return null;
+		return this.owner;
 	}
 
 }

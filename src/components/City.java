@@ -15,15 +15,17 @@ import models.Player;
  */
 public class City {
 
-	private String owner;
+	// TODO: Row and col, set row and col
+	private Player owner;
 	private double production;
 	private double productionReserve;
+	private Unit unitInProduction;
 	private int population; // population can represent city level
 	// garrison is handled by tile.
 	private double cityHP;
 
-	public City(String playerName) {
-		this.owner = playerName;
+	public City(Player player) {
+		this.owner = player;
 		// default production subject to change, higher start is better
 		this.production = 50;
 		this.population = 1; // we can say 1pop = 1000 people or something
@@ -59,24 +61,27 @@ public class City {
 		return this.cityHP;
 	}
 
-	/**
-	 * Add to reserve
-	 */
-	public void produce() {
-		productionReserve += production;
-	}
 
 	public double getProductionReserve() {
 		return productionReserve;
 	}
 
+	/**
+	 * TODO:
+	 * 
+	 * @param unitType
+	 * @return
+	 */
 	public Unit produceUnit(String unitType) {
-		// TODO: make a unit of the right type and return it
+		// TODO return a new unit
 		return null;
 	}
 
-	public void checkLevelUp() {
-		// called by the controller every turn
+	/**
+	 * Do all of the things at the start of the turn TODO:
+	 */
+	public void cityIncrement() {
+		productionReserve += production;
 	}
 
 	/**
@@ -87,8 +92,7 @@ public class City {
 	}
 
 	public Player getOwner() {
-		// return owner
-		return null;
+		return this.owner;
 	}
 
 }

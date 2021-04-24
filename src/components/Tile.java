@@ -3,6 +3,8 @@ package components;
 import java.util.ArrayList;
 import java.util.List;
 
+import models.Player;
+
 /**
  * Class representing a single tile within our board.
  *
@@ -11,6 +13,7 @@ import java.util.List;
  */
 public class Tile {
 
+	// TODO: Mountain which is an obstacle
 	public enum terrainTypes {
 		CITY, FIELD, HILL, SWAMP, WATER
 	}
@@ -22,7 +25,7 @@ public class Tile {
 	private City ownerCity = null;
 	private Unit unitHere = null;
 	// Used string to represent players, could also make an object but idk yet
-	private List<String> revealedTo = new ArrayList<String>();
+	private List<Player> revealedTo = new ArrayList<Player>();
 
 	/**
 	 * When initially making a game, create every tile with a terrain type in mind.
@@ -43,6 +46,7 @@ public class Tile {
 		} else {
 			// terrain type is either a mountain or water, either way it is impassable.
 			// movement bonus set to -5 if impassable, change if necessary
+			// TODO: - max int
 			this.movementBonus = -5;
 			this.attackMult = 0;
 		}
@@ -135,6 +139,12 @@ public class Tile {
 		return this.unitHere;
 	}
 
+	/**
+	 * Place a unit on this tile, will be used if a unit moves here or if a unit
+	 * kills the unit stationed here.
+	 * 
+	 * @param unit that is now stationed here.
+	 */
 	public void setUnit(Unit unit) {
 		unitHere = unit;
 	}
@@ -145,7 +155,7 @@ public class Tile {
 	 * @param player String representing player name
 	 * @return boolean representing whether the player passed in can see the tile
 	 */
-	public boolean canSeeTile(String player) {
+	public boolean canSeeTile(Player player) {
 		return revealedTo.contains(player);
 	}
 
@@ -154,7 +164,7 @@ public class Tile {
 	 *
 	 * @param player String representing player name
 	 */
-	public void revealTile(String player) {
+	public void revealTile(Player player) {
 		revealedTo.add(player);
 	}
 
