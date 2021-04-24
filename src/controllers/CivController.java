@@ -98,6 +98,21 @@ public class CivController {
 		Unit onTile = moveTo.getUnit();
 		boolean movesOnto = true;
 		if (onTile != null) // unit exists here, attack it
+			movesOnto = attack(unit, onTile);
+		else if (moveTo.getTerrainType() == Tile.terrainTypes.CITY
+				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
+			movesOnto = attack(unit, moveTo.getOwnerCity());
+		if (movesOnto) {
+			moveFrom.setUnit(null);
+			moveTo.setUnit(unit);
+			return false;
+		Tile moveTo = getTileAt(newRow, newCol);
+		int cost = moveTo.getMovementModifier();
+		if (cost + 1 > movement)
+			return false;
+		Unit onTile = moveTo.getUnit();
+		boolean movesOnto = true;
+		if (onTile != null) // unit exists here, attack it
 			movesOnto = attack(moveFrom, moveTo);
 		else if (moveTo.getTerrainType() == Tile.terrainTypes.CITY
 				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
@@ -111,6 +126,12 @@ public class CivController {
 		return true;
 	}
 
+	// returns true if moves onto (defeats existing unit)
+	private boolean attack(Unit attacker, Unit defender) {
+		return false;
+	}
+
+	private boolean attack(Unit attacker, City defender) {
 	private void revealTiles(int row, int col) {
 		Tile tile = getTileAt(row, col);
 		for (int i = -1; i < 2; i++) {
@@ -142,7 +163,6 @@ public class CivController {
 	}
 
 	private boolean attack(Tile attackerTile, City defender) {
-
 		return false;
 	}
 

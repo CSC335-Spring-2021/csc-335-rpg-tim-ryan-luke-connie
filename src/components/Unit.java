@@ -60,6 +60,7 @@ public class Unit {
 		// decrease current movement by cost of movement
 	}
 
+
 	public double getAttackValue() {
 		return attackValue;
 	}
