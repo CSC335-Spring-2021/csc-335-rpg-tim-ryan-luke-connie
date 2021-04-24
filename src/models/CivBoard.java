@@ -50,7 +50,7 @@ public class CivBoard {
 		this.tiles = board;
 	}
 	
-	private Tile getTile(int row, int col) {
+	public Tile getTile(int row, int col) {
 		return this.tiles[row][col];
 	}
 

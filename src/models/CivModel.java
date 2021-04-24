@@ -1,5 +1,5 @@
 package models;
-
+import components.Tile;
 import java.util.Observable;
 
 /**
@@ -18,6 +18,8 @@ public class CivModel extends Observable {
 	public CivModel() {
 		this.board = new CivBoard(20);
 	}
-	
+	public Tile getTileAt(int row, int col) {
+		return this.board.getTile(row,  col);
+	}
 
 }
