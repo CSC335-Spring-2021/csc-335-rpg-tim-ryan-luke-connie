@@ -9,6 +9,7 @@ public class Player {
 	private ArrayList<Unit> units;
 	private ArrayList<City> cities;
 	private boolean isHuman;
+	
 	public Player(int isHuman) {
 		units = new ArrayList<Unit>();
 		cities = new ArrayList<City>();

@@ -14,12 +14,14 @@ public class CivModel extends Observable {
 	private Node curPlayer;
 	private Node head;
 	private boolean singlePlayer;
+	private int round;
 	
 	/**
 	 * Initialize a new model.
 	 * @param playerCount indicates how many players this game will have
 	 */
 	public CivModel(int playerCount) {
+		round = 0;
 		this.board = new CivBoard(20);
 		head = new Node(new Player(1)); // make a human player
 		curPlayer = head;
@@ -78,10 +80,17 @@ public class CivModel extends Observable {
 	 */
 	public void nextPlayer() {
 		curPlayer = curPlayer.next;
+		if (curPlayer.equals(head)) {
+			round++;
+		}
 	}
 	
 	public boolean isComputer() {
 		return !curPlayer.getPlayer().isHuman();
+	}
+	
+	public int roundNumber() {
+		return round;
 	}
 	
 	/**
