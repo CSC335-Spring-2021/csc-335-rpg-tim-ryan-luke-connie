@@ -63,6 +63,27 @@ public class CivModel extends Observable {
 		this.setChanged();
 		this.notifyObservers(this.board);
 	}
+	
+
+	/**
+	 * getter for Model's current player
+	 * @return Player object whose turn it is
+	 */
+	public Player getCurPlayer() {
+		return this.curPlayer.getPlayer();
+	}
+	/**
+	 * void function allowing turn logic control. Sets cur player 
+	 * 	to next player. 
+	 */
+	public void nextPlayer() {
+		curPlayer = curPlayer.next;
+	}
+	
+	public boolean isComputer() {
+		return !curPlayer.getPlayer().isHuman();
+	}
+	
 	/**
 	 * Node class for keeping a wrapped list of players
 	 * @author Luke
@@ -87,20 +108,6 @@ public class CivModel extends Observable {
 		private Player getPlayer() {
 			return this.player;
 		}
+		
 	}
-	/**
-	 * getter for Model's current player
-	 * @return Player object whose turn it is
-	 */
-	public Player getCurPlayer() {
-		return this.curPlayer.getPlayer();
-	}
-	/**
-	 * void function allowing turn logic control. Sets cur player 
-	 * 	to next player. 
-	 */
-	public void nextPlayer() {
-		curPlayer = curPlayer.next;
-	}
-
 }
