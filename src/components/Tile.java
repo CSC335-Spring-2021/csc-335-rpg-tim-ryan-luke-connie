@@ -12,11 +12,7 @@ import java.util.List;
 public class Tile {
 
 	public enum terrainTypes {
-		CITY,
-		FIELD,
-		HILL,
-		SWAMP,
-		WATER
+		CITY, FIELD, HILL, SWAMP, WATER
 	}
 
 	private terrainTypes terrainType;
@@ -88,7 +84,6 @@ public class Tile {
 		return this.terrainType;
 	}
 
-
 	/**
 	 * Return type of resource on this tile, of null if there is no resource. For
 	 * the average tile this should be null, but we have yet to figure out how
@@ -138,6 +133,10 @@ public class Tile {
 	 */
 	public Unit getUnit() {
 		return this.unitHere;
+	}
+
+	public void setUnit(Unit unit) {
+		unitHere = unit;
 	}
 
 	/**
