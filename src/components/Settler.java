@@ -4,9 +4,12 @@ import models.Player;
 
 /**
  * Basic setup for a settler, all values subject to change. Settler needs to be
- * able to found a city but im not sure how we want to do this yet.
+ * able to found a city but im not sure how we want to do this yet. Settler can
+ * only found one city.
  * 
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
+ * 
+ *         TODO: Methods for has founded a city/is used up.
  *
  */
 public class Settler extends Unit {

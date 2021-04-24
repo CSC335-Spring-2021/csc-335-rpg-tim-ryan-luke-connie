@@ -9,6 +9,8 @@ import models.Player;
  * Unit superclass.
  * 
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
+ * 
+ *         TODO: arraylist of producable units TODO: if tile is city
  *
  */
 public class Unit {
@@ -20,6 +22,7 @@ public class Unit {
 		// add more as we add different types of Units
 	}
 
+	// TODO: Row and col, set row and col
 	private Player owner;
 
 	protected double HP;
@@ -67,13 +70,8 @@ public class Unit {
 	 * @param cost integer representing the movement cost of this move.
 	 * @return boolean representing whether the move was a success.
 	 */
-	public boolean move(int cost) {
-		if (cost > this.remainingMovement) {
-			// there was an issue somewhwere, we shouldnt be able to move
-			return false;
-		}
+	public void move(int cost) {
 		this.remainingMovement -= cost;
-		return true;
 	}
 
 	/**

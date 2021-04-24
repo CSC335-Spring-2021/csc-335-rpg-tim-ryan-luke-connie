@@ -13,6 +13,7 @@ import models.Player;
  */
 public class Tile {
 
+	// TODO: Mountain which is an obstacle
 	public enum terrainTypes {
 		CITY, FIELD, HILL, SWAMP, WATER
 	}
@@ -45,6 +46,7 @@ public class Tile {
 		} else {
 			// terrain type is either a mountain or water, either way it is impassable.
 			// movement bonus set to -5 if impassable, change if necessary
+			// TODO: - max int
 			this.movementBonus = -5;
 			this.attackMult = 0;
 		}

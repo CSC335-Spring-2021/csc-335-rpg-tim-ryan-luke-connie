@@ -15,6 +15,7 @@ import models.Player;
  */
 public class City {
 
+	// TODO: Row and col, set row and col
 	private Player owner;
 	private double production;
 	private double productionReserve;
@@ -60,12 +61,6 @@ public class City {
 		return this.cityHP;
 	}
 
-	/**
-	 * Add to reserve
-	 */
-	public void produce() {
-		productionReserve += production;
-	}
 
 	public double getProductionReserve() {
 		return productionReserve;
@@ -78,12 +73,15 @@ public class City {
 	 * @return
 	 */
 	public Unit produceUnit(String unitType) {
-		this.unitInProduction = null;
-		return this.unitInProduction;
+		// TODO return a new unit
+		return null;
 	}
 
-	public void checkLevelUp() {
-		// called by the controller every turn
+	/**
+	 * Do all of the things at the start of the turn TODO:
+	 */
+	public void cityIncrement() {
+		productionReserve += production;
 	}
 
 	/**
