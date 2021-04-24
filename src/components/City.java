@@ -1,5 +1,7 @@
 package components;
 
+import models.Player;
+
 /**
  * TODO: I will need to make it so the city levels up. To do this we can have an
  * integer representing the number of turns that need to pass before the city
@@ -70,8 +72,12 @@ public class City {
 	}
 
 	public Unit produceUnit(String unitType) {
-		// TODO: make a unit of the right type and make it
+		// TODO: make a unit of the right type and return it
 		return null;
+	}
+
+	public void checkLevelUp() {
+		// called by the controller every turn
 	}
 
 	/**
@@ -79,6 +85,11 @@ public class City {
 	 */
 	private void levelUpCity() {
 		// TODO: Stuff
+	}
+
+	public Player getOwner() {
+		// return owner
+		return null;
 	}
 
 }
