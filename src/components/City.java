@@ -1,7 +1,5 @@
 package components;
 
-import models.Player;
-
 /**
  * TODO: I will need to make it so the city levels up. To do this we can have an
  * integer representing the number of turns that need to pass before the city
@@ -18,6 +16,7 @@ public class City {
 	private String owner;
 	private double production;
 	private double productionReserve;
+	private Unit unitInProduction;
 	private int population; // population can represent city level
 	// garrison is handled by tile.
 	private double cityHP;
@@ -70,9 +69,15 @@ public class City {
 		return productionReserve;
 	}
 
+	/**
+	 * TODO:
+	 * 
+	 * @param unitType
+	 * @return
+	 */
 	public Unit produceUnit(String unitType) {
-		// TODO: make a unit of the right type and return it
-		return null;
+		this.unitInProduction = null;
+		return this.unitInProduction;
 	}
 
 	public void checkLevelUp() {
@@ -86,9 +91,8 @@ public class City {
 		// TODO: Stuff
 	}
 
-	public Player getOwner() {
-		// return owner
-		return null;
+	public String getOwner() {
+		return this.owner;
 	}
 
 }

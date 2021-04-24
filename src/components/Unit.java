@@ -3,8 +3,6 @@ package components;
 import java.util.HashMap;
 import java.util.Map;
 
-import models.Player;
-
 /**
  * Unit superclass.
  * 
@@ -23,10 +21,11 @@ public class Unit {
 	private String owner;
 
 	protected double HP;
-	protected int movement;
+	protected int maxMovement;
+	protected int remainingMovement;
 	protected double cost;
 	protected int sight;
-	protected double attackValue; // need to add to all units!
+	protected double attackValue;
 
 	public Unit(String player) {
 		this.owner = player;
@@ -44,27 +43,52 @@ public class Unit {
 	}
 
 	/**
-	 * Return unit's base move speed
+	 * Return the amount of tiles a unit can still move.
 	 * 
 	 * @return int representing move speed
 	 */
 	public int getMovement() {
-		return this.movement;
+		return this.remainingMovement;
 	}
 
+
+	/**
+	 * Unit is done moving, reset its movement for next turn.
+	 */
 	public void resetMovement() {
-		// reset to original max movement value
+		this.remainingMovement = this.maxMovement;
 	}
 
-	public void move(int cost) {
-		// decrease current movement by cost of movement
+	/**
+	 * Decrement the amount this unit can still move this turn
+	 * 
+	 * @param cost integer representing the movement cost of this move.
+	 * @return boolean representing whether the move was a success.
+	 */
+	public boolean move(int cost) {
+		if (cost > this.remainingMovement) {
+			// there was an issue somewhwere, we shouldnt be able to move
+			return false;
+		}
+		this.remainingMovement -= cost;
+		return true;
 	}
 
-
+	/**
+	 * Getter for this unit's attack value
+	 * 
+	 * @return double representing the damage inflicted upon enemy units or cities.
+	 */
 	public double getAttackValue() {
 		return attackValue;
 	}
 	
+	/**
+	 * Getter for this unit's remaining health
+	 * 
+	 * @return double representing health, if it is any value above 0 they are still
+	 *         alive.
+	 */
 	public double getHP() {
 		return HP;
 	}
@@ -87,9 +111,14 @@ public class Unit {
 		return this.sight;
 	}
 
-	public Player getOwner() {
-		// return owner
-		return null;
+	/**
+	 * returns String representing the owner, can also be represented as a Player
+	 * object if we decide that is a better implementation.
+	 * 
+	 * @return String representing owner's name
+	 */
+	public String getOwner() {
+		return this.owner;
 	}
 
 }

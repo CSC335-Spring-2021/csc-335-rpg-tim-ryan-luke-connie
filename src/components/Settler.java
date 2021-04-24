@@ -12,8 +12,11 @@ public class Settler extends Unit {
 	public Settler(String player) {
 		super(player);
 		HP = 1;
-		movement = 2;
+		maxMovement = 2;
+		resetMovement();
 		cost = 1000;
 		sight = 2;
+		attackValue = 0;
+
 	}
 }

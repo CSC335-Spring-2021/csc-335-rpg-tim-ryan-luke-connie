@@ -135,6 +135,12 @@ public class Tile {
 		return this.unitHere;
 	}
 
+	/**
+	 * Place a unit on this tile, will be used if a unit moves here or if a unit
+	 * kills the unit stationed here.
+	 * 
+	 * @param unit that is now stationed here.
+	 */
 	public void setUnit(Unit unit) {
 		unitHere = unit;
 	}
