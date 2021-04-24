@@ -15,20 +15,22 @@ public class CivBoard {
 
 	public CivBoard(int size) {
 		this.size = size;
-		Tile[][] board = new Tile[size][size];
+		Tile[][] board = new Tile[size][size]; 
 		int i = 0;
 		int j;
 		Random rng = new Random();
 		while (i < size-1) {
 			j = 0;
 			while (j < size-1) {
-				int type = rng.nextInt(2);
-				if (type == 0)
+				int type = rng.nextInt(1);
+				if (type == 0 && (i < size/2 || j < size/2))
 					board[i][j] =  new Tile(Tile.terrainTypes.FIELD);
-				else if (type == 1)
+				else if (type == 1 && (i < size/2 || j < size/2))
 					board[i][j] = new Tile(Tile.terrainTypes.HILL);
-				else
+				else if (type == 0 && (i >= size/2 || j >= size/2))
 					board[i][j] = new Tile(Tile.terrainTypes.SWAMP);
+				else
+					board[i][j] = new Tile(Tile.terrainTypes.HILL);
 				j++;
 			}
 			i++;
