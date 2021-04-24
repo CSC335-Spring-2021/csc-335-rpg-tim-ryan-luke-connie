@@ -4,6 +4,9 @@ import java.util.Random;
 import components.Tile;
 /**
  * Holds the collection of individual tiles that make up a single Civ map.
+ * 
+ * @field tiles 2D array containing our tile objects
+ * @field size int specifying the size of our board --> board is size x size tiles
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  */
@@ -12,7 +15,10 @@ public class CivBoard {
 	public Tile[][] tiles;
 	public int size;
 
-
+	/**
+	 * Constructor for our board
+	 * @param size
+	 */
 	public CivBoard(int size) {
 		this.size = size;
 		Tile[][] board = new Tile[size][size]; 
