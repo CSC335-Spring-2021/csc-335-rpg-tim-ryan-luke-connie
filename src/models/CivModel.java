@@ -15,12 +15,14 @@ public class CivModel extends Observable {
 	private Node head;
 	private boolean singlePlayer;
 	private int round;
+	private int numPlayers;
 	
 	/**
 	 * Initialize a new model.
 	 * @param playerCount indicates how many players this game will have
 	 */
 	public CivModel(int playerCount) {
+		numPlayers = playerCount;
 		round = 0;
 		this.board = new CivBoard(20);
 		head = new Node(new Player(1)); // make a human player
@@ -91,6 +93,25 @@ public class CivModel extends Observable {
 	
 	public int roundNumber() {
 		return round;
+	}
+	
+	public boolean removePlayer(Player deadGuy) {
+		Node prev = head;
+		Node cur = head.next;
+		Node next = cur.next;
+		while (cur.getPlayer() != deadGuy) {
+			prev = prev.next;
+			cur = cur.next;
+			next = next.next;
+			if (prev == head)
+				return false;
+		}
+		numPlayers--;
+		prev.next = next;
+		return true;
+	}
+	private int numPlayers() {
+		return numPlayers;
 	}
 	
 	/**
