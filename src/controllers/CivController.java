@@ -57,11 +57,19 @@ public class CivController {
 			c.produce();
 			c.checkLevelUp();
 		}
+		if (!curPlayer.isHuman())
+			computerTurn();
 		model.changeAndNotify();
 	}
 
 	public void endTurn() {
 		model.nextPlayer();
+		model.changeAndNotify();
+	}
+
+	public void computerTurn() {
+		// TODO AI logic
+		endTurn();
 	}
 
 	/**
@@ -90,24 +98,50 @@ public class CivController {
 		Unit onTile = moveTo.getUnit();
 		boolean movesOnto = true;
 		if (onTile != null) // unit exists here, attack it
-			movesOnto = attack(unit, onTile);
+			movesOnto = attack(moveFrom, moveTo);
 		else if (moveTo.getTerrainType() == Tile.terrainTypes.CITY
 				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
-			movesOnto = attack(unit, moveTo.getOwnerCity());
+			movesOnto = attack(moveFrom, moveTo.getOwnerCity());
 		if (movesOnto) {
 			moveFrom.setUnit(null);
 			moveTo.setUnit(unit);
+			revealTiles(newRow, newCol);
 		}
 		model.changeAndNotify();
 		return true;
 	}
 
+	private void revealTiles(int row, int col) {
+		Tile tile = getTileAt(row, col);
+		for (int i = -1; i < 2; i++) {
+			for (int j = -1; j < 2; j++) {
+				int toRevealRow = row + i;
+				int toRevealCol = col + j;
+				Tile toRevealTile = getTileAt(toRevealRow, toRevealCol);
+				if (!canSeeTile(curPlayer))
+					revealTile(curPlayer);
+			}
+		}
+	}
+
 	// returns true if moves onto (defeats existing unit)
-	private boolean attack(Unit attacker, Unit defender) {
+	private boolean attack(Tile attackerTile, Tile defenderTile) {
+		Unit attacker = attackerTile.getUnit();
+		Unit defender = defenderTile.getUnit();
+		double attack = attacker.getAttackValue();
+		attack *= defenderTile.getAttackModifier();
+		defender.takeAttack(attack);
+		if (defender.getHP() < 0) {
+			defender.getOwner().removeUnit(defender);
+			return true;
+		}
+		double counterattack = defender.getAttackValue();
+		counterattack *= attackerTile.getAttackModifier();
+		attacker.takeAttack(counterattack);
 		return false;
 	}
 
-	private boolean attack(Unit attacker, City defender) {
+	private boolean attack(Tile attackerTile, City defender) {
 
 		return false;
 	}
@@ -139,6 +173,10 @@ public class CivController {
 	}
 
 	public boolean foundCity(int row, int col) {
+		Tile tile = getTileAt(row, col);
+		City city = new City(curPlayer);
+		tile.foundCity(city);
+		curPlayer.addCity(city);
 		model.changeAndNotify();
 		return false;
 	}
