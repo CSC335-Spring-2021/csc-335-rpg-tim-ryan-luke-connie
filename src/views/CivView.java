@@ -8,6 +8,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -34,6 +35,7 @@ public class CivView extends Application implements Observer {
 
 	// ui hooks
 	private ScrollPane mapContainer;
+	private Canvas mapCanvas;
 
 	// viz constants
 	private static final int WINDOW_WIDTH = 800;
@@ -61,6 +63,9 @@ public class CivView extends Application implements Observer {
 		// assemble ui
 		StackPane window = new StackPane();
 		buildUI(window);
+
+		// add global events
+		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
 
 		// build the application window
 		Scene scene = new Scene(window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -100,11 +105,11 @@ public class CivView extends Application implements Observer {
 		Pane mapGridContainer = new Pane();
 		mapGridContainer.setPadding(new Insets(0, SCROLL_GUTTER, SCROLL_GUTTER, 0));
 
-		Canvas canvas = new Canvas(isoBoardWidth, isoBoardHeight);
-		mapGridContainer.getChildren().add(canvas);
-		canvas.setLayoutX(SCROLL_GUTTER);
-		canvas.setLayoutY(SCROLL_GUTTER);
-		GraphicsContext context = canvas.getGraphicsContext2D();
+		mapCanvas = new Canvas(isoBoardWidth, isoBoardHeight);
+		mapGridContainer.getChildren().add(mapCanvas);
+		mapCanvas.setLayoutX(SCROLL_GUTTER);
+		mapCanvas.setLayoutY(SCROLL_GUTTER);
+		GraphicsContext context = mapCanvas.getGraphicsContext2D();
 
 		for (int[] coords : getDrawTraversal()) {
 			try {
@@ -134,6 +139,21 @@ public class CivView extends Application implements Observer {
 		// ScrollPane scroll values are percentages (0 through 1), not raw pixel values
 		mapContainer.setHvalue((coords[0] + TILE_SIZE / 2.0) / (double) isoBoardWidth);
 		mapContainer.setVvalue((coords[1] + TILE_SIZE * ISO_FACTOR / 2.0) / (double) isoBoardHeight);
+	}
+
+
+	/**
+	 * Handle an arbitrary click on the map at any time.
+	 *
+	 * @param ev The event object generated from the click
+	 */
+	private void handleMapClick(MouseEvent ev) {
+		int[] space = isoToGrid(ev.getX(), ev.getY());
+		// reject clicks in the negative space left by the iso view
+		if (space[0] < 0 || space[0] >= model.getSize() ||space[1] < 0 || space[1] >= model.getSize()) {
+			return;
+		}
+		System.out.println("[" + space[0] + ", " + space[1] + "]");
 	}
 
 
@@ -217,8 +237,32 @@ public class CivView extends Application implements Observer {
 	}
 
 
-	private int[] isoToGrid(int x, int y) {
-		return null;
+	/**
+	 * Translate absolute pixel coordinates in the isometric display to grid spaces.
+	 *
+	 * <p>Note that returned indices may be outside the real bounds of the grid due to the natural
+	 * negative space that any isometric view has in the corners. Since this method doesn't
+	 * necessarily return "safe" indices, make sure to check.
+	 *
+	 * @param x The horizontal pixel offset of the coordinate from the left edge of the canvas
+	 * @param y The vertical pixel offset of the coordinate from the top edge of the canvas
+	 * @return A two-element int array containing the x and y indices of the space in the grid
+	 */
+	private int[] isoToGrid(double x, double y) {
+		int[] result = new int[2];
+
+		// derived from algebra-ing the gridToIso() calculations:
+		//
+		// x = tileX * TILE_SIZE / 2 - tileY * TILE_SIZE / 2;
+		// y = tileX * TILE_SIZE / 2 * ISO_FACTOR + tileY * TILE_SIZE / 2 * ISO_FACTOR;
+		//
+		// then translating based on the board size
+		double w = TILE_SIZE / 2.0;
+		double h = TILE_SIZE / 2.0 * ISO_FACTOR;
+		result[0] = (int) ((x / w + y / h) / 2 - model.getSize() / 2);
+		result[1] = (int) ((y / h - x / w) / 2 + model.getSize() / 2);
+
+		return result;
 	}
 
 }
