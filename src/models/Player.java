@@ -9,6 +9,7 @@ public class Player {
 	private ArrayList<Unit> units;
 	private ArrayList<City> cities;
 	private boolean isHuman;
+	
 	public Player(int isHuman) {
 		units = new ArrayList<Unit>();
 		cities = new ArrayList<City>();
@@ -31,5 +32,12 @@ public class Player {
 	}
 	public ArrayList<City> getCities() {
 		return cities;
+	}
+	
+	public boolean isHuman() {
+		return this.isHuman;
+	}
+	public void removeUnit(Unit unit) {
+		this.units.remove(unit);
 	}
 }

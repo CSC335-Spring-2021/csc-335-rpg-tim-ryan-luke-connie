@@ -3,6 +3,8 @@ package components;
 import java.util.HashMap;
 import java.util.Map;
 
+import models.Player;
+
 /**
  * Unit superclass.
  * 
@@ -15,6 +17,7 @@ public class Unit {
 	static {
 		unitCosts.put("Scout", 500);
 		unitCosts.put("Settler", 1000);
+		// add more as we add different types of Units
 	}
 
 	private String owner;
@@ -23,6 +26,7 @@ public class Unit {
 	protected int movement;
 	protected double cost;
 	protected int sight;
+	protected double attackValue; // need to add to all units!
 
 	public Unit(String player) {
 		this.owner = player;
@@ -48,6 +52,23 @@ public class Unit {
 		return this.movement;
 	}
 
+	public void resetMovement() {
+		// reset to original max movement value
+	}
+
+	public void move(int cost) {
+		// decrease current movement by cost of movement
+	}
+
+
+	public double getAttackValue() {
+		return attackValue;
+	}
+	
+	public double getHP() {
+		return HP;
+	}
+
 	/**
 	 * Return unit's production cost
 	 * 
@@ -64,6 +85,11 @@ public class Unit {
 	 */
 	public int getSight() {
 		return this.sight;
+	}
+
+	public Player getOwner() {
+		// return owner
+		return null;
 	}
 
 }
