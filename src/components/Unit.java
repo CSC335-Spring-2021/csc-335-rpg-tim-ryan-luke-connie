@@ -3,6 +3,8 @@ package components;
 import java.util.HashMap;
 import java.util.Map;
 
+import models.Player;
+
 /**
  * Unit superclass.
  * 
@@ -18,7 +20,7 @@ public class Unit {
 		// add more as we add different types of Units
 	}
 
-	private String owner;
+	private Player owner;
 
 	protected double HP;
 	protected int maxMovement;
@@ -27,7 +29,7 @@ public class Unit {
 	protected int sight;
 	protected double attackValue;
 
-	public Unit(String player) {
+	public Unit(Player player) {
 		this.owner = player;
 	}
 
@@ -117,7 +119,7 @@ public class Unit {
 	 * 
 	 * @return String representing owner's name
 	 */
-	public String getOwner() {
+	public Player getOwner() {
 		return this.owner;
 	}
 

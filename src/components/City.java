@@ -1,5 +1,7 @@
 package components;
 
+import models.Player;
+
 /**
  * TODO: I will need to make it so the city levels up. To do this we can have an
  * integer representing the number of turns that need to pass before the city
@@ -13,7 +15,7 @@ package components;
  */
 public class City {
 
-	private String owner;
+	private Player owner;
 	private double production;
 	private double productionReserve;
 	private Unit unitInProduction;
@@ -21,8 +23,8 @@ public class City {
 	// garrison is handled by tile.
 	private double cityHP;
 
-	public City(String playerName) {
-		this.owner = playerName;
+	public City(Player player) {
+		this.owner = player;
 		// default production subject to change, higher start is better
 		this.production = 50;
 		this.population = 1; // we can say 1pop = 1000 people or something
@@ -91,7 +93,7 @@ public class City {
 		// TODO: Stuff
 	}
 
-	public String getOwner() {
+	public Player getOwner() {
 		return this.owner;
 	}
 

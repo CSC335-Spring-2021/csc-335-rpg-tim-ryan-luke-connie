@@ -3,6 +3,8 @@ package components;
 import java.util.ArrayList;
 import java.util.List;
 
+import models.Player;
+
 /**
  * Class representing a single tile within our board.
  *
@@ -22,7 +24,7 @@ public class Tile {
 	private City ownerCity = null;
 	private Unit unitHere = null;
 	// Used string to represent players, could also make an object but idk yet
-	private List<String> revealedTo = new ArrayList<String>();
+	private List<Player> revealedTo = new ArrayList<Player>();
 
 	/**
 	 * When initially making a game, create every tile with a terrain type in mind.
@@ -151,7 +153,7 @@ public class Tile {
 	 * @param player String representing player name
 	 * @return boolean representing whether the player passed in can see the tile
 	 */
-	public boolean canSeeTile(String player) {
+	public boolean canSeeTile(Player player) {
 		return revealedTo.contains(player);
 	}
 
@@ -160,7 +162,7 @@ public class Tile {
 	 *
 	 * @param player String representing player name
 	 */
-	public void revealTile(String player) {
+	public void revealTile(Player player) {
 		revealedTo.add(player);
 	}
 
