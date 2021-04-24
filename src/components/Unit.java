@@ -31,7 +31,7 @@ public class Unit {
 		this.owner = player;
 	}
 
-	/**
+	/*
 	 * make the unit take damage and return remaining hp, can be used with 0 to
 	 * retrieve current HP
 	 * 
