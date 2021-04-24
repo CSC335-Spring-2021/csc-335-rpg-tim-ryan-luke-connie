@@ -53,10 +53,8 @@ public class CivController {
 		curPlayer = model.getCurPlayer();
 		for (Unit u : curPlayer.getUnits())
 			u.resetMovement();
-		for (City c : curPlayer.getCities()) {
-			c.produce();
-			c.checkLevelUp();
-		}
+		for (City c : curPlayer.getCities())
+			c.cityIncrement();
 		if (!curPlayer.isHuman())
 			computerTurn();
 		model.changeAndNotify();
@@ -98,49 +96,29 @@ public class CivController {
 		Unit onTile = moveTo.getUnit();
 		boolean movesOnto = true;
 		if (onTile != null) // unit exists here, attack it
-			movesOnto = attack(unit, onTile);
-		else if (moveTo.getTerrainType() == Tile.terrainTypes.CITY
-				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
-			movesOnto = attack(unit, moveTo.getOwnerCity());
-		if (movesOnto) {
-			moveFrom.setUnit(null);
-			moveTo.setUnit(unit);
-			return false;
-		Tile moveTo = getTileAt(newRow, newCol);
-		int cost = moveTo.getMovementModifier();
-		if (cost + 1 > movement)
-			return false;
-		Unit onTile = moveTo.getUnit();
-		boolean movesOnto = true;
-		if (onTile != null) // unit exists here, attack it
 			movesOnto = attack(moveFrom, moveTo);
-		else if (moveTo.getTerrainType() == Tile.terrainTypes.CITY
-				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
+		else if (moveTo.isCity() && !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
 			movesOnto = attack(moveFrom, moveTo.getOwnerCity());
 		if (movesOnto) {
 			moveFrom.setUnit(null);
 			moveTo.setUnit(unit);
+			unit.setRow(newRow);
+			unit.setCol(newCol);
+			unit.move(cost + 1);
 			revealTiles(newRow, newCol);
 		}
 		model.changeAndNotify();
 		return true;
 	}
 
-	// returns true if moves onto (defeats existing unit)
-	private boolean attack(Unit attacker, Unit defender) {
-		return false;
-	}
-
-	private boolean attack(Unit attacker, City defender) {
 	private void revealTiles(int row, int col) {
-		Tile tile = getTileAt(row, col);
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
 				int toRevealRow = row + i;
 				int toRevealCol = col + j;
 				Tile toRevealTile = getTileAt(toRevealRow, toRevealCol);
-				if (!canSeeTile(curPlayer))
-					revealTile(curPlayer);
+				if (!toRevealTile.canSeeTile(curPlayer))
+					toRevealTile.revealTile(curPlayer);
 			}
 		}
 	}
@@ -150,19 +128,29 @@ public class CivController {
 		Unit attacker = attackerTile.getUnit();
 		Unit defender = defenderTile.getUnit();
 		double attack = attacker.getAttackValue();
-		attack *= defenderTile.getAttackModifier();
+		attack *= attackerTile.getAttackModifier();
 		defender.takeAttack(attack);
 		if (defender.getHP() < 0) {
 			defender.getOwner().removeUnit(defender);
 			return true;
 		}
 		double counterattack = defender.getAttackValue();
-		counterattack *= attackerTile.getAttackModifier();
+		counterattack *= defenderTile.getAttackModifier();
 		attacker.takeAttack(counterattack);
 		return false;
 	}
 
 	private boolean attack(Tile attackerTile, City defender) {
+		Unit attacker = attackerTile.getUnit();
+		double attack = attacker.getAttackValue();
+		attack *= attackerTile.getAttackModifier();
+		defender.takeAttack(attack);
+		if (defender.getHP() < 0) {
+			// curPlayer.removeCity(defender); needs to be added in Player
+			Player lostCity = defender.getOwner();
+			if (lostCity.getCities().size() == 0)
+				model.removePlayer(lostCity);
+		}
 		return false;
 	}
 
