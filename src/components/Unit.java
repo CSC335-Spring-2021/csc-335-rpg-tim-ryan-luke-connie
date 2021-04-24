@@ -1,5 +1,8 @@
 package components;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Unit superclass.
  * 
@@ -7,6 +10,12 @@ package components;
  *
  */
 public class Unit {
+
+	public static final Map<String, Integer> unitCosts = new HashMap<String, Integer>();
+	static {
+		unitCosts.put("Scout", 500);
+		unitCosts.put("Settler", 1000);
+	}
 
 	private String owner;
 
@@ -56,8 +65,5 @@ public class Unit {
 	public int getSight() {
 		return this.sight;
 	}
-
-
-
 
 }

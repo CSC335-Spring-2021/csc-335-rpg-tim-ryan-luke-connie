@@ -18,8 +18,9 @@ public class CivModel extends Observable {
 	 * Initialize a new model.
 	 */
 	public CivModel() {
-		this.board = new CivBoard(10);
+		this.board = new CivBoard(20);
 	}
+	
 
 
 	/**
