@@ -21,5 +21,9 @@ public class CivModel extends Observable {
 	public Tile getTileAt(int row, int col) {
 		return this.board.getTile(row,  col);
 	}
+	
+	public int getSize() {
+		return this.board.getSize();
+	}
 
 }

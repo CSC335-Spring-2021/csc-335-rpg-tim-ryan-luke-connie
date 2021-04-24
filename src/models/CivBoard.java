@@ -55,6 +55,9 @@ public class CivBoard {
 	public Tile getTile(int row, int col) {
 		return this.tiles[row][col];
 	}
+	public int getSize() {
+		return this.size;
+	}
 
 
 
