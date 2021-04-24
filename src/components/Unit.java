@@ -26,6 +26,7 @@ public class Unit {
 	protected int movement;
 	protected double cost;
 	protected int sight;
+	protected double attackValue; // need to add to all units!
 
 	public Unit(String player) {
 		this.owner = player;
@@ -57,6 +58,15 @@ public class Unit {
 
 	public void move(int cost) {
 		// decrease current movement by cost of movement
+	}
+
+
+	public double getAttackValue() {
+		return attackValue;
+	}
+	
+	public double getHP() {
+		return HP;
 	}
 
 	/**
