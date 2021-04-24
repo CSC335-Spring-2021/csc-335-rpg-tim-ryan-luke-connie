@@ -1,5 +1,6 @@
 package views;
 
+import components.Tile;
 import controllers.CivController;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -112,13 +113,11 @@ public class CivView extends Application implements Observer {
 		GraphicsContext context = mapCanvas.getGraphicsContext2D();
 
 		for (int[] coords : getDrawTraversal()) {
-			try {
-				Image tileImage = new Image(new FileInputStream("src/assets/tiles/field-1.png"));
-				int[] isoCoords = gridToIso(coords[0], coords[1]);
-				context.drawImage(tileImage, isoCoords[0], isoCoords[1], TILE_SIZE, TILE_SIZE * ISO_FACTOR);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
+			Tile tile = model.getTileAt(coords[0], coords[1]);
+			if (tile == null) continue;
+			Image tileImage = getTileImage(tile.getTerrainType());
+			int[] isoCoords = gridToIso(coords[0], coords[1]);
+			context.drawImage(tileImage, isoCoords[0], isoCoords[1], TILE_SIZE, TILE_SIZE * ISO_FACTOR);
 		}
 
 		mapContainer.setContent(mapGridContainer);
@@ -263,6 +262,53 @@ public class CivView extends Application implements Observer {
 		result[1] = (int) ((y / h - x / w) / 2 + model.getSize() / 2);
 
 		return result;
+	}
+
+
+	/**
+	 * Get a tile image for a terrain type.
+	 *
+	 * <p>Since there can be many tile choices for a given terrain type, this method chooses one
+	 * randomly. Don't expect the same image for the same terrain type each time.
+	 *
+	 * @param terrainType The terrain type to get a file for
+	 * @return An Image object containing the image data for a tile image matching the terrain type
+	 */
+	private Image getTileImage(Tile.terrainTypes terrainType) {
+		try {
+			if (terrainType == Tile.terrainTypes.HILL) {
+				return new Image(new FileInputStream(
+						"src/assets/tiles/hill-" + getRandInt(1, 5) + ".png"
+				));
+			} else if (terrainType == Tile.terrainTypes.SWAMP) {
+				return new Image(new FileInputStream(
+						"src/assets/tiles/swamp-" + getRandInt(1, 5) + ".png"
+				));
+			} else if (terrainType == Tile.terrainTypes.WATER) {
+				return new Image(new FileInputStream(
+						"src/assets/tiles/water-" + getRandInt(1, 5) + ".png"
+				));
+			} else {
+				return new Image(new FileInputStream(
+						"src/assets/tiles/field-" + getRandInt(1, 5) + ".png"
+				));
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+
+	/**
+	 * Generate a random integer in a given range.
+	 *
+	 * @param min The minimum possible result (inclusive)
+	 * @param max The maximum possible result (inclusive)
+	 * @return A random integer between the two bounds, inclusive
+	 */
+	private int getRandInt(int min, int max) {
+		return (int) (Math.random() * (max - min + 1) + min);
 	}
 
 }
