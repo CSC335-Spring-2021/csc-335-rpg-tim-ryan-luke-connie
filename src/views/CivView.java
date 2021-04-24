@@ -55,7 +55,7 @@ public class CivView extends Application implements Observer {
 
 	@Override
 	public void start(Stage stage) {
-		this.model = new CivModel();
+		this.model = new CivModel(2);
 		this.controller = new CivController(model);
 
 		model.addObserver(this);
