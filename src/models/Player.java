@@ -36,4 +36,7 @@ public class Player {
 	public boolean isHuman() {
 		return this.isHuman;
 	}
+	public void removeUnit(Unit unit) {
+		this.units.remove(unit);
+	}
 }
