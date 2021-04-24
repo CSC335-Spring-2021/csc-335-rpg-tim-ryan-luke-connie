@@ -32,4 +32,8 @@ public class Player {
 	public ArrayList<City> getCities() {
 		return cities;
 	}
+	
+	public boolean isHuman() {
+		return this.isHuman;
+	}
 }
