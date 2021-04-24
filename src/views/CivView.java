@@ -12,6 +12,7 @@ import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import models.CivModel;
 
@@ -64,13 +65,14 @@ public class CivView extends Application implements Observer {
 		// assemble ui
 		StackPane window = new StackPane();
 		buildUI(window);
+		focusMap(model.getSize() / 2, model.getSize() / 2);
 
 		// add global events
 		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
 
 		// build the application window
 		Scene scene = new Scene(window, WINDOW_WIDTH, WINDOW_HEIGHT);
-		scene.getStylesheets().add("views/CivView.css");
+		scene.getStylesheets().add("assets/CivView.css");
 		stage.setScene(scene);
 		stage.setTitle("Sid Meier's Civilization 0.5");
 
@@ -96,22 +98,34 @@ public class CivView extends Application implements Observer {
 	 * @param window The main pane that will contain all UI elements
 	 */
 	private void buildUI(StackPane window) {
+		window.getStyleClass().add("ui");
+
+		// scrollable container that houses our map group
 		mapContainer = new ScrollPane();
 		mapContainer.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 		mapContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 		mapContainer.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 		mapContainer.setPannable(true);
+		mapContainer.getStyleClass().add("map");
 		window.getChildren().add(mapContainer);
 
+		// pane to contain the map canvas. This interim layer lets us add padding without screwing
+		// up canvas click math, etc
 		Pane mapGridContainer = new Pane();
 		mapGridContainer.setPadding(new Insets(0, SCROLL_GUTTER, SCROLL_GUTTER, 0));
 
+		// terrain map: element
 		mapCanvas = new Canvas(isoBoardWidth, isoBoardHeight);
 		mapGridContainer.getChildren().add(mapCanvas);
 		mapCanvas.setLayoutX(SCROLL_GUTTER);
 		mapCanvas.setLayoutY(SCROLL_GUTTER);
-		GraphicsContext context = mapCanvas.getGraphicsContext2D();
 
+		// terrain map: bg
+		GraphicsContext context = mapCanvas.getGraphicsContext2D();
+		context.setFill(Color.BLACK);
+		context.fillRect(0, 0, isoBoardWidth, isoBoardHeight);
+
+		// terrain map: tiles
 		for (int[] coords : getDrawTraversal()) {
 			Tile tile = model.getTileAt(coords[0], coords[1]);
 			if (tile == null) continue;
@@ -121,8 +135,6 @@ public class CivView extends Application implements Observer {
 		}
 
 		mapContainer.setContent(mapGridContainer);
-
-		focusMap(model.getSize() / 2, model.getSize() / 2);
 	}
 
 
