@@ -1,5 +1,7 @@
 package components;
 
+import models.Player;
+
 /**
  * Basic setup for a scout unit all vals subject to change. Scouts move and
  * reveal more.
@@ -9,7 +11,7 @@ package components;
  */
 public class Scout extends Unit {
 
-	public Scout(String player) {
+	public Scout(Player player) {
 		super(player);
 		HP = 50;
 		maxMovement = 4;

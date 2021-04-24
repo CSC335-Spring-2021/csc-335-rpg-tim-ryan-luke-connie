@@ -1,5 +1,7 @@
 package components;
 
+import models.Player;
+
 /**
  * Basic setup for a settler, all values subject to change. Settler needs to be
  * able to found a city but im not sure how we want to do this yet.
@@ -9,7 +11,7 @@ package components;
  */
 public class Settler extends Unit {
 
-	public Settler(String player) {
+	public Settler(Player player) {
 		super(player);
 		HP = 1;
 		maxMovement = 2;
