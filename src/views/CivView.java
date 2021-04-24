@@ -4,10 +4,9 @@ import controllers.CivController;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import models.CivModel;
@@ -30,9 +29,6 @@ public class CivView extends Application implements Observer {
 	// game data + controller
 	private CivController controller;
 	private CivModel model;
-
-	// ui hooks
-	private Pane mapContainer;
 
 	// viz constants
 	private static final int WINDOW_WIDTH = 800;
@@ -67,26 +63,7 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.setTitle("Sid Meier's Civilization 0.5");
 
-		// add global event listeners
-		scene.setOnScroll(ev -> handleScroll(ev));
-
 		stage.show();
-	}
-
-
-	private void handleScroll(ScrollEvent ev) {
-		int newX = (int) (mapContainer.getTranslateX() + ev.getDeltaX());
-		int newY = (int) (mapContainer.getTranslateY() + ev.getDeltaY());
-
-		// clamp scroll. We're panning inside a fixed-width window, which means we can derive the
-		// scroll bounds from their difference
-		newX = Math.min(SCROLL_GUTTER, newX);
-		newX = Math.max(WINDOW_WIDTH - isoBoardWidth - SCROLL_GUTTER, newX);
-		newY = Math.min(SCROLL_GUTTER, newY);
-		newY = Math.max(WINDOW_HEIGHT - isoBoardHeight - SCROLL_GUTTER, newY);
-
-		mapContainer.setTranslateX(newX);
-		mapContainer.setTranslateY(newY);
 	}
 
 
@@ -108,7 +85,11 @@ public class CivView extends Application implements Observer {
 	 * @param window The main pane that will contain all UI elements
 	 */
 	private void buildUI(StackPane window) {
-		mapContainer = new Pane();
+		ScrollPane mapContainer = new ScrollPane();
+		mapContainer.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+		mapContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		mapContainer.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		mapContainer.setPannable(true);
 		window.getChildren().add(mapContainer);
 
 		Group mapGridContainer = new Group();
@@ -126,7 +107,7 @@ public class CivView extends Application implements Observer {
 			}
 		}
 
-		mapContainer.getChildren().add(mapGridContainer);
+		mapContainer.setContent(mapGridContainer);
 	}
 
 
@@ -148,8 +129,8 @@ public class CivView extends Application implements Observer {
 		int diagonalSlices = model.getSize() * 2 - 1;
 		int mid = diagonalSlices / 2;
 		int sliceSize = 0;
-		int startX = 0;
-		int startY = 0;
+		int startX;
+		int startY;
 
 		for (int slice = 0; slice < diagonalSlices; slice++) {
 			if (slice <= mid) {
