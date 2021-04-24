@@ -18,7 +18,6 @@ public class City {
 	private int population; // population can represent city level
 	// garrison is handled by tile.
 	private double cityHP;
-	private int productionReserve;
 
 	public City(String playerName) {
 		this.owner = playerName;
@@ -26,7 +25,6 @@ public class City {
 		this.production = 50;
 		this.population = 1; // we can say 1pop = 1000 people or something
 		this.cityHP = 100;
-		this.productionReserve = 0; // start with 0 production
 	}
 
 	/**
@@ -56,22 +54,6 @@ public class City {
 	public double takeAttack(double damage) {
 		this.cityHP -= damage;
 		return this.cityHP;
-	}
-
-	/**
-	 * Add to reserve
-	 */
-	public void produce() {
-		productionReserve += production;
-	}
-
-	public int getProductionReserve() {
-		return productionReserve;
-	}
-
-	public Unit produceUnit(String unitType) {
-		// TODO: make a unit of the right type and make it
-		return null;
 	}
 
 	/**

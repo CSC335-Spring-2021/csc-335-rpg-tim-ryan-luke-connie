@@ -25,5 +25,13 @@ public class CivModel extends Observable {
 	public int getSize() {
 		return this.board.getSize();
 	}
+	/**
+	 * Set the state of the model to changed and notify Observers that the model has
+	 * been updated. Pass the current game state (board) to all Observers.
+	 */
+	public void changeAndNotify() {
+		this.setChanged();
+		this.notifyObservers(this.board);
+	}
 
 }
