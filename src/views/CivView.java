@@ -6,8 +6,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -36,8 +35,15 @@ public class CivView extends Application implements Observer {
 	private Pane mapContainer;
 
 	// viz constants
+	private static final int WINDOW_WIDTH = 800;
+	private static final int WINDOW_HEIGHT = 600;
 	private static final int TILE_SIZE = 120;
 	private static final double ISO_FACTOR = 0.6;
+	private static final int SCROLL_GUTTER = 20;
+
+	// viz derived constants (for convenience)
+	private int isoBoardWidth;
+	private int isoBoardHeight;
 
 
 	@Override
@@ -47,18 +53,40 @@ public class CivView extends Application implements Observer {
 
 		model.addObserver(this);
 
+		// calculate derived constants (less spaghetti later on)
+		isoBoardWidth = (int) (Math.sqrt(2 * Math.pow(model.getSize(), 2)) * TILE_SIZE);
+		isoBoardHeight = (int) (isoBoardWidth * ISO_FACTOR);
+
+		// assemble ui
 		StackPane window = new StackPane();
 		buildUI(window);
 
 		// build the application window
-		Scene scene = new Scene(window, 800, 600);
+		Scene scene = new Scene(window, WINDOW_WIDTH, WINDOW_HEIGHT);
 		scene.getStylesheets().add("views/CivView.css");
 		stage.setScene(scene);
 		stage.setTitle("Sid Meier's Civilization 0.5");
 
 		// add global event listeners
+		scene.setOnScroll(ev -> handleScroll(ev));
 
 		stage.show();
+	}
+
+
+	private void handleScroll(ScrollEvent ev) {
+		int newX = (int) (mapContainer.getTranslateX() + ev.getDeltaX());
+		int newY = (int) (mapContainer.getTranslateY() + ev.getDeltaY());
+
+		// clamp scroll. We're panning inside a fixed-width window, which means we can derive the
+		// scroll bounds from their difference
+		newX = Math.min(SCROLL_GUTTER, newX);
+		newX = Math.max(WINDOW_WIDTH - isoBoardWidth - SCROLL_GUTTER, newX);
+		newY = Math.min(SCROLL_GUTTER, newY);
+		newY = Math.max(WINDOW_HEIGHT - isoBoardHeight - SCROLL_GUTTER, newY);
+
+		mapContainer.setTranslateX(newX);
+		mapContainer.setTranslateY(newY);
 	}
 
 
@@ -164,7 +192,6 @@ public class CivView extends Application implements Observer {
 
 		// our origin point is [half of the real rendered width, 0] (the very top corner of the
 		// rendered board)
-		int isoBoardWidth = (int) (Math.sqrt(2 * Math.pow(model.getSize(), 2)) * TILE_SIZE);
 		int originX = isoBoardWidth / 2;
 		result[0] = originX;
 
