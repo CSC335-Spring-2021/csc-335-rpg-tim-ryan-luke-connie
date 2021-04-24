@@ -1,5 +1,7 @@
 package models;
+import java.util.Random;
 
+import components.Tile;
 /**
  * Holds the collection of individual tiles that make up a single Civ map.
  *
@@ -13,36 +15,45 @@ public class CivBoard {
 
 	public CivBoard(int size) {
 		this.size = size;
-		this.tiles = createRandomBoard(size);
-	}
-
-
-	/**
-	 * Generate a new board made up of random tiles.
-	 *
-	 * <p>todo: nonrandom right now. Make random once we have tile types
-	 *
-	 * @param size The size of the square board to generate
-	 * @return A new 2d array of tiles
-	 */
-	private Tile[][] createRandomBoard(int size) {
-		Tile[][] result = new Tile[size][size];
-
-		for (int x = 0; x < result.length; x++) {
-			for (int y = 0; y < result[x].length; y++) {
-				result[x][y] = new Tile();
+		Tile[][] board = new Tile[size][size];
+		int i = 0;
+		int j;
+		Random rng = new Random();
+		while (i < size-1) {
+			j = 0;
+			while (j < size-1) {
+				int type = rng.nextInt(2);
+				if (type == 0)
+					board[i][j] =  new Tile(Tile.terrainTypes.FIELD);
+				else if (type == 1)
+					board[i][j] = new Tile(Tile.terrainTypes.HILL);
+				else
+					board[i][j] = new Tile(Tile.terrainTypes.SWAMP);
+				j++;
 			}
+			i++;
 		}
-
-		return result;
+		i = 0;
+		j = 0;
+		while (i < size) { // set border to water
+			board[i][0] = new Tile(Tile.terrainTypes.WATER);
+			board[0][i] = new Tile(Tile.terrainTypes.WATER);
+			if (i == size-1) {
+				while (j < size-1) {
+					board[j][i] = new Tile(Tile.terrainTypes.WATER);
+					j++;
+					continue;
+				}
+			}
+			i++;
+		}
+		this.tiles = board;
+	}
+	
+	private Tile getTile(int row, int col) {
+		return this.tiles[row][col];
 	}
 
 
-	static class Tile {
-		public boolean isTraversible;
 
-		public Tile() {
-			this.isTraversible = true;
-		}
-	}
 }
