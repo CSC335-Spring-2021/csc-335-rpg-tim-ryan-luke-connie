@@ -16,7 +16,7 @@ public class CivControllerTest {
 
 	@Test
 	void testBasics() {
-		CivModel model = new CivModel();
+		CivModel model = new CivModel(2);
 		CivController controller = new CivController(model);
 
 		assertNotNull(controller);
