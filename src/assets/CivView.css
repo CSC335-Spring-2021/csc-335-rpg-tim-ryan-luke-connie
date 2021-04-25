@@ -2,9 +2,30 @@
  * Styling for the application window and elements.
  */
 
+.root {
+  -fx-font-family: "Arial";
+  -fx-font-size: 18;
+  -fx-line-spacing: 6px;
+}
+
 .ui {
   -fx-background: #000;
 }
 .map > .viewport {
   -fx-background-color: transparent;
+}
+
+.detail-pane {
+  -fx-pref-width: 200;
+  -fx-padding: 24 24 30;
+  -fx-border-width: 2;
+  -fx-border-style: solid;
+  -fx-border-color: rgba(255,255,255,0.2);
+  -fx-background-color: rgba(0,0,0,0.7);
+  -fx-background-insets: 2;
+}
+.detail-pane__label {
+  -fx-fill: #fff;
+  -fx-font-size: 26;
+  -fx-font-weight: bold;
 }

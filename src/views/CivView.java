@@ -4,6 +4,7 @@ import components.*;
 import controllers.CivController;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -13,7 +14,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import models.CivModel;
 
@@ -44,6 +47,10 @@ public class CivView extends Application implements Observer {
 
 	// sprite hooks
 	private List<ImageView> spriteImages;
+
+	// ui hooks
+	private VBox unitPane;
+	private Unit selectedUnit;
 
 	// viz constants
 	private static final int WINDOW_WIDTH = 800;
@@ -77,7 +84,7 @@ public class CivView extends Application implements Observer {
 		isoBoardHeight = (int) (isoBoardWidth * ISO_FACTOR);
 
 		// assemble ui
-		StackPane window = new StackPane();
+		Pane window = new Pane();
 		buildUI(window);
 		focusMap(model.getSize() / 2, model.getSize() / 2);
 
@@ -116,7 +123,7 @@ public class CivView extends Application implements Observer {
 	 *
 	 * @param window The main pane that will contain all UI elements
 	 */
-	private void buildUI(StackPane window) {
+	private void buildUI(Pane window) {
 		window.getStyleClass().add("ui");
 
 		// scrollable container that houses our map group
@@ -167,6 +174,13 @@ public class CivView extends Application implements Observer {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+
+		// unit detail pane
+		unitPane = new VBox();
+		unitPane.getStyleClass().addAll("detail-pane", "detail-pane--unit");
+		unitPane.setLayoutX(24);
+		unitPane.setVisible(false);
+		window.getChildren().add(unitPane);
 	}
 
 
@@ -270,13 +284,20 @@ public class CivView extends Application implements Observer {
 		if (!ev.isStillSincePress()) return;
 
 		int[] space = isoToGrid(ev.getX(), ev.getY());
+		Tile tile = controller.getTileAt(space[0], space[1]);
 
 		// reject clicks in the negative space left by the iso view
-		if (space[0] < 0 || space[0] >= model.getSize() ||space[1] < 0 || space[1] >= model.getSize()) {
-			return;
-		}
+		if (tile == null) return;
 
-		System.out.println("[" + space[0] + ", " + space[1] + "]");
+		// if a unit is already selected, this click is either move/attack (if in range) or
+		// deselect (if out of range)
+		if (selectedUnit != null) {
+			deselectUnit();
+
+		// otherwise, select the unit under the click if there is one
+		} else {
+			selectUnit(tile.getUnit());
+		}
 	}
 
 
@@ -295,12 +316,47 @@ public class CivView extends Application implements Observer {
 		if (space[0] < 0 || space[0] >= model.getSize() ||space[1] < 0 || space[1] >= model.getSize()) {
 			return;
 		}
-		
+
 		int[] coords = gridToIso(space[0], space[1]);
 
 		mapHoverCursor.setX(coords[0] + SCROLL_GUTTER);
 		mapHoverCursor.setY(coords[1] + SCROLL_GUTTER);
 		mapHoverCursor.setVisible(true);
+	}
+
+
+	/**
+	 * Select a unit. This involves marking said unit as selected, centering the map on it, and
+	 * building and showing a detail pane that displays the unit's properties.
+	 *
+	 * @param unit The Unit to select
+	 */
+	private void selectUnit(Unit unit) {
+		if (unit == null) return;
+
+		unitPane.getChildren().clear();
+
+		Text name = new Text(unit.getLabel());
+		name.getStyleClass().add("detail-pane__label");
+
+		unitPane.getChildren().addAll(name);
+		unitPane.setVisible(true);
+		unitPane.setLayoutY((WINDOW_HEIGHT - unitPane.getHeight()) / 2 - 24);
+
+		selectedUnit = unit;
+		renderAllSprites();
+		focusMap(unit.getX(), unit.getY());
+	}
+
+
+	/**
+	 * Deselect the currently selected unit. This also removes the unit's detail pane.
+	 */
+	private void deselectUnit() {
+		selectedUnit = null;
+		unitPane.setVisible(false);
+		unitPane.getChildren().clear();
+		renderAllSprites();
 	}
 
 

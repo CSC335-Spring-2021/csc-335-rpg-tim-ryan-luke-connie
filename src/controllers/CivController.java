@@ -1,9 +1,6 @@
 package controllers;
 
-import components.City;
-import components.Settler;
-import components.Tile;
-import components.Unit;
+import components.*;
 import models.CivModel;
 import models.Player;
 
@@ -35,11 +32,17 @@ public class CivController {
 	 * Configure the map with the units that should exist at the start of a new game.
 	 */
 	public void placeStartingUnits() {
-		Settler settler = new Settler(model.getCurPlayer(), new Point(0, 0));
-		model.getTileAt(0, 0).setUnit(settler);
+		Settler settler = new Settler(model.getCurPlayer(), new Point(9, 9));
+		model.getTileAt(9, 9).setUnit(settler);
 
-		City city = new City(model.getCurPlayer(), 1, 1);
-		model.getTileAt(1, 1).foundCity(city);
+		City city = new City(model.getCurPlayer(), 10, 10);
+		model.getTileAt(10, 10).foundCity(city);
+
+		Scout scout = new Scout(model.getCurPlayer(), new Point(10, 9));
+		model.getTileAt(10, 9).setUnit(scout);
+
+		Warrior warrior = new Warrior(model.getCurPlayer(), new Point(9, 10));
+		model.getTileAt(9, 10).setUnit(warrior);
 	}
 
 

@@ -6,7 +6,7 @@ import components.Tile;
 
 /**
  * Holds the collection of individual tiles that make up a single Civ map.
- * 
+ *
  * @field tiles 2D array containing our tile objects
  * @field size int specifying the size of our board --> board is size x size
  *        tiles
@@ -20,7 +20,7 @@ public class CivBoard {
 
 	/**
 	 * Constructor for our board
-	 * 
+	 *
 	 * @param size
 	 */
 	public CivBoard(int size) {
@@ -58,6 +58,7 @@ public class CivBoard {
 	}
 
 	public Tile getTile(int x, int y) {
+		if (x < 0 || x >= size || y < 0 || y >= size) return null;
 		return this.tiles[y][x];
 	}
 
