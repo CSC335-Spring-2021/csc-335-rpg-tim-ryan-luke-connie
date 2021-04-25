@@ -385,6 +385,8 @@ public class CivView extends Application implements Observer {
 	private void selectUnit(Unit unit) {
 		if (unit == null) return;
 
+		Tile tile = controller.getTileAt(unit.getX(), unit.getY());
+
 		selectedUnit = unit;
 
 		unitPane.getChildren().clear();
@@ -400,10 +402,35 @@ public class CivView extends Application implements Observer {
 		TextFlow hpFlow = createLabeledFigure("HP", (int) unit.getHP(), (int) unit.getMaxHP(), hpDisp);
 		GridPane hpBar = createHPBar(unit.getHP(), unit.getMaxHP());
 
+		// pane info: attack
+		String attackDisp = "";
+		if (tile.getAttackModifier() > 1) attackDisp = "positive";
+		if (tile.getAttackModifier() < 1) attackDisp = "negative";
+		TextFlow attackFlow = createLabeledFigure(
+				"attack",
+				(int) (unit.getAttackValue() * tile.getAttackModifier()),
+				(tile.getAttackModifier() != 1 ? (int) unit.getAttackValue() : -1),
+				attackDisp
+		);
+		attackFlow.getStyleClass().add("detail-pane__space-above");
+		TextFlow attackHelp = new TextFlow();
+		attackHelp.getStyleClass().add("detail-pane__help");
+		if (tile.getAttackModifier() != 1) {
+			Text attackMod = new Text((tile.getAttackModifier() > 1 ? "+" : "-") + " attack ");
+			attackMod.getStyleClass().add(tile.getAttackModifier() > 1 ? "positive" : "negative");
+			Text attackWhy = new Text("in " + tile.getTerrainType().name().toLowerCase() + "s");
+			attackHelp.getChildren().addAll(attackMod, attackWhy);
+		}
+
+		// pane info: movement
+		TextFlow moveFlow = createLabeledFigure("moves remaining", unit.getMovement(), -1, "");
+		moveFlow.getStyleClass().add("detail-pane__space-above");
+
 		// populate and show pane
-		unitPane.getChildren().addAll(name, hpFlow, hpBar);
+		unitPane.getChildren().addAll(name, hpFlow, hpBar, attackFlow, attackHelp, moveFlow);
 		unitPane.setVisible(true);
-		unitPane.setLayoutY((WINDOW_HEIGHT - unitPane.getHeight()) / 2 - 24);
+		// javafx doesn't calculate this vbox's height correctly, so magic number for now
+		unitPane.setLayoutY((WINDOW_HEIGHT - 230) / 2.0);
 
 		// add selection indicator
 		int[] coords = gridToIso(unit.getX(), unit.getY());
@@ -437,7 +464,7 @@ public class CivView extends Application implements Observer {
 		result.getChildren().add(figureNode);
 
 		if (max >= 0) {
-			Text dividerNode = new Text("  /  ");
+			Text dividerNode = new Text(" / ");
 			dividerNode.getStyleClass().add("detail-pane__divider");
 			result.getChildren().add(dividerNode);
 
@@ -446,7 +473,7 @@ public class CivView extends Application implements Observer {
 			result.getChildren().add(maxNode);
 		}
 
-		Text labelNode = new Text("   " + label);
+		Text labelNode = new Text("  " + label);
 		labelNode.getStyleClass().add("detail-pane__label");
 		result.getChildren().add(labelNode);
 

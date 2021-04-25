@@ -41,8 +41,8 @@ public class CivController {
 		Scout scout = new Scout(model.getCurPlayer(), new Point(10, 9));
 		model.getTileAt(10, 9).setUnit(scout);
 
-		Warrior warrior = new Warrior(model.getCurPlayer(), new Point(9, 10));
-		model.getTileAt(9, 10).setUnit(warrior);
+		Warrior warrior = new Warrior(model.getCurPlayer(), new Point(11, 12));
+		model.getTileAt(11, 12).setUnit(warrior);
 	}
 
 

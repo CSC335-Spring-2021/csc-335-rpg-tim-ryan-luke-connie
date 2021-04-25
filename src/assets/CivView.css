@@ -47,6 +47,10 @@
   -fx-font-size: 13;
   -fx-fill: rgba(255,255,255,0.7);
 }
+.detail-pane__help * {
+  -fx-font-size: 13;
+  -fx-fill: rgba(255,255,255,0.9);
+}
 .detail-pane__space-above {
   -fx-padding: 24 0 0;
 }
@@ -66,10 +70,13 @@
 
 .positive {
   -fx-fill: #17e313;
+  -fx-font-weight: bold;
 }
 .neutral {
   -fx-fill: #e3B820;
+  -fx-font-weight: bold;
 }
 .negative {
   -fx-fill: #f46464;
+  -fx-font-weight: bold;
 }
