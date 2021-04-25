@@ -12,10 +12,14 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import models.CivModel;
@@ -364,10 +368,17 @@ public class CivView extends Application implements Observer {
 
 		// pane info: label
 		Text name = new Text(unit.getLabel());
-		name.getStyleClass().add("detail-pane__label");
+		name.getStyleClass().add("detail-pane__name");
+
+		// pane info: HP
+		String hpDisp = "positive";
+		if (unit.getHP() < unit.getMaxHP() * 2/3) hpDisp = "neutral";
+		if (unit.getHP() < unit.getMaxHP() * 1/3) hpDisp = "negative";
+		TextFlow hpFlow = createLabeledFigure("HP", (int) unit.getHP(), (int) unit.getMaxHP(), hpDisp);
+		GridPane hpBar = createHPBar(unit.getHP(), unit.getMaxHP());
 
 		// populate and show pane
-		unitPane.getChildren().addAll(name);
+		unitPane.getChildren().addAll(name, hpFlow, hpBar);
 		unitPane.setVisible(true);
 		unitPane.setLayoutY((WINDOW_HEIGHT - unitPane.getHeight()) / 2 - 24);
 
@@ -380,6 +391,66 @@ public class CivView extends Application implements Observer {
 
 		// center map on unit
 		focusMap(unit.getX(), unit.getY());
+	}
+
+
+	/**
+	 * Assemble a TextFlow with a common layout for figures and their associated labels.
+	 *
+	 * @param label The label text to render
+	 * @param figure The primary figure value
+	 * @param max If the figure has a max value, pass it here. Otherwise, pass a negative number
+	 * @param disposition The disposition class to render ("positive", "neutral", or "negative") or
+	 *                    an empty string if not applicable
+	 * @return The assembled TextFlow object containing the data inside new Text nodes
+	 */
+	private TextFlow createLabeledFigure(String label, int figure, int max, String disposition) {
+		TextFlow result = new TextFlow();
+		result.getStyleClass().add("detail-pane__figure-group");
+
+		Text figureNode = new Text("" + figure);
+		figureNode.getStyleClass().add("detail-pane__figure");
+		if (disposition.length() > 0) figureNode.getStyleClass().add(disposition);
+		result.getChildren().add(figureNode);
+
+		if (max >= 0) {
+			Text dividerNode = new Text("  /  ");
+			dividerNode.getStyleClass().add("detail-pane__divider");
+			result.getChildren().add(dividerNode);
+
+			Text maxNode = new Text("" + max);
+			maxNode.getStyleClass().add("detail-pane__figure");
+			result.getChildren().add(maxNode);
+		}
+
+		Text labelNode = new Text("   " + label);
+		labelNode.getStyleClass().add("detail-pane__label");
+		result.getChildren().add(labelNode);
+
+		return result;
+	}
+
+
+	/**
+	 * Create a standardized structure representing an HP bar.
+	 *
+	 * @param cur The current HP
+	 * @param max The max HP
+	 * @return A structure of Nodes that represent an HP bar
+	 */
+	private GridPane createHPBar(double cur, double max) {
+		GridPane result = new GridPane();
+		result.getStyleClass().add("hp-bar");
+
+		Pane curNode = new Pane();
+		curNode.getStyleClass().add("hp-bar__remainder");
+		result.add(curNode, 0, 0);
+
+		ColumnConstraints constraint = new ColumnConstraints();
+		constraint.setPercentWidth(cur / max * 100);
+		result.getColumnConstraints().add(constraint);
+
+		return result;
 	}
 
 

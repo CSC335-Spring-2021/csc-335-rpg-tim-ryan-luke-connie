@@ -43,4 +43,10 @@ public class Settler extends Unit {
 		return this.charges;
 	}
 
+
+	@Override
+	public double getMaxHP() {
+		return 1;
+	}
+
 }

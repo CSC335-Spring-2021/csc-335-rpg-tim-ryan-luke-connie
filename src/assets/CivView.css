@@ -24,8 +24,52 @@
   -fx-background-color: rgba(0,0,0,0.7);
   -fx-background-insets: 2;
 }
-.detail-pane__label {
+.detail-pane__name {
   -fx-fill: #fff;
   -fx-font-size: 26;
   -fx-font-weight: bold;
+  -fx-padding: 20;
+}
+.detail-pane__figure-group {
+  -fx-padding: 6 0;
+}
+.detail-pane__figure {
+  -fx-fill: #fff;
+  -fx-font-size: 18;
+  -fx-font-weight: bold;
+}
+.detail-pane__divider {
+  -fx-fill: rgba(255,255,255,0.5);
+  -fx-font-size: 18;
+  -fx-font-weight: bold;
+}
+.detail-pane__label {
+  -fx-font-size: 13;
+  -fx-fill: rgba(255,255,255,0.7);
+}
+.detail-pane__space-above {
+  -fx-padding: 24 0 0;
+}
+
+.hp-bar {
+  -fx-max-width: Infinity;
+  -fx-border-width: 1;
+  -fx-border-style: solid;
+  -fx-border-color: rgba(0,0,0,0.25);
+  -fx-background-color: #dd3d3d;
+  -fx-background-insets: 1;
+}
+.hp-bar__remainder {
+  -fx-pref-height: 4;
+  -fx-background-color: #17e313;
+}
+
+.positive {
+  -fx-fill: #17e313;
+}
+.neutral {
+  -fx-fill: #e3B820;
+}
+.negative {
+  -fx-fill: #f46464;
 }

@@ -23,4 +23,10 @@ public class Scout extends Unit {
 		attackValue = 5;
 	}
 
+
+	@Override
+	public double getMaxHP() {
+		return 50;
+	}
+
 }

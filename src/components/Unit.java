@@ -109,6 +109,16 @@ public class Unit {
 		return HP;
 	}
 
+
+	/**
+	 * Get the unit's total possible health
+	 *
+	 * @return A double representing the unit's starting health
+	 */
+	public double getMaxHP() {
+		return 0;
+	}
+
 	/**
 	 * Decrement this unit's HP from an attack
 	 *
