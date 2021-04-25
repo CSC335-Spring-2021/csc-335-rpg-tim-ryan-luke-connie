@@ -1,42 +1,150 @@
 package components;
 
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import models.Player;
 
 /**
- * TODO: I will need to make it so the city levels up. To do this we can have an
- * integer representing the number of turns that need to pass before the city
- * levels up again, and every time that number is hit it increases by a larger
- * and larger amount. Turns passing also need to heal cities (I think). We could
- * also have an itemInProduction field to determine when a unit is being made
- * and where it should be placed.
+ * TODO: What happens if city HP reaches 0 - I currently think that the city and
+ * any unit within should be destroyed. Maybe units garrisoned in a city can
+ * have infinite hp until they leave? Either way garrisoned units need some sort
+ * of bonus which I am unsure of rn.
  * 
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
  */
 public class City {
 
-	private String owner;
+	private final Player owner;
+	private final Point coord;
+
 	private double production;
 	private double productionReserve;
+	private int turnsBeforeGrowth;
 	private int population; // population can represent city level
-	// garrison is handled by tile.
-	private double cityHP;
+	private double cityHPMax;
+	private double cityHPCur;
 
-	public City(String playerName) {
-		this.owner = playerName;
-		// default production subject to change, higher start is better
+	private List<String> producableUnits;
+
+
+	public City(Player player, int row, int col) {
+		this.owner = player;
+		this.coord = new Point(row, col);
+
+		// TODO: balance default values
 		this.production = 50;
-		this.population = 1; // we can say 1pop = 1000 people or something
-		this.cityHP = 100;
+		this.productionReserve = 0;
+		this.turnsBeforeGrowth = 5;
+		this.population = 1;
+		this.cityHPMax = 100;
+		this.cityHPCur = this.cityHPMax;
+		// For use if we want to add more units with conditions later on.
+		this.producableUnits = new ArrayList<String>(Arrays.asList("Settler", "Scout", "Warrior"));
+	}
+
+	/**
+	 * TODO: Should the city delete itself if it is out of health?
+	 * 
+	 * Deal damage to the city from a unit
+	 * 
+	 * @param damage attack value of unit hitting the city
+	 */
+	public void takeAttack(double damage) {
+		this.cityHPCur -= damage;
+	}
+
+	/**
+	 * A new unit has been purchased in this city, create and return it.
+	 * 
+	 * @param unitType String representing the type of unit to be created
+	 * @return Unit object that has been created for a player in a city
+	 */
+	public Unit produceUnit(String unitType) {
+		Unit retUnit = null;
+		if (unitType.equals("Settler")) {
+			// settlers decrease city population by 1
+			this.population -= 1;
+			retUnit = new Settler(owner, coord);
+		} else if (unitType.equals("Scout")) {
+			retUnit = new Scout(owner, coord);
+		} else if (unitType.equals("Warrior")) {
+			retUnit = new Warrior(owner, coord);
+		}
+		this.productionReserve -= Unit.unitCosts.get(unitType);
+		return retUnit;
+	}
+
+	/**
+	 * Increment production, population, and city health, and grow the city if
+	 * necessary.
+	 */
+	public void cityIncrement() {
+		productionReserve += production;
+		this.turnsBeforeGrowth -= 1;
+		// city grows
+		if (this.turnsBeforeGrowth == 0) {
+			this.population += 1;
+			// TODO: Balance growth
+			this.turnsBeforeGrowth = this.population * 2 + 1;
+			this.production += (5);
+			this.cityHPMax += (this.cityHPMax / 10);
+		}
+		// repairs
+		if (this.cityHPCur < this.cityHPMax) {
+			// TODO: balance city repairs
+			this.cityHPCur += (2 * this.population);
+			if (this.cityHPCur > this.cityHPMax) {
+				this.cityHPCur = this.cityHPMax;
+			}
+		}
+	}
+
+	/**
+	 * Retrieve the player who owns the city
+	 * 
+	 * @return Player object representing the city owner.
+	 */
+	public Player getOwner() {
+		return this.owner;
+	}
+	/**
+	 * Retrieve this city's X coordinate
+	 * 
+	 * @return integer representing x value
+	 */
+	public int getX() {
+		return this.coord.x;
+	}
+
+	/**
+	 * Retrieve this city's Y coordinate
+	 * 
+	 * @return integer representing y value;
+	 */
+	public int getY() {
+		return this.coord.y;
 	}
 
 	/**
 	 * retrieve the city's turn by turn production value
 	 * 
-	 * @return boolean representing production per turn.
+	 * @return double representing production per turn.
 	 */
 	public double getProduction() {
 		return this.production;
+	}
+
+	/**
+	 * retrieve the city's turn by turn production value
+	 * 
+	 * @return double representing current accumulated production.
+	 */
+	public double getProductionReserve() {
+		return this.productionReserve;
 	}
 
 	/**
@@ -49,46 +157,22 @@ public class City {
 	}
 
 	/**
-	 * Deal damage to the city from a unit and return the city's remaining hp
+	 * retrieve the city's max HP, necessary for the view
 	 * 
-	 * @param damage attack value of unit hitting the city
-	 * @return boolean representing city hp
+	 * @return double representing the city's max HP value
 	 */
-	public double takeAttack(double damage) {
-		this.cityHP -= damage;
-		return this.cityHP;
+	public double getMaxHP() {
+		return this.cityHPMax;
 	}
 
 	/**
-	 * Add to reserve
+	 * retrieve the city's remaining HP, for use in the controller and view
+	 * 
+	 * @return double representing the city's current HP value
 	 */
-	public void produce() {
-		productionReserve += production;
+	public double getRemainingHP() {
+		return this.cityHPCur;
 	}
 
-	public double getProductionReserve() {
-		return productionReserve;
-	}
-
-	public Unit produceUnit(String unitType) {
-		// TODO: make a unit of the right type and return it
-		return null;
-	}
-
-	public void checkLevelUp() {
-		// called by the controller every turn
-	}
-
-	/**
-	 * Level up the city and increase its stats accordingly.
-	 */
-	private void levelUpCity() {
-		// TODO: Stuff
-	}
-
-	public Player getOwner() {
-		// return owner
-		return null;
-	}
 
 }

@@ -1,94 +1,163 @@
 package components;
 
+import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 
 import models.Player;
 
 /**
+ * 
+ * TODO: City handling for Tim
+ * 
  * Unit superclass.
  * 
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
- *
+ * 
  */
 public class Unit {
 
 	public static final Map<String, Integer> unitCosts = new HashMap<String, Integer>();
 	static {
+		// TODO: rebalance unit costs
 		unitCosts.put("Scout", 500);
 		unitCosts.put("Settler", 1000);
+		unitCosts.put("Warrior", 750);
 		// add more as we add different types of Units
 	}
 
-	private String owner;
+	protected final Player owner;
+	protected Point coord;
 
 	protected double HP;
-	protected int movement;
-	protected double cost;
+	protected int maxMovement;
+	protected int remainingMovement;
+	protected double attackValue;
 	protected int sight;
-	protected double attackValue; // need to add to all units!
 
-	public Unit(String player) {
+
+	/**
+	 * Make a new unit for the specified player at the city coordinates
+	 * 
+	 * @param player
+	 * @param coord
+	 */
+	public Unit(Player player, Point coord) {
 		this.owner = player;
+		this.coord = coord;
 	}
 
 	/**
-	 * make the unit take damage and return remaining hp, can be used with 0 to
-	 * retrieve current HP
+	 * Decrement the amount this unit can still move this turn and set the new
+	 * coordinates
 	 * 
-	 * @return double representing HP
+	 * @param cost integer representing the movement cost of this move.
+	 * @param x    the unit's new x value on the grid
+	 * @param y    the unit's new y value on our grid
+	 * @return boolean representing whether the move was a success.
 	 */
-	public double takeAttack(double damage) {
-		this.HP -= damage;
-		return this.HP;
+	public void move(int cost, int x, int y) {
+		this.remainingMovement -= cost;
+		this.coord.x = x;
+		this.coord.y = y;
 	}
 
 	/**
-	 * Return unit's base move speed
+	 * Retrieve the owner of this unit.
 	 * 
-	 * @return int representing move speed
+	 * @return Player object representing the owner of this unit.
 	 */
-	public int getMovement() {
-		return this.movement;
+	public Player getOwner() {
+		return this.owner;
 	}
 
-	public void resetMovement() {
-		// reset to original max movement value
+	/**
+	 * retrieve this unit's x coordinate within the grid
+	 * 
+	 * @return int representing the x position
+	 */
+	public int getX() {
+		return coord.x;
 	}
 
-	public void move(int cost) {
-		// decrease current movement by cost of movement
+	/**
+	 * retrieve this unit's y coordinate within the grid
+	 * 
+	 * @return int representing the y position
+	 */
+	public int getY() {
+		return coord.y;
 	}
 
-	public double getAttackValue() {
-		return attackValue;
-	}
-	
+	/**
+	 * Getter for this unit's remaining health
+	 * 
+	 * @return double representing health, if it is any value above 0 they are still
+	 *         alive.
+	 */
 	public double getHP() {
 		return HP;
 	}
 
 	/**
-	 * Return unit's production cost
+	 * Decrement this unit's HP from an attack
 	 * 
-	 * @return double representing production cost
+	 * TODO: This might need to be modifed to make movement 0 after a unit has
+	 * attacked.
+	 * 
+	 * @param damage double representing the amount of damage dealt to our unit HP
 	 */
-	public double getCost() {
-		return this.cost;
+	public void takeAttack(double damage) {
+		this.HP -= damage;
+	}
+
+
+	/**
+	 * Retrieve remaining unit movement
+	 * 
+	 * @return int representing number of standard tiles the unit can still move
+	 *         over
+	 */
+	public int getMovement() {
+		return this.remainingMovement;
+	}
+
+
+	/**
+	 * Unit is done moving, reset its movement for next turn.
+	 */
+	public void resetMovement() {
+		this.remainingMovement = this.maxMovement;
+	}
+
+
+	/**
+	 * Retrieve this unit's un-buffed attack value
+	 * 
+	 * @return double representing the damage inflicted upon enemy units or cities.
+	 */
+	public double getAttackValue() {
+		return attackValue;
+	}
+
+
+	/**
+	 * Retrieve total cost of producing this unit
+	 * 
+	 * @return double representing production cost of unit
+	 */
+	public double getCost(String unitType) {
+		return unitCosts.get(unitType);
 	}
 
 	/**
-	 * Return unit's sight value
+	 * Retrieve this unit's sight value
 	 * 
-	 * @return int representing unit sight
+	 * @return int representing radius of surrounding tiles that this unit can
+	 *         reveal.
 	 */
 	public int getSight() {
 		return this.sight;
-	}
-
-	public Player getOwner() {
-		// return owner
-		return null;
 	}
 
 }
