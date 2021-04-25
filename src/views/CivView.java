@@ -141,7 +141,7 @@ public class CivView extends Application implements Observer {
 		// grab hover cursor image for later
 		try {
 			Image hoverCursorImage = new Image(
-					new FileInputStream("src/assets/tiles/hover-1.png")
+					new FileInputStream("src/assets/tiles/hover.png")
 			);
 			mapHoverCursor = new ImageView(hoverCursorImage);
 			mapHoverCursor.setFitWidth(TILE_SIZE);
