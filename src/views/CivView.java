@@ -1,6 +1,6 @@
 package views;
 
-import components.Tile;
+import components.*;
 import controllers.CivController;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -36,15 +36,21 @@ public class CivView extends Application implements Observer {
 	private CivController controller;
 	private CivModel model;
 
-	// ui hooks
-	private ScrollPane mapContainer;
+	// map hooks
+	private ScrollPane mapScrollContainer;
+	private Pane mapElementContainer;
 	private Canvas mapCanvas;
 	private ImageView mapHoverCursor;
+
+	// sprite hooks
+	private List<ImageView> spriteImages;
 
 	// viz constants
 	private static final int WINDOW_WIDTH = 800;
 	private static final int WINDOW_HEIGHT = 600;
 	private static final int TILE_SIZE = 120;
+	private static final int CITY_SIZE = 100;
+	private static final int SPRITE_SIZE = 60;
 	private static final double ISO_FACTOR = 0.6;
 	private static final int SCROLL_GUTTER = 240;
 
@@ -53,10 +59,16 @@ public class CivView extends Application implements Observer {
 	private int isoBoardHeight;
 
 
+	/**
+	 * Build the UI, start the game, and regulate game flow.
+	 *
+	 * @param stage The stage automatically passed when called Application.launch()
+	 */
 	@Override
 	public void start(Stage stage) {
 		this.model = new CivModel(2);
 		this.controller = new CivController(model);
+		this.spriteImages = new ArrayList<>();
 
 		model.addObserver(this);
 
@@ -68,6 +80,10 @@ public class CivView extends Application implements Observer {
 		StackPane window = new StackPane();
 		buildUI(window);
 		focusMap(model.getSize() / 2, model.getSize() / 2);
+
+		// populate initial map state
+		controller.placeStartingUnits();
+		renderAllSprites();
 
 		// add global events
 		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
@@ -104,23 +120,23 @@ public class CivView extends Application implements Observer {
 		window.getStyleClass().add("ui");
 
 		// scrollable container that houses our map group
-		mapContainer = new ScrollPane();
-		mapContainer.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-		mapContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-		mapContainer.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-		mapContainer.setPannable(true);
-		mapContainer.getStyleClass().add("map");
-		window.getChildren().add(mapContainer);
+		mapScrollContainer = new ScrollPane();
+		mapScrollContainer.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+		mapScrollContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		mapScrollContainer.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		mapScrollContainer.setPannable(true);
+		mapScrollContainer.getStyleClass().add("map");
+		window.getChildren().add(mapScrollContainer);
 
 		// pane to contain the map canvas. This interim layer lets us add padding without screwing
 		// up canvas click math, etc
-		Pane mapGridContainer = new Pane();
-		mapGridContainer.setPadding(new Insets(0, SCROLL_GUTTER, SCROLL_GUTTER, 0));
-		mapContainer.setContent(mapGridContainer);
+		mapElementContainer = new Pane();
+		mapElementContainer.setPadding(new Insets(0, SCROLL_GUTTER, SCROLL_GUTTER, 0));
+		mapScrollContainer.setContent(mapElementContainer);
 
-		// terrain map: element
+		// terrain map: canvas element
 		mapCanvas = new Canvas(isoBoardWidth, isoBoardHeight);
-		mapGridContainer.getChildren().add(mapCanvas);
+		mapElementContainer.getChildren().add(mapCanvas);
 		mapCanvas.setLayoutX(SCROLL_GUTTER);
 		mapCanvas.setLayoutY(SCROLL_GUTTER);
 
@@ -138,7 +154,7 @@ public class CivView extends Application implements Observer {
 			context.drawImage(tileImage, isoCoords[0], isoCoords[1], TILE_SIZE, TILE_SIZE * ISO_FACTOR);
 		}
 
-		// grab hover cursor image for later
+		// store hover cursor image for later so we don't have to keep loading and unloading it
 		try {
 			Image hoverCursorImage = new Image(
 					new FileInputStream("src/assets/tiles/hover.png")
@@ -147,10 +163,82 @@ public class CivView extends Application implements Observer {
 			mapHoverCursor.setFitWidth(TILE_SIZE);
 			mapHoverCursor.setFitHeight(TILE_SIZE * ISO_FACTOR);
 			mapHoverCursor.setMouseTransparent(true);
-			mapGridContainer.getChildren().add(mapHoverCursor);
+			mapElementContainer.getChildren().add(mapHoverCursor);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+
+
+	/**
+	 * Wipe and render the entire sprite layer.
+	 */
+	private void renderAllSprites() {
+		clearAllSprites();
+		for (int[] space : getDrawTraversal()) {
+			Tile tile = model.getTileAt(space[0], space[1]);
+			if (tile == null) continue;
+			City city = tile.getOwnerCity();
+			Unit unit = tile.getUnit();
+			if (city != null) renderCity(city);
+			if (unit != null) renderUnit(unit);
+		}
+	}
+
+
+	/**
+	 * Render a single city to the map.
+	 *
+	 * @param city The city to render. Position will be derived from the City's stored coords
+	 */
+	private void renderCity(City city) {
+		int[] coords = gridToIso(city.getX(), city.getY());
+		try {
+			Image cityImage = new Image(new FileInputStream("src/assets/sprites/city.png"));
+			ImageView cityImageView = new ImageView(cityImage);
+			cityImageView.setFitWidth(CITY_SIZE);
+			cityImageView.setFitHeight(CITY_SIZE);
+			cityImageView.setMouseTransparent(true);
+			cityImageView.setX(coords[0] + SCROLL_GUTTER + ((TILE_SIZE - CITY_SIZE) / 2.0));
+			cityImageView.setY(coords[1] + SCROLL_GUTTER - 34.0);  // Magic Number, for now
+			mapElementContainer.getChildren().add(cityImageView);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	/**
+	 * Render a single unit to the map.
+	 *
+	 * @param unit The unit to render. Position will be derived from the Unit's stored coords
+	 */
+	private void renderUnit(Unit unit) {
+		int[] coords = gridToIso(unit.getX(), unit.getY());
+		String spriteImage = "src/assets/sprites/settler.png";
+		if (unit instanceof Scout) spriteImage = "src/assets/sprites/scout.png";
+		if (unit instanceof Warrior) spriteImage = "src/assets/sprites/warrior.png";
+		try {
+			Image unitImage = new Image(new FileInputStream(spriteImage));
+			ImageView unitImageView = new ImageView(unitImage);
+			unitImageView.setFitWidth(SPRITE_SIZE);
+			unitImageView.setFitHeight(SPRITE_SIZE);
+			unitImageView.setMouseTransparent(true);
+			unitImageView.setX(coords[0] + SCROLL_GUTTER + ((TILE_SIZE - SPRITE_SIZE) / 2.0 ));
+			unitImageView.setY(coords[1] + SCROLL_GUTTER - (SPRITE_SIZE / 4.0));
+			mapElementContainer.getChildren().add(unitImageView);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	/**
+	 * Clear all currently rendered sprites.
+	 */
+	private void clearAllSprites() {
+		mapElementContainer.getChildren().removeAll(spriteImages);
+		spriteImages.clear();
 	}
 
 
@@ -164,8 +252,8 @@ public class CivView extends Application implements Observer {
 		int[] coords = gridToIso(x, y);
 
 		// ScrollPane scroll values are percentages (0 through 1), not raw pixel values
-		mapContainer.setHvalue((coords[0] + TILE_SIZE / 2.0) / (double) isoBoardWidth);
-		mapContainer.setVvalue((coords[1] + TILE_SIZE * ISO_FACTOR / 2.0) / (double) isoBoardHeight);
+		mapScrollContainer.setHvalue((coords[0] + TILE_SIZE / 2.0) / (double) isoBoardWidth);
+		mapScrollContainer.setVvalue((coords[1] + TILE_SIZE * ISO_FACTOR / 2.0) / (double) isoBoardHeight);
 	}
 
 

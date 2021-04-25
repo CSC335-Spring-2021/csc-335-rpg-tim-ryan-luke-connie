@@ -7,6 +7,8 @@ import components.Unit;
 import models.CivModel;
 import models.Player;
 
+import java.awt.*;
+
 /**
  * Provides methods to calculate data about game state or act as a computer
  * player that updates game state.
@@ -28,14 +30,27 @@ public class CivController {
 		this.model = model;
 	}
 
+
+	/**
+	 * Configure the map with the units that should exist at the start of a new game.
+	 */
+	public void placeStartingUnits() {
+		Settler settler = new Settler(model.getCurPlayer(), new Point(0, 0));
+		model.getTileAt(0, 0).setUnit(settler);
+
+		City city = new City(model.getCurPlayer(), 1, 1);
+		model.getTileAt(1, 1).foundCity(city);
+	}
+
+
 	/**
 	 * Returns the Tile located at the board location row, col
-	 * 
+	 *
 	 * @param row int for row of board positionn
 	 * @param col int for col of board position
-	 * 
+	 *
 	 * @return the Tile at row,col on the board
-	 * 
+	 *
 	 */
 	public Tile getTileAt(int row, int col) {
 		return model.getTileAt(row, col);
@@ -44,10 +59,10 @@ public class CivController {
 	/**
 	 * Starts a player's turn by doing all of the "housekeeping" automatic game
 	 * events for a player turn
-	 * 
+	 *
 	 * All Units have their movement reset, all Cities owned by a Player are
 	 * incremented
-	 * 
+	 *
 	 * @param player
 	 */
 	public void startTurn() {
@@ -72,7 +87,7 @@ public class CivController {
 
 	/**
 	 * When there is only 1 player left, the game is won.
-	 * 
+	 *
 	 * @return true if the game is over, false otherwise
 	 */
 	public boolean gameOver() {
@@ -89,9 +104,9 @@ public class CivController {
 
 	/**
 	 * Moves a unit from its old location to the new player-specified location.
-	 * 
+	 *
 	 * Unit moves one tile at a time
-	 * 
+	 *
 	 * @param oldx int of old row location of unit
 	 * @param oldy int of old col location of unit
 	 * @param newx int of new row location of unit
@@ -134,7 +149,7 @@ public class CivController {
 	/**
 	 * Set all the tiles in a 1-tile radius around the given location as revealed
 	 * for the current player.
-	 * 
+	 *
 	 * @param row int of row location middle tile
 	 * @param col int of col location middle tile
 	 */
@@ -152,11 +167,11 @@ public class CivController {
 
 	/**
 	 * Unit on attakcerTile attacks the Unit on defenderTile.
-	 * 
+	 *
 	 * Unit gets attack modifier based on its current terrain; defender gets to
 	 * counterattack. Movement for attacker Unit is set to 0, as attack can only
 	 * happen once.
-	 * 
+	 *
 	 * @param attackerTile
 	 * @param defenderTile
 	 * @return
@@ -180,11 +195,11 @@ public class CivController {
 
 	/**
 	 * Overloaded method, to be called when attacking a City
-	 * 
+	 *
 	 * Attacker attacks the city; city's health is checked. If <= 0, the City is
 	 * defeated and removed from the owner's list of cities. This is how the game
 	 * ends, so checks the end game condition as well.
-	 * 
+	 *
 	 * @param attackerTile
 	 * @param defender
 	 * @return
@@ -208,11 +223,11 @@ public class CivController {
 	/**
 	 * Creates a unit on the given tile if the city has enough in its production
 	 * reserve to make that unit.
-	 * 
+	 *
 	 * View should pass the correct Tile object when a player tries to create a unit
 	 * (i.e., only an actual city Tile can produce a unit). Updates the tile so that
 	 * it has the new unit on it.
-	 * 
+	 *
 	 * @param tile     the Tile (city) creating a unit
 	 * @param unitType String representing the type of unit to create
 	 * @return true if the unit was successfully created and added to the board,
@@ -233,10 +248,10 @@ public class CivController {
 
 	/**
 	 * Found a city on the Tile at row, col on the board
-	 * 
+	 *
 	 * Adds city to the current player's list of cities as well. Assumes that this
 	 * was only called on a valid tile (Settler on the tile).
-	 * 
+	 *
 	 * @param row int of row location of new city
 	 * @param col int of col location of new city
 	 */
