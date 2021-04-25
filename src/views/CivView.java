@@ -17,7 +17,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
@@ -53,6 +52,7 @@ public class CivView extends Application implements Observer {
 
 	// sprite hooks
 	private List<ImageView> spriteImages;
+	private List<GridPane> hpBars;
 
 	// ui hooks
 	private VBox unitPane;
@@ -82,6 +82,7 @@ public class CivView extends Application implements Observer {
 		this.model = new CivModel(2);
 		this.controller = new CivController(model);
 		this.spriteImages = new ArrayList<>();
+		this.hpBars = new ArrayList<>();
 
 		model.addObserver(this);
 
@@ -274,6 +275,26 @@ public class CivView extends Application implements Observer {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+
+		renderSpriteHPBar(unit.getHP(), unit.getMaxHP(), coords[0], coords[1]);
+	}
+
+
+	/**
+	 * Place an inline HP bar above a certain map square
+	 *
+	 * @param cur The unit or city's current hp
+	 * @param max The unit or city's max hp
+	 * @param x The left iso coord of the space to render on
+	 * @param y The top iso coord of the space to render on
+	 */
+	private void renderSpriteHPBar(double cur, double max, int x, int y) {
+		GridPane hpBar = createHPBar(cur, max);
+		hpBar.setPrefWidth(TILE_SIZE / 2.0);
+		hpBar.setLayoutX(x + SCROLL_GUTTER + TILE_SIZE / 4.0);
+		hpBar.setLayoutY(y + SCROLL_GUTTER + (TILE_SIZE * ISO_FACTOR) / 1.35);
+		mapElementContainer.getChildren().add(hpBar);
+		hpBars.add(hpBar);
 	}
 
 
@@ -282,7 +303,9 @@ public class CivView extends Application implements Observer {
 	 */
 	private void clearAllSprites() {
 		mapElementContainer.getChildren().removeAll(spriteImages);
+		mapElementContainer.getChildren().removeAll(hpBars);
 		spriteImages.clear();
+		hpBars.clear();
 	}
 
 
