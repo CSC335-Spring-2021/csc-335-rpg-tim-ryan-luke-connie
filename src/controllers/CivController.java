@@ -37,8 +37,8 @@ public class CivController {
 	 * @return the Tile at row,col on the board
 	 * 
 	 */
-	public Tile getTileAt(int row, int col) {
-		return model.getTileAt(row, col);
+	public Tile getTileAt(int x, int y) {
+		return model.getTileAt(x, y);
 	}
 
 	/**
@@ -98,16 +98,16 @@ public class CivController {
 	 * @param newy int of new col location of unit
 	 * @return true if the unit successfully moved/attacked, false otherwise
 	 */
-	public boolean moveUnit(int oldRow, int oldCol, int newRow, int newCol) {
-		Tile moveFrom = getTileAt(oldRow, oldCol);
+	public boolean moveUnit(int oldX, int oldY, int newX, int newY) {
+		Tile moveFrom = getTileAt(oldX, oldY);
 		Unit unit = moveFrom.getUnit(); // unit to move
 		if (unit == null)
 			return false;
 		int movement = unit.getMovement();
 		// this conditional checks that the unit is only moving 1 space
-		if (Math.abs(newRow - oldRow) > 1 || Math.abs(newCol - oldCol) > 1)
+		if (Math.abs(newX - oldX) > 1 || Math.abs(newY - oldY) > 1)
 			return false;
-		Tile moveTo = getTileAt(newRow, newCol);
+		Tile moveTo = getTileAt(newX, newY);
 		int cost = moveTo.getMovementModifier();
 		if (cost + 1 > movement)
 			return false;
@@ -124,8 +124,8 @@ public class CivController {
 		if (movesOnto) {
 			moveFrom.setUnit(null); // unit gone
 			moveTo.setUnit(unit); // successfully moves to new tile
-			unit.move(cost + 1, newRow, newCol); // update costs and unit location
-			revealTiles(newRow, newCol); // reveal tiles around unit
+			unit.move(cost + 1, newX, newY); // update costs and unit location
+			revealTiles(newX, newY); // reveal tiles around unit
 		}
 		model.changeAndNotify();
 		return true;
@@ -138,11 +138,11 @@ public class CivController {
 	 * @param row int of row location middle tile
 	 * @param col int of col location middle tile
 	 */
-	private void revealTiles(int row, int col) {
+	private void revealTiles(int x, int y) {
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
-				int toRevealRow = row + i;
-				int toRevealCol = col + j;
+				int toRevealRow = x + i;
+				int toRevealCol = y + j;
 				Tile toRevealTile = getTileAt(toRevealRow, toRevealCol);
 				if (!toRevealTile.canSeeTile(curPlayer))
 					toRevealTile.revealTile(curPlayer);
@@ -218,8 +218,8 @@ public class CivController {
 	 * @return true if the unit was successfully created and added to the board,
 	 *         false otherwise
 	 */
-	public boolean createUnit(int row, int col, String unitType) {
-		Tile tile = getTileAt(row, col);
+	public boolean createUnit(int x, int y, String unitType) {
+		Tile tile = getTileAt(x, y);
 		City city = tile.getOwnerCity();
 		if (city.getProductionReserve() >= Unit.unitCosts.get(unitType)) {
 			Unit newUnit = city.produceUnit(unitType);
@@ -240,8 +240,8 @@ public class CivController {
 	 * @param row int of row location of new city
 	 * @param col int of col location of new city
 	 */
-	public void foundCity(int row, int col) {
-		Tile tile = getTileAt(row, col);
+	public void foundCity(int x, int y) {
+		Tile tile = getTileAt(x, y);
 		Settler settler = (Settler) tile.getUnit();
 		City city = settler.foundCity();
 		tile.foundCity(city);
