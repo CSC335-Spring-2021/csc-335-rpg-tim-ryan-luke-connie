@@ -2,9 +2,9 @@ package views;
 
 import components.*;
 import controllers.CivController;
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -13,11 +13,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import models.CivModel;
 
 import java.io.FileInputStream;
@@ -44,6 +44,8 @@ public class CivView extends Application implements Observer {
 	private Pane mapElementContainer;
 	private Canvas mapCanvas;
 	private ImageView mapHoverCursor;
+	private ImageView mapSelectedCursor;
+	private FadeTransition mapSelectedTransition;
 
 	// sprite hooks
 	private List<ImageView> spriteImages;
@@ -161,8 +163,8 @@ public class CivView extends Application implements Observer {
 			context.drawImage(tileImage, isoCoords[0], isoCoords[1], TILE_SIZE, TILE_SIZE * ISO_FACTOR);
 		}
 
-		// store hover cursor image for later so we don't have to keep loading and unloading it
 		try {
+			// store hover cursor image for later so we don't have to keep loading and unloading it
 			Image hoverCursorImage = new Image(
 					new FileInputStream("src/assets/tiles/hover.png")
 			);
@@ -171,6 +173,26 @@ public class CivView extends Application implements Observer {
 			mapHoverCursor.setFitHeight(TILE_SIZE * ISO_FACTOR);
 			mapHoverCursor.setMouseTransparent(true);
 			mapElementContainer.getChildren().add(mapHoverCursor);
+
+			// same with "selected" image
+			Image selectedImage = new Image(
+					new FileInputStream("src/assets/tiles/selected.png")
+			);
+			mapSelectedCursor = new ImageView(selectedImage);
+			mapSelectedCursor.setFitWidth(TILE_SIZE);
+			mapSelectedCursor.setFitHeight(TILE_SIZE * ISO_FACTOR);
+			mapSelectedCursor.setMouseTransparent(true);
+			mapElementContainer.getChildren().add(mapSelectedCursor);
+
+			// ... and its transition
+			mapSelectedTransition = new FadeTransition();
+			mapSelectedTransition.setDuration(Duration.millis(1200));
+			mapSelectedTransition.setFromValue(2);
+			mapSelectedTransition.setToValue(0.5);
+			mapSelectedTransition.setCycleCount(Integer.MAX_VALUE);
+			mapSelectedTransition.setAutoReverse(true);
+			mapSelectedTransition.setNode(mapSelectedCursor);
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -192,8 +214,10 @@ public class CivView extends Application implements Observer {
 		for (int[] space : getDrawTraversal()) {
 			Tile tile = model.getTileAt(space[0], space[1]);
 			if (tile == null) continue;
+
 			City city = tile.getOwnerCity();
 			Unit unit = tile.getUnit();
+
 			if (city != null) renderCity(city);
 			if (unit != null) renderUnit(unit);
 		}
@@ -334,17 +358,27 @@ public class CivView extends Application implements Observer {
 	private void selectUnit(Unit unit) {
 		if (unit == null) return;
 
+		selectedUnit = unit;
+
 		unitPane.getChildren().clear();
 
+		// pane info: label
 		Text name = new Text(unit.getLabel());
 		name.getStyleClass().add("detail-pane__label");
 
+		// populate and show pane
 		unitPane.getChildren().addAll(name);
 		unitPane.setVisible(true);
 		unitPane.setLayoutY((WINDOW_HEIGHT - unitPane.getHeight()) / 2 - 24);
 
-		selectedUnit = unit;
-		renderAllSprites();
+		// add selection indicator
+		int[] coords = gridToIso(unit.getX(), unit.getY());
+		mapSelectedCursor.setX(coords[0] + SCROLL_GUTTER);
+		mapSelectedCursor.setY(coords[1] + SCROLL_GUTTER);
+		mapSelectedCursor.setVisible(true);
+		mapSelectedTransition.play();
+
+		// center map on unit
 		focusMap(unit.getX(), unit.getY());
 	}
 
@@ -356,7 +390,8 @@ public class CivView extends Application implements Observer {
 		selectedUnit = null;
 		unitPane.setVisible(false);
 		unitPane.getChildren().clear();
-		renderAllSprites();
+		mapSelectedCursor.setVisible(false);
+		mapSelectedTransition.pause();
 	}
 
 
