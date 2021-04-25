@@ -1,6 +1,7 @@
 package controllers;
 
 import components.City;
+import components.Settler;
 import components.Tile;
 import components.Unit;
 import models.CivModel;
@@ -44,8 +45,8 @@ public class CivController {
 	 * Starts a player's turn by doing all of the "housekeeping" automatic game
 	 * events for a player turn
 	 * 
-	 * All Units have their movement reset, all Cities owned by a Player will
-	 * produce; City level is checked for advancement
+	 * All Units have their movement reset, all Cities owned by a Player are
+	 * incremented
 	 * 
 	 * @param player
 	 */
@@ -60,11 +61,27 @@ public class CivController {
 		model.changeAndNotify();
 	}
 
+	/**
+	 * Human player ends their turn, the model moves on to the next player. This
+	 * will update the curPlayer for when the next turn begins.
+	 */
 	public void endTurn() {
 		model.nextPlayer();
 		model.changeAndNotify();
 	}
 
+	/**
+	 * When there is only 1 player left, the game is won.
+	 * 
+	 * @return true if the game is over, false otherwise
+	 */
+	public boolean gameOver() {
+		return model.numPlayers() == 1;
+	}
+
+	/**
+	 * does all the computer turn's AI stuff
+	 */
 	public void computerTurn() {
 		// TODO AI logic
 		endTurn();
@@ -79,14 +96,15 @@ public class CivController {
 	 * @param oldy int of old col location of unit
 	 * @param newx int of new row location of unit
 	 * @param newy int of new col location of unit
-	 * @return true if the unit was successfully moved, false otherwise
+	 * @return true if the unit successfully moved/attacked, false otherwise
 	 */
 	public boolean moveUnit(int oldRow, int oldCol, int newRow, int newCol) {
 		Tile moveFrom = getTileAt(oldRow, oldCol);
-		Unit unit = moveFrom.getUnit();
-		if (unit == null || !unit.getOwner().equals(curPlayer))
+		Unit unit = moveFrom.getUnit(); // unit to move
+		if (unit == null)
 			return false;
 		int movement = unit.getMovement();
+		// this conditional checks that the unit is only moving 1 space
 		if (Math.abs(newRow - oldRow) > 1 || Math.abs(newCol - oldCol) > 1)
 			return false;
 		Tile moveTo = getTileAt(newRow, newCol);
@@ -95,20 +113,31 @@ public class CivController {
 			return false;
 		Unit onTile = moveTo.getUnit();
 		boolean movesOnto = true;
-		if (onTile != null) // unit exists here, attack it
+		if (onTile != null) { // unit exists here, attack it
 			movesOnto = attack(moveFrom, moveTo);
-		else if (moveTo.isCity() && !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
+			cost = unit.getMovement() - 1; // have to deplete to if successful move
+		}
+		// eventually have to change the city check to isCityTile()
+		else if (moveTo.getTerrainType() == Tile.terrainTypes.CITY
+				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
 			movesOnto = attack(moveFrom, moveTo.getOwnerCity());
 		if (movesOnto) {
-			moveFrom.setUnit(null);
-			moveTo.setUnit(unit);
-			unit.move(cost + 1, newRow, newCol);
-			revealTiles(newRow, newCol);
+			moveFrom.setUnit(null); // unit gone
+			moveTo.setUnit(unit); // successfully moves to new tile
+			unit.move(cost + 1, newRow, newCol); // update costs and unit location
+			revealTiles(newRow, newCol); // reveal tiles around unit
 		}
 		model.changeAndNotify();
 		return true;
 	}
 
+	/**
+	 * Set all the tiles in a 1-tile radius around the given location as revealed
+	 * for the current player.
+	 * 
+	 * @param row int of row location middle tile
+	 * @param col int of col location middle tile
+	 */
 	private void revealTiles(int row, int col) {
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
@@ -121,7 +150,17 @@ public class CivController {
 		}
 	}
 
-	// returns true if moves onto (defeats existing unit)
+	/**
+	 * Unit on attakcerTile attacks the Unit on defenderTile.
+	 * 
+	 * Unit gets attack modifier based on its current terrain; defender gets to
+	 * counterattack. Movement for attacker Unit is set to 0, as attack can only
+	 * happen once.
+	 * 
+	 * @param attackerTile
+	 * @param defenderTile
+	 * @return
+	 */
 	private boolean attack(Tile attackerTile, Tile defenderTile) {
 		Unit attacker = attackerTile.getUnit();
 		Unit defender = defenderTile.getUnit();
@@ -135,20 +174,34 @@ public class CivController {
 		double counterattack = defender.getAttackValue();
 		counterattack *= defenderTile.getAttackModifier();
 		attacker.takeAttack(counterattack);
+		attacker.move(attacker.getMovement(), attacker.getX(), attacker.getY()); // failed move
 		return false;
 	}
 
+	/**
+	 * Overloaded method, to be called when attacking a City
+	 * 
+	 * Attacker attacks the city; city's health is checked. If <= 0, the City is
+	 * defeated and removed from the owner's list of cities. This is how the game
+	 * ends, so checks the end game condition as well.
+	 * 
+	 * @param attackerTile
+	 * @param defender
+	 * @return
+	 */
 	private boolean attack(Tile attackerTile, City defender) {
 		Unit attacker = attackerTile.getUnit();
 		double attack = attacker.getAttackValue();
 		attack *= attackerTile.getAttackModifier();
 		defender.takeAttack(attack);
-		if (defender.getHP() < 0) {
-			// curPlayer.removeCity(defender); needs to be added in Player
-			Player lostCity = defender.getOwner();
-			if (lostCity.getCities().size() == 0)
-				model.removePlayer(lostCity);
+		if (defender.getRemainingHP() <= 0) {
+			curPlayer.removeCity(defender);
+			Player lostACity = defender.getOwner();
+			if (lostACity.getCities().size() == 0) {
+				model.removePlayer(lostACity); // player has no cities left, remove from game
+			}
 		}
+		attacker.move(attacker.getMovement(), attacker.getX(), attacker.getY()); // set move to 0
 		return false;
 	}
 
@@ -178,13 +231,21 @@ public class CivController {
 		return false;
 	}
 
-	public boolean foundCity(int row, int col) {
+	/**
+	 * Found a city on the Tile at row, col on the board
+	 * 
+	 * Adds city to the current player's list of cities as well. Assumes that this
+	 * was only called on a valid tile (Settler on the tile).
+	 * 
+	 * @param row int of row location of new city
+	 * @param col int of col location of new city
+	 */
+	public void foundCity(int row, int col) {
 		Tile tile = getTileAt(row, col);
-		City city = new City(curPlayer);
+		Settler settler = (Settler) tile.getUnit();
+		City city = settler.foundCity();
 		tile.foundCity(city);
-		curPlayer.addCity(city);
 		model.changeAndNotify();
-		return false;
 	}
 
 }
