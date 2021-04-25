@@ -2,7 +2,7 @@ package views;
 
 import components.*;
 import controllers.CivController;
-import javafx.animation.FadeTransition;
+import javafx.animation.*;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -95,7 +95,7 @@ public class CivView extends Application implements Observer {
 		// assemble ui
 		Pane window = new Pane();
 		buildUI(window);
-		focusMap(model.getSize() / 2, model.getSize() / 2);
+		focusMap(model.getSize() / 2, model.getSize() / 2, false);
 
 		// populate initial map state
 		controller.placeStartingUnits();
@@ -322,13 +322,26 @@ public class CivView extends Application implements Observer {
 	 *
 	 * @param x The x index of the board grid to center on
 	 * @param y The y index of the board grid to center on
+	 * @param animate True if this refocus should be smooth/animated, false if it should be instant
 	 */
-	private void focusMap(int x, int y) {
+	private void focusMap(int x, int y, boolean animate) {
 		int[] coords = gridToIso(x, y);
 
 		// ScrollPane scroll values are percentages (0 through 1), not raw pixel values
-		mapScrollContainer.setHvalue((coords[0] + TILE_SIZE / 2.0) / (double) isoBoardWidth);
-		mapScrollContainer.setVvalue((coords[1] + TILE_SIZE * ISO_FACTOR / 2.0) / (double) isoBoardHeight);
+		double targetH = (coords[0] + TILE_SIZE / 2.0) / (double) isoBoardWidth;
+		double targetV = (coords[1] + TILE_SIZE * ISO_FACTOR / 2.0) / (double) isoBoardHeight;
+
+		if (animate) {
+			Animation animation = new Timeline(new KeyFrame(
+				Duration.millis(250),
+				new KeyValue(mapScrollContainer.hvalueProperty(), targetH, Interpolator.EASE_BOTH),
+				new KeyValue(mapScrollContainer.vvalueProperty(), targetV, Interpolator.EASE_BOTH)
+			));
+			animation.play();
+		} else {
+			mapScrollContainer.setHvalue(targetH);
+			mapScrollContainer.setVvalue(targetV);
+		}
 	}
 
 
@@ -453,7 +466,7 @@ public class CivView extends Application implements Observer {
 		mapSelectedTransition.play();
 
 		// center map on unit
-		focusMap(unit.getX(), unit.getY());
+		focusMap(unit.getX(), unit.getY(), true);
 	}
 
 
