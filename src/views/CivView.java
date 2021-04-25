@@ -202,6 +202,7 @@ public class CivView extends Application implements Observer {
 			cityImageView.setX(coords[0] + SCROLL_GUTTER + ((TILE_SIZE - CITY_SIZE) / 2.0));
 			cityImageView.setY(coords[1] + SCROLL_GUTTER - 34.0);  // Magic Number, for now
 			mapElementContainer.getChildren().add(cityImageView);
+			spriteImages.add(cityImageView);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -227,6 +228,7 @@ public class CivView extends Application implements Observer {
 			unitImageView.setX(coords[0] + SCROLL_GUTTER + ((TILE_SIZE - SPRITE_SIZE) / 2.0 ));
 			unitImageView.setY(coords[1] + SCROLL_GUTTER - (SPRITE_SIZE / 4.0));
 			mapElementContainer.getChildren().add(unitImageView);
+			spriteImages.add(unitImageView);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
