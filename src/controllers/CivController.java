@@ -102,9 +102,7 @@ public class CivController {
 		if (movesOnto) {
 			moveFrom.setUnit(null);
 			moveTo.setUnit(unit);
-			unit.setRow(newRow);
-			unit.setCol(newCol);
-			unit.move(cost + 1);
+			unit.move(cost + 1, newRow, newCol);
 			revealTiles(newRow, newCol);
 		}
 		model.changeAndNotify();
