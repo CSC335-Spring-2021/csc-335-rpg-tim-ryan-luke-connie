@@ -336,6 +336,10 @@ public class CivView extends Application implements Observer {
 				return new Image(new FileInputStream(
 						"src/assets/tiles/water-" + getRandInt(1, 5) + ".png"
 				));
+			} else if (terrainType == Tile.terrainTypes.MOUNTAIN) {
+				return new Image(new FileInputStream(
+						"src/assets/tiles/mountain-" + getRandInt(1, 5) + ".png"
+				));
 			} else {
 				return new Image(new FileInputStream(
 						"src/assets/tiles/field-" + getRandInt(1, 5) + ".png"
