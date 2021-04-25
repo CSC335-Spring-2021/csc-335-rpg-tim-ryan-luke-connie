@@ -265,11 +265,17 @@ public class CivView extends Application implements Observer {
 	 * @param ev The event object generated from the click
 	 */
 	private void handleMapClick(MouseEvent ev) {
+		// filter mouseup events that happen after releasing a drag
+		// https://stackoverflow.com/questions/26590010/how-can-i-stop-javafx-parent-node-getting-click-after-drag-between-children
+		if (!ev.isStillSincePress()) return;
+
 		int[] space = isoToGrid(ev.getX(), ev.getY());
+
 		// reject clicks in the negative space left by the iso view
 		if (space[0] < 0 || space[0] >= model.getSize() ||space[1] < 0 || space[1] >= model.getSize()) {
 			return;
 		}
+
 		System.out.println("[" + space[0] + ", " + space[1] + "]");
 	}
 
@@ -281,13 +287,17 @@ public class CivView extends Application implements Observer {
 	 */
 	private void handleMapHover(MouseEvent ev) {
 		mapHoverCursor.setVisible(false);
+
 		// "snap" to a grid space by getting its grid coord and re-translating to iso coords
 		int[] space = isoToGrid(ev.getX(), ev.getY());
+
 		// reject events in the negative space left by the iso view
 		if (space[0] < 0 || space[0] >= model.getSize() ||space[1] < 0 || space[1] >= model.getSize()) {
 			return;
 		}
+		
 		int[] coords = gridToIso(space[0], space[1]);
+
 		mapHoverCursor.setX(coords[0] + SCROLL_GUTTER);
 		mapHoverCursor.setY(coords[1] + SCROLL_GUTTER);
 		mapHoverCursor.setVisible(true);
