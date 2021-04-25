@@ -11,6 +11,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -99,15 +101,21 @@ public class CivView extends Application implements Observer {
 		controller.placeStartingUnits();
 		renderAllSprites();
 
-		// add global events
-		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
-		mapCanvas.setOnMouseMoved(ev -> handleMapHover(ev));
-
 		// build the application window
 		Scene scene = new Scene(window, WINDOW_WIDTH, WINDOW_HEIGHT);
 		scene.getStylesheets().add("assets/CivView.css");
 		stage.setScene(scene);
 		stage.setTitle("Sid Meier's Civilization 0.5");
+
+		// add global events
+		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
+		mapCanvas.setOnMouseMoved(ev -> handleMapHover(ev));
+		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
+			if (ev.getCode() == KeyCode.ESCAPE) {
+				deselectUnit();
+				ev.consume();
+			}
+		});
 
 		stage.show();
 	}
@@ -340,14 +348,19 @@ public class CivView extends Application implements Observer {
 		// reject clicks in the negative space left by the iso view
 		if (tile == null) return;
 
-		// if a unit is already selected, this click is either move/attack (if in range) or
-		// deselect (if out of range)
+		Unit targetUnit = tile.getUnit();
+
+		// if a unit is already selected, this click is either move/attack (if in range), select
+		// a different friendly unit, or deselect entirely
 		if (selectedUnit != null) {
 			deselectUnit();
+			if (targetUnit != null && targetUnit.getOwner() == model.getCurPlayer()) {
+				selectUnit(targetUnit);
+			}
 
 		// otherwise, select the unit under the click if there is one
 		} else {
-			selectUnit(tile.getUnit());
+			selectUnit(targetUnit);
 		}
 	}
 
