@@ -22,6 +22,7 @@ public class Tile {
 	private double attackMult;
 	private String resourceType = null;
 	private City ownerCity = null;
+	private boolean isCityTile = false;
 	private Unit unitHere = null;
 	private List<Player> revealedTo = new ArrayList<Player>();
 
@@ -62,6 +63,7 @@ public class Tile {
 	public boolean foundCity(City city) {
 		if (this.ownerCity == null) { // && this.unitHere instanceOf Settler?
 			this.ownerCity = city;
+			this.isCityTile = true;
 			this.movementBonus = 0; // TODO: figure out bonuses for units in cities
 			this.attackMult = 1; // subject to change
 			return true;
@@ -120,6 +122,16 @@ public class Tile {
 	 */
 	public City getOwnerCity() {
 		return this.ownerCity;
+	}
+
+	/**
+	 * Getter for if this tile is a city tile, not to be confused with being owned
+	 * by a city
+	 * 
+	 * @return boolean representing if this tile contains a city.
+	 */
+	public boolean isCityTile() {
+		return this.isCityTile;
 	}
 
 	/**
