@@ -17,16 +17,12 @@ public class Scout extends Unit {
 		label = "Scout";
 		// TODO: Rebalance default values
 		HP = 50;
+		maxHP = HP;
 		maxMovement = 4;
 		resetMovement();
 		sight = 4;
 		attackValue = 5;
 	}
 
-
-	@Override
-	public double getMaxHP() {
-		return 50;
-	}
 
 }

@@ -30,6 +30,7 @@ public class Unit {
 	protected Point coord;
 
 	protected String label;
+	protected double maxHP;
 	protected double HP;
 	protected int maxMovement;
 	protected int remainingMovement;
@@ -116,7 +117,7 @@ public class Unit {
 	 * @return A double representing the unit's starting health
 	 */
 	public double getMaxHP() {
-		return 0;
+		return this.maxHP;
 	}
 
 	/**

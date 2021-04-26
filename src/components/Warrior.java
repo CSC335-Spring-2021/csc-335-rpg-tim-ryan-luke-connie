@@ -17,16 +17,11 @@ public class Warrior extends Unit {
 		label = "Warrior";
 		// TODO: Rebalance default values
 		HP = 100;
+		maxHP = HP;
 		maxMovement = 2;
 		resetMovement();
 		sight = 2;
 		attackValue = 10;
-	}
-
-
-	@Override
-	public double getMaxHP() {
-		return 100;
 	}
 
 }

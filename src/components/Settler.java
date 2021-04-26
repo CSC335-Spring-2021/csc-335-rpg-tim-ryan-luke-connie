@@ -19,6 +19,7 @@ public class Settler extends Unit {
 		label = "Settler";
 		// TODO: Rebalance settler defaults
 		HP = 1;
+		maxHP = HP;
 		maxMovement = 2;
 		resetMovement();
 		sight = 2;
@@ -27,8 +28,6 @@ public class Settler extends Unit {
 
 	public City foundCity() {
 		City foundedCity = new City(owner, coord.x, coord.y);
-		// TODO: Update tile with correct information
-
 		owner.addCity(foundedCity);
 		this.charges = 0;
 		return foundedCity;
@@ -41,12 +40,6 @@ public class Settler extends Unit {
 	 */
 	public int getCharges() {
 		return this.charges;
-	}
-
-
-	@Override
-	public double getMaxHP() {
-		return 1;
 	}
 
 }
