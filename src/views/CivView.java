@@ -3,6 +3,7 @@ package views;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -541,7 +542,11 @@ public class CivView extends Application implements Observer {
 		unitPane.setLayoutY((WINDOW_HEIGHT - 230) / 2.0);
 
 		selectTile(unit.getX(), unit.getY());
-
+		// TODO: highlight possible moves
+		HashSet<int[]> validMoves = controller.getValidMoves(selectedUnit);
+		for (int[] move : validMoves)
+			System.out.print("(" + move[0] + ", " + move[1] + ")");
+		System.out.println();
 	}
 
 	/**
