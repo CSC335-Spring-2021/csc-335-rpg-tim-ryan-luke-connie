@@ -5,9 +5,11 @@ import controllers.CivController;
 import javafx.animation.*;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -390,9 +392,9 @@ public class CivView extends Application implements Observer {
 			}
 		}
 
-		// if a friendly city is already selected, another map click always deselects it. We might
-		// reselect it again right after, but don't care for now
-		if (selectedCity != null) deselect();
+		// if only a friendly city is already selected, another map click always deselects it. We
+		// might reselect it again right after, but don't care for now
+		if (selectedCity != null && selectedUnit == null) deselect();
 
 		// select a new or different friendly unit
 		if (targetUnit != null && targetUnit.getOwner() == model.getCurPlayer()) {
@@ -562,11 +564,23 @@ public class CivView extends Application implements Observer {
 		Text prodRateLabel = new Text(" per turn");
 		prodRateFlow.getChildren().addAll(prodRate, prodRateLabel);
 
+		// pane actions
+		Pane spacer = new Pane();  // text nodes can't take padding, so we'll space with this
+		spacer.getStyleClass().add("detail-pane__space-above");
+		Text buildLabel = new Text("Build:");
+		buildLabel.getStyleClass().add("detail-pane__label");
+		Node[] scoutRow = createCityBuildButton(city, "Scout", 1, Unit.unitCosts.get("Scout"));
+		Node[] warriorRow = createCityBuildButton(city, "Warrior", 1, Unit.unitCosts.get("Warrior"));
+		Node[] settlerRow = createCityBuildButton(city, "Settler", 1, Unit.unitCosts.get("Settler"));
+
 		// populate and show pane
-		cityPane.getChildren().addAll(name, hpFlow, hpBar, popCount, popLabel, prodFlow, prodRateFlow);
+		cityPane.getChildren().addAll(
+				name, hpFlow, hpBar, popCount, popLabel, prodFlow, prodRateFlow, spacer,
+				buildLabel, scoutRow[0], warriorRow[0], settlerRow[0]
+		);
 		cityPane.setVisible(true);
-		// another magic number
-		cityPane.setLayoutY((WINDOW_HEIGHT - 260) / 2.0);
+		// another magic number because HBox.getHeight() is incorrect
+		cityPane.setLayoutY((WINDOW_HEIGHT - 470) / 2.0);
 
 		selectTile(city.getX(), city.getY());
 	}
@@ -646,6 +660,67 @@ public class CivView extends Application implements Observer {
 		ColumnConstraints constraint = new ColumnConstraints();
 		constraint.setPercentWidth(cur / max * 100);
 		result.getColumnConstraints().add(constraint);
+
+		return result;
+	}
+
+
+	/**
+	 * Create and assemble the nodes necessary to display a 'build' button with associated costs,
+	 * for display on a city detail pane.
+	 *
+	 * <p>Styles the button and labels depending on whether enough resources exist to build the
+	 * unit.
+	 *
+	 * @param city The city this would build to
+	 * @param label The label to add to the button
+	 * @param popCost The population cost that building this unit requires
+	 * @param pointCost The production point cost that building this unit requires
+	 * @return A two-element node array. The first element is the containing GridPane for the entire
+	 * row so it can be added to the layout. The second element is the created Button so the
+	 * calling method can attach an event listener to it
+	 */
+	private Node[] createCityBuildButton(City city, String label, int popCost, double pointCost) {
+		GridPane container = new GridPane();
+		container.getStyleClass().add("detail-pane__build-row");
+
+		Button button = new Button(label);
+		button.getStyleClass().add("detail-pane__button");
+		if (popCost > city.getPopulation() || pointCost > city.getProductionReserve()) {
+			button.setDisable(true);
+			button.getStyleClass().add("detail-pane__button--disabled");
+		}
+		container.add(button, 0, 0);
+
+		HBox popCostNode = new HBox();
+		for (int i = 0; i < popCost; i++) {
+			Rectangle icon = new Rectangle(9, 12);
+			icon.getStyleClass().add("population-icon");
+			if (i >= city.getPopulation()) {
+				icon.getStyleClass().add("population-icon--unavailable");
+			}
+			popCostNode.getChildren().add(icon);
+		}
+
+		TextFlow pointCostNode = new TextFlow();
+		pointCostNode.getStyleClass().add("detail-pane__help");
+		Text pointCostFigure = new Text("" + (int) pointCost);
+		pointCostFigure.getStyleClass().add(pointCost > city.getProductionReserve() ? "negative" : "positive");
+		Text pointCostLabel = new Text(" pp");
+		pointCostNode.getChildren().addAll(pointCostFigure, pointCostLabel);
+
+		VBox costs = new VBox();
+		costs.getStyleClass().add("detail-pane__build-costs");
+		costs.getChildren().addAll(popCostNode, pointCostNode);
+		container.add(costs, 1, 0);
+
+		ColumnConstraints constraint = new ColumnConstraints();
+		constraint.setPrefWidth(110);
+		container.getColumnConstraints().add(constraint);
+
+		Node[] result = new Node[2];
+		result[0] = container;
+		result[1] = button;
 
 		return result;
 	}
