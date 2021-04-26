@@ -12,7 +12,7 @@ import models.Player;
  * any unit within should be destroyed. Maybe units garrisoned in a city can
  * have infinite hp until they leave? Either way garrisoned units need some sort
  * of bonus which I am unsure of rn.
- * 
+ *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
  */
@@ -48,9 +48,9 @@ public class City {
 
 	/**
 	 * TODO: Should the city delete itself if it is out of health?
-	 * 
+	 *
 	 * Deal damage to the city from a unit
-	 * 
+	 *
 	 * @param damage attack value of unit hitting the city
 	 */
 	public void takeAttack(double damage) {
@@ -59,7 +59,7 @@ public class City {
 
 	/**
 	 * A new unit has been purchased in this city, create and return it.
-	 * 
+	 *
 	 * @param unitType String representing the type of unit to be created
 	 * @return Unit object that has been created for a player in a city
 	 */
@@ -105,7 +105,7 @@ public class City {
 
 	/**
 	 * Retrieve the player who owns the city
-	 * 
+	 *
 	 * @return Player object representing the city owner.
 	 */
 	public Player getOwner() {
@@ -113,7 +113,7 @@ public class City {
 	}
 	/**
 	 * Retrieve this city's X coordinate
-	 * 
+	 *
 	 * @return integer representing x value
 	 */
 	public int getX() {
@@ -122,7 +122,7 @@ public class City {
 
 	/**
 	 * Retrieve this city's Y coordinate
-	 * 
+	 *
 	 * @return integer representing y value;
 	 */
 	public int getY() {
@@ -131,7 +131,7 @@ public class City {
 
 	/**
 	 * retrieve the city's turn by turn production value
-	 * 
+	 *
 	 * @return double representing production per turn.
 	 */
 	public double getProduction() {
@@ -140,7 +140,7 @@ public class City {
 
 	/**
 	 * retrieve the city's turn by turn production value
-	 * 
+	 *
 	 * @return double representing current accumulated production.
 	 */
 	public double getProductionReserve() {
@@ -149,7 +149,7 @@ public class City {
 
 	/**
 	 * retrieve the city's population, aka level
-	 * 
+	 *
 	 * @return integer representing level
 	 */
 	public int getPopulation() {
@@ -158,7 +158,7 @@ public class City {
 
 	/**
 	 * retrieve the city's max HP, necessary for the view
-	 * 
+	 *
 	 * @return double representing the city's max HP value
 	 */
 	public double getMaxHP() {
@@ -167,11 +167,21 @@ public class City {
 
 	/**
 	 * retrieve the city's remaining HP, for use in the controller and view
-	 * 
+	 *
 	 * @return double representing the city's current HP value
 	 */
 	public double getRemainingHP() {
 		return this.cityHPCur;
+	}
+
+
+	/**
+	 * Retrieve the city's turns before growth.
+	 *
+	 * @return The number of turns before this city grows
+	 */
+	public int getTurnsBeforeGrowth() {
+		return this.turnsBeforeGrowth;
 	}
 
 

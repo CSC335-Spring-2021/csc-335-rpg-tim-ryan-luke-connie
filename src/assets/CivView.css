@@ -24,6 +24,9 @@
   -fx-background-color: rgba(0,0,0,0.7);
   -fx-background-insets: 2;
 }
+.detail-pane--city {
+  -fx-pref-width: 240;
+}
 .detail-pane__name {
   -fx-fill: #fff;
   -fx-font-size: 26;
@@ -47,12 +50,23 @@
   -fx-font-size: 13;
   -fx-fill: rgba(255,255,255,0.7);
 }
+.detail-pane__help {
+  -fx-padding: 6 0 0;
+}
 .detail-pane__help * {
   -fx-font-size: 13;
   -fx-fill: rgba(255,255,255,0.9);
 }
 .detail-pane__space-above {
   -fx-padding: 24 0 0;
+}
+.detail-pane__pop-count {
+  -fx-hgap: 6;
+  -fx-padding: 24 0 6;
+}
+
+.population-icon {
+  -fx-fill: #47bee3;
 }
 
 .hp-bar {

@@ -14,11 +14,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
@@ -59,10 +57,12 @@ public class CivView extends Application implements Observer {
 	// ui hooks
 	private VBox unitPane;
 	private Unit selectedUnit;
+	private VBox cityPane;
+	private City selectedCity;
 
 	// viz constants
-	private static final int WINDOW_WIDTH = 800;
-	private static final int WINDOW_HEIGHT = 600;
+	private static final int WINDOW_WIDTH = 1024;
+	private static final int WINDOW_HEIGHT = 576;
 	private static final int TILE_SIZE = 120;
 	private static final int CITY_SIZE = 100;
 	private static final int SPRITE_SIZE = 60;
@@ -112,7 +112,7 @@ public class CivView extends Application implements Observer {
 		mapCanvas.setOnMouseMoved(ev -> handleMapHover(ev));
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
 			if (ev.getCode() == KeyCode.ESCAPE) {
-				deselectUnit();
+				deselect();
 				ev.consume();
 			}
 		});
@@ -216,6 +216,13 @@ public class CivView extends Application implements Observer {
 		unitPane.setLayoutX(24);
 		unitPane.setVisible(false);
 		window.getChildren().add(unitPane);
+
+		// city detail pane
+		cityPane = new VBox();
+		cityPane.getStyleClass().addAll("detail-pane", "detail-pane--city");
+		cityPane.setLayoutX(WINDOW_WIDTH - 240 - 24);
+		cityPane.setVisible(false);
+		window.getChildren().add(cityPane);
 	}
 
 
@@ -362,18 +369,39 @@ public class CivView extends Application implements Observer {
 		if (tile == null) return;
 
 		Unit targetUnit = tile.getUnit();
+		City targetCity = tile.getOwnerCity();
 
-		// if a unit is already selected, this click is either move/attack (if in range), select
-		// a different friendly unit, or deselect entirely
+		// if a friendly unit is already selected, we'll have different behaviors depending on if
+		// the click was on an enemy unit in range, another friendly unit, or neither
 		if (selectedUnit != null) {
-			deselectUnit();
-			if (targetUnit != null && targetUnit.getOwner() == model.getCurPlayer()) {
-				selectUnit(targetUnit);
+			if (targetUnit != null && targetUnit.getOwner() != model.getCurPlayer()) {
+				// todo: do attack on unit here
+			} else if (targetCity != null && targetCity.getOwner() != model.getCurPlayer()) {
+				// todo: do attack on city here
+			} else if (targetUnit == null && targetCity == null) {
+				// todo: if this is in range, move here
+				// if (selectedUnit.canMoveTo(tile)) {
+				// 	selectedUnit.move();
+				// } else {
+					deselect();
+				// }
+			} else {
+				deselect();
 			}
+		}
 
-		// otherwise, select the unit under the click if there is one
-		} else {
+		// if a friendly city is already selected, another map click always deselects it. We might
+		// reselect it again right after, but don't care for now
+		if (selectedCity != null) deselect();
+
+		// select a new or different friendly unit
+		if (targetUnit != null && targetUnit.getOwner() == model.getCurPlayer()) {
 			selectUnit(targetUnit);
+		}
+
+		// select a friendly city
+		if (targetCity != null && targetCity.getOwner() == model.getCurPlayer()) {
+			selectCity(targetCity);
 		}
 	}
 
@@ -403,6 +431,23 @@ public class CivView extends Application implements Observer {
 
 
 	/**
+	 * Deselect the currently selected unit and/or city. Also hides the respective detail pane(s)
+	 */
+	private void deselect() {
+		selectedUnit = null;
+		selectedCity = null;
+
+		unitPane.setVisible(false);
+		unitPane.getChildren().clear();
+		cityPane.setVisible(false);
+		cityPane.getChildren().clear();
+
+		mapSelectedCursor.setVisible(false);
+		mapSelectedTransition.pause();
+	}
+
+
+	/**
 	 * Select a unit. This involves marking said unit as selected, centering the map on it, and
 	 * building and showing a detail pane that displays the unit's properties.
 	 *
@@ -420,6 +465,7 @@ public class CivView extends Application implements Observer {
 		// pane info: label
 		Text name = new Text(unit.getLabel());
 		name.getStyleClass().add("detail-pane__name");
+		unitPane.getChildren().add(name);
 
 		// pane info: HP
 		String hpDisp = "positive";
@@ -427,8 +473,9 @@ public class CivView extends Application implements Observer {
 		if (unit.getHP() < unit.getMaxHP() * 1/3) hpDisp = "negative";
 		TextFlow hpFlow = createLabeledFigure("HP", (int) unit.getHP(), (int) unit.getMaxHP(), hpDisp);
 		GridPane hpBar = createHPBar(unit.getHP(), unit.getMaxHP());
+		unitPane.getChildren().addAll(hpFlow, hpBar);
 
-		// pane info: attack
+		// pane info: attack stat
 		String attackDisp = "";
 		if (tile.getAttackModifier() > 1) attackDisp = "positive";
 		if (tile.getAttackModifier() < 1) attackDisp = "negative";
@@ -439,34 +486,108 @@ public class CivView extends Application implements Observer {
 				attackDisp
 		);
 		attackFlow.getStyleClass().add("detail-pane__space-above");
-		TextFlow attackHelp = new TextFlow();
-		attackHelp.getStyleClass().add("detail-pane__help");
+		unitPane.getChildren().add(attackFlow);
+
+		// pane info: attack modifier
 		if (tile.getAttackModifier() != 1) {
+			TextFlow attackHelp = new TextFlow();
+			attackHelp.getStyleClass().add("detail-pane__help");
 			Text attackMod = new Text((tile.getAttackModifier() > 1 ? "+" : "-") + " attack ");
 			attackMod.getStyleClass().add(tile.getAttackModifier() > 1 ? "positive" : "negative");
 			Text attackWhy = new Text("in " + tile.getTerrainType().name().toLowerCase() + "s");
 			attackHelp.getChildren().addAll(attackMod, attackWhy);
+			unitPane.getChildren().add(attackHelp);
 		}
 
 		// pane info: movement
 		TextFlow moveFlow = createLabeledFigure("moves remaining", unit.getMovement(), -1, "");
 		moveFlow.getStyleClass().add("detail-pane__space-above");
+		unitPane.getChildren().add(moveFlow);
 
-		// populate and show pane
-		unitPane.getChildren().addAll(name, hpFlow, hpBar, attackFlow, attackHelp, moveFlow);
+		// show pane
 		unitPane.setVisible(true);
 		// javafx doesn't calculate this vbox's height correctly, so magic number for now
 		unitPane.setLayoutY((WINDOW_HEIGHT - 230) / 2.0);
 
+		selectTile(unit.getX(), unit.getY());
+	}
+
+
+	/**
+	 * Select a city. This involves marking said city as selected, centering the map on it, and
+	 * building and showing a detail pane that displays the city's properties.
+	 *
+	 * @param city The City to select
+	 */
+	private void selectCity(City city) {
+		if (city == null) return;
+
+		selectedCity = city;
+
+		cityPane.getChildren().clear();
+
+		// pane info: label
+		Text name = new Text("City");
+		name.getStyleClass().add("detail-pane__name");
+
+		// pane info: HP
+		String hpDisp = "positive";
+		if (city.getRemainingHP() < city.getMaxHP() * 2/3) hpDisp = "neutral";
+		if (city.getRemainingHP() < city.getMaxHP() * 1/3) hpDisp = "negative";
+		TextFlow hpFlow = createLabeledFigure("HP", (int) city.getRemainingHP(), (int) city.getMaxHP(), hpDisp);
+		GridPane hpBar = createHPBar(city.getRemainingHP(), city.getMaxHP());
+
+		// pane info: population
+		HBox popCount = new HBox();
+		popCount.getStyleClass().add("detail-pane__pop-count");
+		for (int i = 0; i < city.getPopulation(); i++) {
+			Rectangle icon = new Rectangle(15, 20);
+			icon.getStyleClass().add("population-icon");
+			popCount.getChildren().add(icon);
+		}
+		Text popLabel = new Text(
+			"population (grows in " +
+			city.getTurnsBeforeGrowth() +
+			(city.getTurnsBeforeGrowth() == 1 ? " turn)" : " turns)")
+		);
+		popLabel.getStyleClass().add("detail-pane__label");
+
+		// pane info: production points
+		TextFlow prodFlow = createLabeledFigure("production points", (int) city.getProductionReserve(), -1, "");
+		prodFlow.getStyleClass().add("detail-pane__space-above");
+		TextFlow prodRateFlow = new TextFlow();
+		prodRateFlow.getStyleClass().add("detail-pane__help");
+		Text prodRate = new Text("+ " + (int) city.getProduction());
+		prodRate.getStyleClass().add("positive");
+		Text prodRateLabel = new Text(" per turn");
+		prodRateFlow.getChildren().addAll(prodRate, prodRateLabel);
+
+		// populate and show pane
+		cityPane.getChildren().addAll(name, hpFlow, hpBar, popCount, popLabel, prodFlow, prodRateFlow);
+		cityPane.setVisible(true);
+		// another magic number
+		cityPane.setLayoutY((WINDOW_HEIGHT - 260) / 2.0);
+
+		selectTile(city.getX(), city.getY());
+	}
+
+
+	/**
+	 * Add a selection indicator to a tile and center the view on it.
+	 *
+	 * @param x The x index of the tile in the map grid
+	 * @param y The y index of the tile in the map grid
+	 */
+	private void selectTile(int x, int y) {
 		// add selection indicator
-		int[] coords = gridToIso(unit.getX(), unit.getY());
+		int[] coords = gridToIso(x, y);
 		mapSelectedCursor.setX(coords[0] + SCROLL_GUTTER);
 		mapSelectedCursor.setY(coords[1] + SCROLL_GUTTER);
 		mapSelectedCursor.setVisible(true);
 		mapSelectedTransition.play();
 
-		// center map on unit
-		focusMap(unit.getX(), unit.getY(), true);
+		// center map on tile
+		focusMap(x, y, true);
 	}
 
 
@@ -527,18 +648,6 @@ public class CivView extends Application implements Observer {
 		result.getColumnConstraints().add(constraint);
 
 		return result;
-	}
-
-
-	/**
-	 * Deselect the currently selected unit. This also removes the unit's detail pane.
-	 */
-	private void deselectUnit() {
-		selectedUnit = null;
-		unitPane.setVisible(false);
-		unitPane.getChildren().clear();
-		mapSelectedCursor.setVisible(false);
-		mapSelectedTransition.pause();
 	}
 
 

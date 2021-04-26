@@ -14,7 +14,7 @@ import models.Player;
 public class Tile {
 
 	public enum terrainTypes {
-		CITY, FIELD, HILL, SWAMP, WATER, MOUNTAIN
+		FIELD, HILL, SWAMP, WATER, MOUNTAIN
 	}
 
 	private terrainTypes terrainType;
@@ -51,7 +51,7 @@ public class Tile {
 
 	/**
 	 * Found a city on this tile. Returns false if failed.
-	 * 
+	 *
 	 * TODO: This code does not interact with settlers correctly and needs to be
 	 * updated depending on how Tim wants cities to work. Should the controller use
 	 * a settler charge then immediately call this, or should the settler do that?
@@ -61,7 +61,6 @@ public class Tile {
 	 */
 	public boolean foundCity(City city) {
 		if (this.ownerCity == null) { // && this.unitHere instanceOf Settler?
-			this.terrainType = terrainTypes.CITY;
 			this.ownerCity = city;
 			this.movementBonus = 0; // TODO: figure out bonuses for units in cities
 			this.attackMult = 1; // subject to change
@@ -136,7 +135,7 @@ public class Tile {
 	/**
 	 * Place a unit on this tile, will be used if a unit moves here or if a unit
 	 * kills the unit stationed here.
-	 * 
+	 *
 	 * @param unit that is now stationed here.
 	 */
 	public void setUnit(Unit unit) {

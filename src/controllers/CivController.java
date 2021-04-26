@@ -35,14 +35,20 @@ public class CivController {
 		Settler settler = new Settler(model.getCurPlayer(), new Point(9, 9));
 		model.getTileAt(9, 9).setUnit(settler);
 
-		City city = new City(model.getCurPlayer(), 10, 10);
-		model.getTileAt(10, 10).foundCity(city);
-
 		Scout scout = new Scout(model.getCurPlayer(), new Point(10, 9));
 		model.getTileAt(10, 9).setUnit(scout);
 
 		Warrior warrior = new Warrior(model.getCurPlayer(), new Point(11, 12));
 		model.getTileAt(11, 12).setUnit(warrior);
+
+		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(14, 12));
+		model.getTileAt(14, 12).setUnit(warrior2);
+
+		City city = new City(model.getCurPlayer(), 10, 10);
+		model.getTileAt(10, 10).foundCity(city);
+
+		City city2 = new City(model.getCurPlayer(), 14, 12);
+		model.getTileAt(14, 12).foundCity(city2);
 	}
 
 
@@ -136,7 +142,7 @@ public class CivController {
 			cost = unit.getMovement() - 1; // have to deplete to if successful move
 		}
 		// eventually have to change the city check to isCityTile()
-		else if (moveTo.getTerrainType() == Tile.terrainTypes.CITY
+		else if (moveTo.getOwnerCity() != null
 				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
 			movesOnto = attack(moveFrom, moveTo.getOwnerCity());
 		if (movesOnto) {
