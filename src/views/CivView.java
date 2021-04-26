@@ -61,6 +61,7 @@ public class CivView extends Application implements Observer {
 	private Unit selectedUnit;
 	private VBox cityPane;
 	private City selectedCity;
+	private Button endTurnButton;
 
 	// viz constants
 	private static final int WINDOW_WIDTH = 1024;
@@ -112,6 +113,9 @@ public class CivView extends Application implements Observer {
 		// add global events
 		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
 		mapCanvas.setOnMouseMoved(ev -> handleMapHover(ev));
+		endTurnButton.setOnMouseClicked(ev -> {
+			// todo: end turn here
+		});
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
 			if (ev.getCode() == KeyCode.ESCAPE) {
 				deselect();
@@ -229,6 +233,13 @@ public class CivView extends Application implements Observer {
 		cityPane.setLayoutX(WINDOW_WIDTH - 240 - 24);
 		cityPane.setVisible(false);
 		window.getChildren().add(cityPane);
+
+		// 'end turn' button
+		endTurnButton = new Button("End Turn");
+		endTurnButton.getStyleClass().add("end-turn-button");
+		endTurnButton.setLayoutX((WINDOW_WIDTH - 100) / 2.0);  // getWidth() doesn't work
+		endTurnButton.setLayoutY(WINDOW_HEIGHT - 36 - 24);  // nor does getHeight()
+		window.getChildren().add(endTurnButton);
 	}
 
 
