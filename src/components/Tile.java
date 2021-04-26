@@ -14,7 +14,7 @@ import models.Player;
 public class Tile {
 
 	public enum terrainTypes {
-		CITY, FIELD, HILL, SWAMP, WATER, MOUNTAIN
+		FIELD, HILL, SWAMP, WATER, MOUNTAIN
 	}
 
 	private terrainTypes terrainType;
@@ -22,6 +22,7 @@ public class Tile {
 	private double attackMult;
 	private String resourceType = null;
 	private City ownerCity = null;
+	private boolean isCityTile = false;
 	private Unit unitHere = null;
 	private List<Player> revealedTo = new ArrayList<Player>();
 
@@ -51,7 +52,7 @@ public class Tile {
 
 	/**
 	 * Found a city on this tile. Returns false if failed.
-	 * 
+	 *
 	 * TODO: This code does not interact with settlers correctly and needs to be
 	 * updated depending on how Tim wants cities to work. Should the controller use
 	 * a settler charge then immediately call this, or should the settler do that?
@@ -61,8 +62,8 @@ public class Tile {
 	 */
 	public boolean foundCity(City city) {
 		if (this.ownerCity == null) { // && this.unitHere instanceOf Settler?
-			this.terrainType = terrainTypes.CITY;
 			this.ownerCity = city;
+			this.isCityTile = true;
 			this.movementBonus = 0; // TODO: figure out bonuses for units in cities
 			this.attackMult = 1; // subject to change
 			return true;
@@ -124,6 +125,15 @@ public class Tile {
 	}
 
 	/**
+	 * Determine if this tile contains the city itself
+	 * 
+	 * @return boolean representing it this tile contains a city object
+	 */
+	public boolean isThisACity() {
+		return this.isCityTile;
+	}
+
+	/**
 	 * Return unit stationed on this tile. This method will be necessary for attack
 	 * and movement logic
 	 *
@@ -136,7 +146,7 @@ public class Tile {
 	/**
 	 * Place a unit on this tile, will be used if a unit moves here or if a unit
 	 * kills the unit stationed here.
-	 * 
+	 *
 	 * @param unit that is now stationed here.
 	 */
 	public void setUnit(Unit unit) {
