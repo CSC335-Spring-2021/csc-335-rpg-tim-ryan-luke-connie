@@ -381,9 +381,9 @@ public class CivView extends Application implements Observer {
 		// the click was on an enemy unit in range, another friendly unit, or neither
 		if (selectedUnit != null) {
 			if (targetUnit != null && targetUnit.getOwner() != model.getCurPlayer()) {
-				// todo: do attack on unit here
+				// todo: do attack on unit here if in range
 			} else if (targetCity != null && targetCity.getOwner() != model.getCurPlayer()) {
-				// todo: do attack on city here
+				// todo: do attack on city here if in range
 			} else if (targetUnit == null && targetCity == null) {
 				// todo: if this is in range, move here
 				// if (selectedUnit.canMoveTo(tile)) {
@@ -576,6 +576,15 @@ public class CivView extends Application implements Observer {
 		Node[] scoutRow = createCityBuildButton(city, "Scout", 1, Unit.unitCosts.get("Scout"));
 		Node[] warriorRow = createCityBuildButton(city, "Warrior", 1, Unit.unitCosts.get("Warrior"));
 		Node[] settlerRow = createCityBuildButton(city, "Settler", 1, Unit.unitCosts.get("Settler"));
+		scoutRow[1].setOnMouseClicked(ev -> {
+			// todo: create scout unit
+		});
+		warriorRow[1].setOnMouseClicked(ev -> {
+			// todo: create warrior unit
+		});
+		settlerRow[1].setOnMouseClicked(ev -> {
+			// todo: create settler unit
+		});
 
 		// populate and show pane
 		cityPane.getChildren().addAll(
