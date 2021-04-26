@@ -1,6 +1,7 @@
 package controllers;
 
 import java.awt.Point;
+import java.util.HashSet;
 
 import components.City;
 import components.Scout;
@@ -290,6 +291,25 @@ public class CivController {
 		City city = settler.foundCity();
 		tile.foundCity(city);
 		model.changeAndNotify();
+	}
+
+	public HashSet<int[]> getValidMoves(Unit unit) {
+		HashSet<int[]> moves = new HashSet<int[]>();
+		int curX = unit.getX(), curY = unit.getY();
+		for (int i = -1; i < 2; i++) {
+			for (int j = -1; j < 2; j++) {
+				int newX = curX + i, newY = curY + j;
+				int movement = unit.getMovement();
+				Tile moveTo = getTileAt(newX, newY);
+				int cost = -moveTo.getMovementModifier();
+				if (cost + 1 <= movement) {
+					Unit unitOnMoveTile = moveTo.getUnit();
+					if (unitOnMoveTile == null || unitOnMoveTile.getOwner() != curPlayer)
+						moves.add(new int[] { newX, newY });
+				}
+			}
+		}
+		return moves;
 	}
 
 }
