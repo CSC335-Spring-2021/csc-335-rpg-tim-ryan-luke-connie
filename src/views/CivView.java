@@ -270,7 +270,9 @@ public class CivView extends Application implements Observer {
 			if (tile == null)
 				continue;
 
-			City city = tile.getOwnerCity();
+			City city = null;
+			if (tile.isCityTile())
+				city = tile.getOwnerCity();
 			Unit unit = tile.getUnit();
 
 			if (city != null)
@@ -405,7 +407,9 @@ public class CivView extends Application implements Observer {
 			return;
 
 		Unit targetUnit = tile.getUnit();
-		City targetCity = tile.getOwnerCity();
+		City targetCity = null;
+		if (tile.isCityTile())
+			targetCity = tile.getOwnerCity();
 
 		// if a friendly unit is already selected, we'll have different behaviors
 		// depending on if
@@ -544,9 +548,6 @@ public class CivView extends Application implements Observer {
 		selectTile(unit.getX(), unit.getY());
 		// TODO: highlight possible moves
 		HashSet<int[]> validMoves = controller.getValidMoves(selectedUnit);
-		for (int[] move : validMoves)
-			System.out.print("(" + move[0] + ", " + move[1] + ")");
-		System.out.println();
 	}
 
 	/**

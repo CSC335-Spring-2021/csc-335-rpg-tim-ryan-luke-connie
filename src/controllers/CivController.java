@@ -77,12 +77,12 @@ public class CivController {
 	}
 
 	/**
-	 * Returns the Tile located at the board location row, col
+	 * Returns the Tile located at the board location x, y
 	 *
-	 * @param row int for row of board positionn
-	 * @param col int for col of board position
+	 * @param x int for x of board positionn
+	 * @param y int for y of board position
 	 *
-	 * @return the Tile at row,col on the board
+	 * @return the Tile at x,y on the board
 	 *
 	 */
 	public Tile getTileAt(int x, int y) {
@@ -138,12 +138,12 @@ public class CivController {
 	/**
 	 * Moves a unit from its old location to the new player-specified location.
 	 *
-	 * Unit moves one tile at a time
+	 * Unit moves one tile at a time. If enemy Unit or city on the location to move
+	 * to, the move is an attack.
 	 *
-	 * @param oldx int of old row location of unit
-	 * @param oldy int of old col location of unit
-	 * @param newx int of new row location of unit
-	 * @param newy int of new col location of unit
+	 * @param toMove the Unit that is attempting a move/attack
+	 * @param newx   int of new x location of unit
+	 * @param newy   int of new y location of unit
 	 * @return true if the unit successfully moved/attacked, false otherwise
 	 */
 	public boolean moveUnit(Unit toMove, int newX, int newY) {
@@ -180,8 +180,8 @@ public class CivController {
 	 * Set all the tiles in a 1-tile radius around the given location as revealed
 	 * for the current player.
 	 *
-	 * @param row int of row location middle tile
-	 * @param col int of col location middle tile
+	 * @param x int of x location middle tile
+	 * @param y int of y location middle tile
 	 */
 	private void revealTiles(int x, int y) {
 		for (int i = -1; i < 2; i++) {
@@ -212,7 +212,7 @@ public class CivController {
 		double attack = attacker.getAttackValue();
 		attack *= attackerTile.getAttackModifier();
 		defender.takeAttack(attack);
-		if (defender.getHP() < 0) {
+		if (defender.getHP() <= 0) {
 			defender.getOwner().removeUnit(defender);
 			return true;
 		}
@@ -254,11 +254,12 @@ public class CivController {
 	 * Creates a unit on the given tile if the city has enough in its production
 	 * reserve to make that unit.
 	 *
-	 * View should pass the correct Tile object when a player tries to create a unit
-	 * (i.e., only an actual city Tile can produce a unit). Updates the tile so that
-	 * it has the new unit on it.
+	 * View should pass the correct x,y when a player tries to create a unit (i.e.,
+	 * only an actual city Tile can produce a unit). Updates the tile so that it has
+	 * the new unit on it.
 	 *
-	 * @param tile     the Tile (city) creating a unit
+	 * @param x        int representing the x location of new unit
+	 * @param y        int representing the y location of new unit
 	 * @param unitType String representing the type of unit to create
 	 * @return true if the unit was successfully created and added to the board,
 	 *         false otherwise
@@ -266,7 +267,7 @@ public class CivController {
 	public boolean createUnit(int x, int y, String unitType) {
 		Tile tile = getTileAt(x, y);
 		City city = tile.getOwnerCity();
-		if (city.getProductionReserve() >= Unit.unitCosts.get(unitType)) {
+		if (tile.getUnit() == null) {
 			Unit newUnit = city.produceUnit(unitType);
 			tile.setUnit(newUnit);
 			curPlayer.addUnit(newUnit);
@@ -277,13 +278,13 @@ public class CivController {
 	}
 
 	/**
-	 * Found a city on the Tile at row, col on the board
+	 * Found a city on the Tile at x, y on the board
 	 *
 	 * Adds city to the current player's list of cities as well. Assumes that this
 	 * was only called on a valid tile (Settler on the tile).
 	 *
-	 * @param row int of row location of new city
-	 * @param col int of col location of new city
+	 * @param x int of x location of new city
+	 * @param y int of y location of new city
 	 */
 	public void foundCity(int x, int y) {
 		Tile tile = getTileAt(x, y);
