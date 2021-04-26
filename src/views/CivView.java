@@ -131,7 +131,11 @@ public class CivView extends Application implements Observer {
 	 */
 	@Override
 	public void update(Observable observable, Object o) {
-		// todo
+		renderAllSprites();
+
+		// refresh any open detail panes, as the selected unit's values may have changed
+		if (selectedUnit != null) selectUnit(selectedUnit);
+		if (selectedCity != null) selectCity(selectedCity);
 	}
 
 
