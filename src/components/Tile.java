@@ -25,6 +25,7 @@ public class Tile {
 	private boolean isCityTile = false;
 	private Unit unitHere = null;
 	private List<Player> revealedTo = new ArrayList<Player>();
+	private boolean isCity = false;
 
 	/**
 	 * When initially making a game, create every tile with a terrain type in mind.
@@ -49,7 +50,6 @@ public class Tile {
 		}
 	}
 
-
 	/**
 	 * Found a city on this tile. Returns false if failed.
 	 *
@@ -66,6 +66,7 @@ public class Tile {
 			this.isCityTile = true;
 			this.movementBonus = 0; // TODO: figure out bonuses for units in cities
 			this.attackMult = 1; // subject to change
+			this.isCity = true;
 			return true;
 		}
 		return false;
@@ -171,6 +172,10 @@ public class Tile {
 	 */
 	public void revealTile(Player player) {
 		revealedTo.add(player);
+	}
+
+	public boolean isCityTile() {
+		return isCity;
 	}
 
 }

@@ -1,10 +1,15 @@
 package controllers;
 
-import components.*;
+import java.awt.Point;
+
+import components.City;
+import components.Scout;
+import components.Settler;
+import components.Tile;
+import components.Unit;
+import components.Warrior;
 import models.CivModel;
 import models.Player;
-
-import java.awt.*;
 
 /**
  * Provides methods to calculate data about game state or act as a computer
@@ -25,32 +30,50 @@ public class CivController {
 	 */
 	public CivController(CivModel model) {
 		this.model = model;
+		curPlayer = model.getCurPlayer();
 	}
 
-
 	/**
-	 * Configure the map with the units that should exist at the start of a new game.
+	 * Configure the map with the units that should exist at the start of a new
+	 * game.
+	 * 
+	 * Note that for testing, you have to add each unit/city to the current player.
+	 * 
+	 * For testing -- delete this later
 	 */
 	public void placeStartingUnits() {
 		Settler settler = new Settler(model.getCurPlayer(), new Point(9, 9));
 		model.getTileAt(9, 9).setUnit(settler);
+		curPlayer.addUnit(settler);
 
 		Scout scout = new Scout(model.getCurPlayer(), new Point(10, 9));
 		model.getTileAt(10, 9).setUnit(scout);
+		curPlayer.addUnit(scout);
 
 		Warrior warrior = new Warrior(model.getCurPlayer(), new Point(11, 12));
 		model.getTileAt(11, 12).setUnit(warrior);
-
-		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(14, 12));
-		model.getTileAt(14, 12).setUnit(warrior2);
+		curPlayer.addUnit(warrior);
 
 		City city = new City(model.getCurPlayer(), 10, 10);
 		model.getTileAt(10, 10).foundCity(city);
+		curPlayer.addCity(city);
+
+		// second player
+		model.nextPlayer();
+		curPlayer = model.getCurPlayer();
+
+		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(14, 12));
+		model.getTileAt(14, 12).setUnit(warrior2);
+		curPlayer.addUnit(warrior2);
 
 		City city2 = new City(model.getCurPlayer(), 14, 12);
 		model.getTileAt(14, 12).foundCity(city2);
-	}
+		city2.takeAttack(100);
+		curPlayer.addCity(city2);
 
+		// go back to player 1 to start the game
+		model.nextPlayer();
+	}
 
 	/**
 	 * Returns the Tile located at the board location row, col
@@ -122,33 +145,30 @@ public class CivController {
 	 * @param newy int of new col location of unit
 	 * @return true if the unit successfully moved/attacked, false otherwise
 	 */
-	public boolean moveUnit(int oldX, int oldY, int newX, int newY) {
+	public boolean moveUnit(Unit toMove, int newX, int newY) {
+		int oldX = toMove.getX(), oldY = toMove.getY();
 		Tile moveFrom = getTileAt(oldX, oldY);
-		Unit unit = moveFrom.getUnit(); // unit to move
-		if (unit == null)
-			return false;
-		int movement = unit.getMovement();
+		int movement = toMove.getMovement();
 		// this conditional checks that the unit is only moving 1 space
 		if (Math.abs(newX - oldX) > 1 || Math.abs(newY - oldY) > 1)
 			return false;
 		Tile moveTo = getTileAt(newX, newY);
-		int cost = moveTo.getMovementModifier();
+		int cost = -moveTo.getMovementModifier();
 		if (cost + 1 > movement)
 			return false;
 		Unit onTile = moveTo.getUnit();
 		boolean movesOnto = true;
 		if (onTile != null) { // unit exists here, attack it
+			if (onTile.getOwner().equals(curPlayer))
+				return false;
 			movesOnto = attack(moveFrom, moveTo);
-			cost = unit.getMovement() - 1; // have to deplete to if successful move
-		}
-		// eventually have to change the city check to isCityTile()
-		else if (moveTo.getOwnerCity() != null
-				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
+			cost = toMove.getMovement() - 1; // have to deplete to if successful move
+		} else if (moveTo.isCityTile() && !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, attack
 			movesOnto = attack(moveFrom, moveTo.getOwnerCity());
 		if (movesOnto) {
 			moveFrom.setUnit(null); // unit gone
-			moveTo.setUnit(unit); // successfully moves to new tile
-			unit.move(cost + 1, newX, newY); // update costs and unit location
+			moveTo.setUnit(toMove); // successfully moves to new tile
+			toMove.move(cost + 1, newX, newY); // update costs and unit location
 			revealTiles(newX, newY); // reveal tiles around unit
 		}
 		model.changeAndNotify();
@@ -219,8 +239,8 @@ public class CivController {
 		attack *= attackerTile.getAttackModifier();
 		defender.takeAttack(attack);
 		if (defender.getRemainingHP() <= 0) {
-			curPlayer.removeCity(defender);
 			Player lostACity = defender.getOwner();
+			lostACity.removeCity(defender);
 			if (lostACity.getCities().size() == 0) {
 				model.removePlayer(lostACity); // player has no cities left, remove from game
 			}
