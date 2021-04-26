@@ -3,6 +3,8 @@ package components;
 import java.util.ArrayList;
 import java.util.List;
 
+import models.Player;
+
 /**
  * Class representing a single tile within our board.
  *
@@ -12,7 +14,7 @@ import java.util.List;
 public class Tile {
 
 	public enum terrainTypes {
-		CITY, FIELD, HILL, SWAMP, WATER
+		FIELD, HILL, SWAMP, WATER, MOUNTAIN
 	}
 
 	private terrainTypes terrainType;
@@ -20,9 +22,9 @@ public class Tile {
 	private double attackMult;
 	private String resourceType = null;
 	private City ownerCity = null;
+	private boolean isCityTile = false;
 	private Unit unitHere = null;
-	// Used string to represent players, could also make an object but idk yet
-	private List<String> revealedTo = new ArrayList<String>();
+	private List<Player> revealedTo = new ArrayList<Player>();
 
 	/**
 	 * When initially making a game, create every tile with a terrain type in mind.
@@ -42,23 +44,47 @@ public class Tile {
 			this.attackMult = 1;
 		} else {
 			// terrain type is either a mountain or water, either way it is impassable.
-			// movement bonus set to -5 if impassable, change if necessary
-			this.movementBonus = -5;
+			this.movementBonus = Integer.MIN_VALUE;
 			this.attackMult = 0;
 		}
+	}
+
+
+	/**
+	 * Found a city on this tile. Returns false if failed.
+	 *
+	 * TODO: This code does not interact with settlers correctly and needs to be
+	 * updated depending on how Tim wants cities to work. Should the controller use
+	 * a settler charge then immediately call this, or should the settler do that?
+	 *
+	 * @param city city created by a settler attempting to be made on this tile.
+	 * @return boolean representing whether city founding was a success
+	 */
+	public boolean foundCity(City city) {
+		if (this.ownerCity == null) { // && this.unitHere instanceOf Settler?
+			this.ownerCity = city;
+			this.isCityTile = true;
+			this.movementBonus = 0; // TODO: figure out bonuses for units in cities
+			this.attackMult = 1; // subject to change
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Retrieve the terrain type for use in the view
+	 *
+	 * @return The terrainType assigned to this tile
+	 */
+	public terrainTypes getTerrainType() {
+		return this.terrainType;
 	}
 
 	/**
 	 * Get movement reduction or bonus to be *added* to unit movement depending on
 	 * tile type.
 	 *
-	 * NOTE: I currently think 'City' should be a terrain type, and the controller
-	 * can call getOwnerCity to retrieve the city object. This makes it easy to
-	 * differentiate a tile owned by a city from the city itself.
-	 *
-	 * @return int representing terrain bonus to be added, terrain type doesnt have
-	 *         to be a string if something else works better, terrain types also
-	 *         dont have to be those I included.
+	 * @return int representing terrain bonus to be added to unit movement value
 	 */
 	public int getMovementModifier() {
 		return this.movementBonus;
@@ -68,20 +94,10 @@ public class Tile {
 	 * Get attack reduction or bonus to be *multiplied* by unit attack depending on
 	 * tile type.
 	 *
-	 * @return double representing multiplier.
+	 * @return double representing attack multiplier.
 	 */
 	public double getAttackModifier() {
 		return this.attackMult;
-	}
-
-	/**
-	 * Not sure why this method might be necessary but I'm including it for
-	 * convenience.
-	 *
-	 * @return The terrainType assigned to this tile
-	 */
-	public terrainTypes getTerrainType() {
-		return this.terrainType;
 	}
 
 	/**
@@ -98,36 +114,29 @@ public class Tile {
 	}
 
 	/**
-	 * Return the city object that owns this tile, that does not mean that the tile
+	 * Return the city object that owns this tile. That does not mean that the tile
 	 * is a city, per se, but that some city's area of influence has reached this
 	 * tile.
 	 *
-	 * @return City object representing the city located on this tile object
+	 * @return City object representing the city which claims ownership of the tile
 	 */
 	public City getOwnerCity() {
 		return this.ownerCity;
 	}
 
 	/**
-	 * Found a city on this tile. Returns false if failed.
-	 *
-	 * @param city city created by a settler attempting to be made on this tile.
-	 * @return boolean representing whether city founding was a success
+	 * Getter for if this tile is a city tile, not to be confused with being owned
+	 * by a city
+	 * 
+	 * @return boolean representing if this tile contains a city.
 	 */
-	public boolean foundCity(City city) {
-		if (this.ownerCity == null) { // && this.unitHere instanceOf Settler?
-			this.terrainType = terrainTypes.CITY;
-			this.ownerCity = city;
-			this.movementBonus = 0; // TODO: figure out bonuses for units in cities
-			this.attackMult = 1; // subject to change
-			return true;
-		}
-		return false;
+	public boolean isCityTile() {
+		return this.isCityTile;
 	}
 
 	/**
 	 * Return unit stationed on this tile. This method will be necessary for attack
-	 * and movement logic, but how that will be implemented is still a TODO
+	 * and movement logic
 	 *
 	 * @return Unit on this tile object, or null if the tile contains no unit.
 	 */
@@ -135,6 +144,12 @@ public class Tile {
 		return this.unitHere;
 	}
 
+	/**
+	 * Place a unit on this tile, will be used if a unit moves here or if a unit
+	 * kills the unit stationed here.
+	 *
+	 * @param unit that is now stationed here.
+	 */
 	public void setUnit(Unit unit) {
 		unitHere = unit;
 	}
@@ -142,19 +157,19 @@ public class Tile {
 	/**
 	 * Figure out if current player is allowed to see the current tile.
 	 *
-	 * @param player String representing player name
+	 * @param player Player object representing the player in question
 	 * @return boolean representing whether the player passed in can see the tile
 	 */
-	public boolean canSeeTile(String player) {
+	public boolean canSeeTile(Player player) {
 		return revealedTo.contains(player);
 	}
 
 	/**
 	 * reveal this tile to the player passed in.
 	 *
-	 * @param player String representing player name
+	 * @param player Player that the tile will be revealed to.
 	 */
-	public void revealTile(String player) {
+	public void revealTile(Player player) {
 		revealedTo.add(player);
 	}
 

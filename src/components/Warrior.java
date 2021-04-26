@@ -5,24 +5,23 @@ import java.awt.Point;
 import models.Player;
 
 /**
- * Basic setup for a scout unit which has higher movement and sight.
+ * Basic setup for a warrior unit, the starting attack unit.
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
  */
-public class Scout extends Unit {
+public class Warrior extends Unit {
 
-	public Scout(Player player, Point coord) {
+	public Warrior(Player player, Point coord) {
 		super(player, coord);
-		label = "Scout";
+		label = "Warrior";
 		// TODO: Rebalance default values
-		HP = 50;
+		HP = 100;
 		maxHP = HP;
-		maxMovement = 4;
+		maxMovement = 2;
 		resetMovement();
-		sight = 4;
-		attackValue = 5;
+		sight = 2;
+		attackValue = 10;
 	}
-
 
 }
