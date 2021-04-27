@@ -100,8 +100,10 @@ public class CivController {
 	 */
 	public void startTurn() {
 		curPlayer = model.getCurPlayer();
-		for (Unit u : curPlayer.getUnits())
+		for (Unit u : curPlayer.getUnits()) {
 			u.resetMovement();
+			u.healUnit();
+		}
 		for (City c : curPlayer.getCities())
 			c.cityIncrement();
 		if (!curPlayer.isHuman())
@@ -128,10 +130,35 @@ public class CivController {
 	}
 
 	/**
-	 * does all the computer turn's AI stuff
+	 * Perform AI turns
+	 *
 	 */
 	public void computerTurn() {
-		// TODO AI logic
+		int firstFew = 2;
+		for (Unit u : curPlayer.getUnits()) {
+			if (u instanceof Settler) {
+				// move towards resource, if near, found city, if no resources, cry
+			}
+			if (firstFew > 0) {
+				// hang out around your cities
+			}
+			// unit is not one of the first few in the list, and is not a settler:
+			// move towards enemy cities, if a unit is within attack range, hit him
+
+			// try to avoid swamps if possible, but maybe this is ok
+
+			firstFew--;
+		}
+		for (City c : curPlayer.getCities()) {
+			// Manage production - there are two good options as I see it
+
+			// 1: Randomly select a unit type, if it cant make it, save up until it can.
+			// have a max number of settlers to make sure things dont get stupid.
+
+			// 2: I can hard code a List to go with every city, and shuffle it
+			// this will make it so AI players can select a unit from this list and wait
+			// until they can create it
+		}
 		model.changeAndNotify();
 		endTurn();
 	}
@@ -262,20 +289,14 @@ public class CivController {
 	 * @param x        int representing the x location of new unit
 	 * @param y        int representing the y location of new unit
 	 * @param unitType String representing the type of unit to create
-	 * @return true if the unit was successfully created and added to the board,
-	 *         false otherwise
 	 */
-	public boolean createUnit(int x, int y, String unitType) {
+	public void createUnit(int x, int y, String unitType) {
 		Tile tile = getTileAt(x, y);
 		City city = tile.getOwnerCity();
-		if (tile.getUnit() == null) {
-			Unit newUnit = city.produceUnit(unitType);
-			tile.setUnit(newUnit);
-			curPlayer.addUnit(newUnit);
-			model.changeAndNotify();
-			return true;
-		}
-		return false;
+		Unit newUnit = city.produceUnit(unitType);
+		tile.setUnit(newUnit);
+		curPlayer.addUnit(newUnit);
+		model.changeAndNotify();
 	}
 
 	/**

@@ -1,9 +1,8 @@
 package components;
 
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import models.Player;
 
@@ -25,25 +24,28 @@ public class City {
 	private double productionReserve;
 	private int turnsBeforeGrowth;
 	private int population; // population can represent city level
+	private int controlRadius;
 	private double cityHPMax;
 	private double cityHPCur;
 
-	private List<String> producableUnits;
-
+	private Set<String> producableUnits;
 
 	public City(Player player, int row, int col) {
 		this.owner = player;
 		this.coord = new Point(row, col);
 
-		// TODO: balance default values
 		this.production = 50;
 		this.productionReserve = 0;
 		this.turnsBeforeGrowth = 5;
 		this.population = 1;
+		this.controlRadius = 0;
 		this.cityHPMax = 100;
 		this.cityHPCur = this.cityHPMax;
 		// For use if we want to add more units with conditions later on.
-		this.producableUnits = new ArrayList<String>(Arrays.asList("Settler", "Scout", "Warrior"));
+		this.producableUnits = new HashSet<String>();
+		producableUnits.add("Warrior");
+		producableUnits.add("Scout");
+		producableUnits.add("Settler");
 	}
 
 	/**
@@ -68,11 +70,11 @@ public class City {
 		if (unitType.equals("Settler")) {
 			// settlers decrease city population by 1
 			this.population -= 1;
-			retUnit = new Settler(owner, coord);
+			retUnit = new Settler(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Scout")) {
-			retUnit = new Scout(owner, coord);
+			retUnit = new Scout(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Warrior")) {
-			retUnit = new Warrior(owner, coord);
+			retUnit = new Warrior(owner, new Point(coord.x, coord.y));
 		}
 		this.productionReserve -= Unit.unitCosts.get(unitType);
 		return retUnit;
@@ -88,15 +90,18 @@ public class City {
 		// city grows
 		if (this.turnsBeforeGrowth == 0) {
 			this.population += 1;
-			// TODO: Balance growth
-			this.turnsBeforeGrowth = this.population * 2 + 1;
-			this.production += (5);
-			this.cityHPMax += (this.cityHPMax / 10);
+			this.controlRadius = (population / 2);
+			if (controlRadius > 3) {
+				controlRadius = 3;
+			}
+			this.turnsBeforeGrowth = this.population * 3 + (population * population) / 3;
+			this.production += (10);
+			this.cityHPMax += (10);
+			this.cityHPCur += (10);
 		}
 		// repairs
 		if (this.cityHPCur < this.cityHPMax) {
-			// TODO: balance city repairs
-			this.cityHPCur += (2 * this.population);
+			this.cityHPCur += (cityHPMax / 20);
 			if (this.cityHPCur > this.cityHPMax) {
 				this.cityHPCur = this.cityHPMax;
 			}
@@ -111,6 +116,7 @@ public class City {
 	public Player getOwner() {
 		return this.owner;
 	}
+
 	/**
 	 * Retrieve this city's X coordinate
 	 *
@@ -156,6 +162,10 @@ public class City {
 		return this.population;
 	}
 
+	public int getControlRadius() {
+		return this.controlRadius;
+	}
+
 	/**
 	 * retrieve the city's max HP, necessary for the view
 	 *
@@ -174,7 +184,6 @@ public class City {
 		return this.cityHPCur;
 	}
 
-
 	/**
 	 * Retrieve the city's turns before growth.
 	 *
@@ -184,5 +193,25 @@ public class City {
 		return this.turnsBeforeGrowth;
 	}
 
+	/**
+	 * retrieve a set of all units that can be made in this city
+	 * 
+	 * @return a set containing strings which represent the unit names
+	 */
+	public Set<String> getProducableUnits() {
+		return this.producableUnits;
+	}
 
+	/*
+	 * Make it so the city can produce a new unit, now that it has access to a
+	 * resource.
+	 */
+	public void unlockUnit(String resource) {
+		if (resource.equals("Wheat"))
+			producableUnits.add("Milita");
+		if (resource.equals("Iron"))
+			producableUnits.add("Swordsman");
+		if (resource.equals("Horses"))
+			producableUnits.add("Cavalry");
+	}
 }
