@@ -1,6 +1,9 @@
 package models;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Random;
+import java.util.Scanner;
 
 import components.Tile;
 
@@ -52,8 +55,11 @@ public class CivBoard {
 				else if (type > 3 && isMiddleStrip) { // diagonal strip down the middle is mostly hills
 					if (resource)
 						board[i][j] = new Tile(Tile.terrainTypes.HILL, "iron");
-					else
+					else if (type < 9)
 						board[i][j] = new Tile(Tile.terrainTypes.HILL, "");
+					else
+						board[i][j] = new Tile(Tile.terrainTypes.MOUNTAIN, "");
+
 				}
 				else { // rest are fields. 
 					if (resource)
@@ -75,6 +81,58 @@ public class CivBoard {
 			i++;
 		}
 		this.tiles = board;
+	}
+	
+	public CivBoard(File file) {
+		Scanner sc = null;
+		try {
+			sc = new Scanner(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		String line = null;
+		if (sc.hasNextLine()) {
+			line = sc.nextLine();
+		}
+		this.size = Integer.valueOf(line);
+		Tile[][] board = new Tile[size][size];
+		int i = 0;
+		int j = 0;
+		Tile.terrainTypes type = null;
+		String resource = "";
+		while (sc.hasNextLine()) {
+			line = sc.nextLine();
+			String[] type_res = line.split(" ");
+			if (type_res[0].equals("field"))
+					type = Tile.terrainTypes.FIELD;
+			else if (type_res[0].equals("swamp"))
+				type = Tile.terrainTypes.SWAMP;
+			else if (type_res[0].equals("hill"))
+				type = Tile.terrainTypes.HILL;
+			else if (type_res[0].equals("water"))
+				type = Tile.terrainTypes.WATER;
+			else if (type_res[0].equals("mountain"))
+				type = Tile.terrainTypes.MOUNTAIN;
+			if (type_res[1].equals("w"))
+				resource = "wheat";
+			else if (type_res[1].equals("h"))
+				resource = "horse";
+			else if (type_res[1].equals("i"))
+				resource = "iron";
+			else
+				resource = "wheat";
+			board[i][j] = new Tile(type, resource);
+			j++;
+			if (j == size - 1) {
+				i++;
+				j = 0;
+			}
+			if (i == size)
+				System.out.println("error with passed size");
+		}
+			
+		
+		
 	}
 
 	public Tile getTile(int x, int y) {
