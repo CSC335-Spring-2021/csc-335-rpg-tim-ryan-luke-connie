@@ -30,15 +30,15 @@ public class Tile {
 	 * When initially making a game, create every tile with a terrain type in mind.
 	 * This will allow for map creation.
 	 */
-	public Tile(terrainTypes terrainType) {
+	public Tile(terrainTypes terrainType, String resource) {
 		this.terrainType = terrainType;
-
+		this.resourceType = resource;
 		if (terrainType.equals(terrainTypes.HILL)) {
 			this.movementBonus = -1;
-			this.attackMult = 1.4;
+			this.attackMult = 1.25;
 		} else if (terrainType.equals(terrainTypes.SWAMP)) {
 			this.movementBonus = -1;
-			this.attackMult = .5;
+			this.attackMult = .75;
 		} else if (terrainType.equals(terrainTypes.FIELD)) {
 			this.movementBonus = 0;
 			this.attackMult = 1;
@@ -52,10 +52,6 @@ public class Tile {
 	/**
 	 * Found a city on this tile. Returns false if failed.
 	 *
-	 * TODO: This code does not interact with settlers correctly and needs to be
-	 * updated depending on how Tim wants cities to work. Should the controller use
-	 * a settler charge then immediately call this, or should the settler do that?
-	 *
 	 * @param city city created by a settler attempting to be made on this tile.
 	 * @return boolean representing whether city founding was a success
 	 */
@@ -63,11 +59,22 @@ public class Tile {
 		if (this.ownerCity == null) { // && this.unitHere instanceOf Settler?
 			this.ownerCity = city;
 			this.isCityTile = true;
-			this.movementBonus = 0; // TODO: figure out bonuses for units in cities
-			this.attackMult = 1; // subject to change
+			this.movementBonus = 0;
+			this.attackMult = 1.5; // subject to change
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Check if a city owns this tile, and this tile owns a resource, so the city
+	 * should have access to the resource.
+	 * 
+	 */
+	public void checkForNewResource() {
+		if (this.ownerCity != null && resourceType != "" && resourceType != null) {
+			ownerCity.unlockUnit(resourceType);
+		}
 	}
 
 	/**

@@ -15,13 +15,12 @@ public class Scout extends Unit {
 	public Scout(Player player, Point coord) {
 		super(player, coord);
 		label = "Scout";
-		// TODO: Rebalance default values
-		HP = 50;
+		HP = 60;
 		maxHP = HP;
 		maxMovement = 4;
 		resetMovement();
 		sight = 4;
-		attackValue = 5;
+		attackValue = 15;
 	}
 
 
