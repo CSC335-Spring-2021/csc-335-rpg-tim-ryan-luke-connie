@@ -103,7 +103,7 @@ public class CivView extends Application implements Observer {
 		this.controller = new CivController(model);
 		this.spriteImages = new ArrayList<>();
 		this.hpBars = new ArrayList<>();
-
+		
 		model.addObserver(this);
 
 		// calculate derived constants (less spaghetti later on)
