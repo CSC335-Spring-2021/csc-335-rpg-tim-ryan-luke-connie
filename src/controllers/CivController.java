@@ -198,7 +198,7 @@ public class CivController {
 			moveFrom.setUnit(null); // unit gone
 			moveTo.setUnit(toMove); // successfully moves to new tile
 			toMove.move(cost + 1, newX, newY); // update costs and unit location
-			revealTiles(newX, newY); // reveal tiles around unit
+			revealTiles(toMove); // reveal tiles around unit
 		}
 		model.changeAndNotify();
 		return true;
@@ -211,11 +211,12 @@ public class CivController {
 	 * @param x int of x location middle tile
 	 * @param y int of y location middle tile
 	 */
-	private void revealTiles(int x, int y) {
-		for (int i = -1; i < 2; i++) {
-			for (int j = -1; j < 2; j++) {
-				int toRevealRow = x + i;
-				int toRevealCol = y + j;
+	private void revealTiles(Unit unit) {
+		int sight = unit.getSight();
+		for (int i = -sight; i <= sight; i++) {
+			for (int j = -sight; j <= sight; j++) {
+				int toRevealRow = unit.getX() + i;
+				int toRevealCol = unit.getY() + j;
 				Tile toRevealTile = getTileAt(toRevealRow, toRevealCol);
 				if (!toRevealTile.canSeeTile(curPlayer))
 					toRevealTile.revealTile(curPlayer);
