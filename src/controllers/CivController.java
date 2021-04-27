@@ -261,20 +261,14 @@ public class CivController {
 	 * @param x        int representing the x location of new unit
 	 * @param y        int representing the y location of new unit
 	 * @param unitType String representing the type of unit to create
-	 * @return true if the unit was successfully created and added to the board,
-	 *         false otherwise
 	 */
-	public boolean createUnit(int x, int y, String unitType) {
+	public void createUnit(int x, int y, String unitType) {
 		Tile tile = getTileAt(x, y);
 		City city = tile.getOwnerCity();
-		if (tile.getUnit() == null) {
-			Unit newUnit = city.produceUnit(unitType);
-			tile.setUnit(newUnit);
-			curPlayer.addUnit(newUnit);
-			model.changeAndNotify();
-			return true;
-		}
-		return false;
+		Unit newUnit = city.produceUnit(unitType);
+		tile.setUnit(newUnit);
+		curPlayer.addUnit(newUnit);
+		model.changeAndNotify();
 	}
 
 	/**
