@@ -159,6 +159,7 @@ public class CivController {
 			// this will make it so AI players can select a unit from this list and wait
 			// until they can create it
 		}
+		model.changeAndNotify();
 		endTurn();
 	}
 
@@ -197,7 +198,7 @@ public class CivController {
 			moveFrom.setUnit(null); // unit gone
 			moveTo.setUnit(toMove); // successfully moves to new tile
 			toMove.move(cost + 1, newX, newY); // update costs and unit location
-			revealTiles(newX, newY); // reveal tiles around unit
+			revealTiles(toMove); // reveal tiles around unit
 		}
 		model.changeAndNotify();
 		return true;
@@ -210,11 +211,12 @@ public class CivController {
 	 * @param x int of x location middle tile
 	 * @param y int of y location middle tile
 	 */
-	private void revealTiles(int x, int y) {
-		for (int i = -1; i < 2; i++) {
-			for (int j = -1; j < 2; j++) {
-				int toRevealRow = x + i;
-				int toRevealCol = y + j;
+	private void revealTiles(Unit unit) {
+		int sight = unit.getSight();
+		for (int i = -sight; i <= sight; i++) {
+			for (int j = -sight; j <= sight; j++) {
+				int toRevealRow = unit.getX() + i;
+				int toRevealCol = unit.getY() + j;
 				Tile toRevealTile = getTileAt(toRevealRow, toRevealCol);
 				if (!toRevealTile.canSeeTile(curPlayer))
 					toRevealTile.revealTile(curPlayer);
@@ -246,6 +248,11 @@ public class CivController {
 		double counterattack = defender.getAttackValue();
 		counterattack *= defenderTile.getAttackModifier();
 		attacker.takeAttack(counterattack);
+		if (attacker.getHP() <= 0) {
+			curPlayer.removeUnit(attacker);
+			getTileAt(attacker.getX(), attacker.getY()).setUnit(null);
+			return false;
+		}
 		attacker.move(attacker.getMovement(), attacker.getX(), attacker.getY()); // failed move
 		return false;
 	}
@@ -323,11 +330,13 @@ public class CivController {
 				int newX = curX + i, newY = curY + j;
 				int movement = unit.getMovement();
 				Tile moveTo = getTileAt(newX, newY);
-				int cost = -moveTo.getMovementModifier();
-				if (cost + 1 <= movement) {
-					Unit unitOnMoveTile = moveTo.getUnit();
-					if (unitOnMoveTile == null || unitOnMoveTile.getOwner() != curPlayer)
-						moves.add(new int[] { newX, newY });
+				if (moveTo != null) {
+					int cost = -moveTo.getMovementModifier();
+					if (cost + 1 <= movement) {
+						Unit unitOnMoveTile = moveTo.getUnit();
+						if (unitOnMoveTile == null || unitOnMoveTile.getOwner() != curPlayer)
+							moves.add(new int[] { newX, newY });
+					}
 				}
 			}
 		}
