@@ -17,7 +17,6 @@ public class Settler extends Unit {
 	public Settler(Player player, Point coord) {
 		super(player, coord);
 		label = "Settler";
-		// TODO: Rebalance settler defaults
 		HP = 1;
 		maxHP = HP;
 		maxMovement = 2;

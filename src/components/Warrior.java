@@ -15,13 +15,12 @@ public class Warrior extends Unit {
 	public Warrior(Player player, Point coord) {
 		super(player, coord);
 		label = "Warrior";
-		// TODO: Rebalance default values
 		HP = 100;
 		maxHP = HP;
 		maxMovement = 2;
 		resetMovement();
 		sight = 2;
-		attackValue = 10;
+		attackValue = 25;
 	}
 
 }

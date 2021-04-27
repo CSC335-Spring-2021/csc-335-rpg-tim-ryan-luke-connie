@@ -68,10 +68,10 @@ public class CivBoard {
 		i = 0;
 		j = 0;
 		while (i < size) { // set border to water
-			board[i][0] = new Tile(Tile.terrainTypes.WATER);
-			board[0][i] = new Tile(Tile.terrainTypes.WATER);
-			board[size - 1][i] = new Tile(Tile.terrainTypes.WATER);
-			board[i][size - 1] = new Tile(Tile.terrainTypes.WATER);
+			board[i][0] = new Tile(Tile.terrainTypes.WATER, "");
+			board[0][i] = new Tile(Tile.terrainTypes.WATER, "");
+			board[size - 1][i] = new Tile(Tile.terrainTypes.WATER, "");
+			board[i][size - 1] = new Tile(Tile.terrainTypes.WATER, "");
 			i++;
 		}
 		this.tiles = board;

@@ -1,10 +1,16 @@
 package controllers;
 
-import components.*;
+import java.awt.Point;
+import java.util.HashSet;
+
+import components.City;
+import components.Scout;
+import components.Settler;
+import components.Tile;
+import components.Unit;
+import components.Warrior;
 import models.CivModel;
 import models.Player;
-
-import java.awt.*;
 
 /**
  * Provides methods to calculate data about game state or act as a computer
@@ -25,40 +31,58 @@ public class CivController {
 	 */
 	public CivController(CivModel model) {
 		this.model = model;
+		curPlayer = model.getCurPlayer();
 	}
 
-
 	/**
-	 * Configure the map with the units that should exist at the start of a new game.
+	 * Configure the map with the units that should exist at the start of a new
+	 * game.
+	 * 
+	 * Note that for testing, you have to add each unit/city to the current player.
+	 * 
+	 * For testing -- delete this later
 	 */
 	public void placeStartingUnits() {
 		Settler settler = new Settler(model.getCurPlayer(), new Point(9, 9));
 		model.getTileAt(9, 9).setUnit(settler);
+		curPlayer.addUnit(settler);
 
 		Scout scout = new Scout(model.getCurPlayer(), new Point(10, 9));
 		model.getTileAt(10, 9).setUnit(scout);
+		curPlayer.addUnit(scout);
 
 		Warrior warrior = new Warrior(model.getCurPlayer(), new Point(11, 12));
 		model.getTileAt(11, 12).setUnit(warrior);
-
-		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(14, 12));
-		model.getTileAt(14, 12).setUnit(warrior2);
+		curPlayer.addUnit(warrior);
 
 		City city = new City(model.getCurPlayer(), 10, 10);
 		model.getTileAt(10, 10).foundCity(city);
+		curPlayer.addCity(city);
+
+		// second player
+		model.nextPlayer();
+		curPlayer = model.getCurPlayer();
+
+		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(14, 12));
+		model.getTileAt(14, 12).setUnit(warrior2);
+		curPlayer.addUnit(warrior2);
 
 		City city2 = new City(model.getCurPlayer(), 14, 12);
 		model.getTileAt(14, 12).foundCity(city2);
+		city2.takeAttack(100);
+		curPlayer.addCity(city2);
+
+		// go back to player 1 to start the game
+		model.nextPlayer();
 	}
 
-
 	/**
-	 * Returns the Tile located at the board location row, col
+	 * Returns the Tile located at the board location x, y
 	 *
-	 * @param row int for row of board positionn
-	 * @param col int for col of board position
+	 * @param x int for x of board positionn
+	 * @param y int for y of board position
 	 *
-	 * @return the Tile at row,col on the board
+	 * @return the Tile at x,y on the board
 	 *
 	 */
 	public Tile getTileAt(int x, int y) {
@@ -76,8 +100,10 @@ public class CivController {
 	 */
 	public void startTurn() {
 		curPlayer = model.getCurPlayer();
-		for (Unit u : curPlayer.getUnits())
+		for (Unit u : curPlayer.getUnits()) {
 			u.resetMovement();
+			u.healUnit();
+		}
 		for (City c : curPlayer.getCities())
 			c.cityIncrement();
 		if (!curPlayer.isHuman())
@@ -104,51 +130,73 @@ public class CivController {
 	}
 
 	/**
-	 * does all the computer turn's AI stuff
+	 * Perform AI turns
+	 *
 	 */
 	public void computerTurn() {
-		// TODO AI logic
+		int firstFew = 2;
+		for (Unit u : curPlayer.getUnits()) {
+			if (u instanceof Settler) {
+				// move towards resource, if near, found city, if no resources, cry
+			}
+			if (firstFew > 0) {
+				// hang out around your cities
+			}
+			// unit is not one of the first few in the list, and is not a settler:
+			// move towards enemy cities, if a unit is within attack range, hit him
+
+			// try to avoid swamps if possible, but maybe this is ok
+
+			firstFew--;
+		}
+		for (City c : curPlayer.getCities()) {
+			// Manage production - there are two good options as I see it
+
+			// 1: Randomly select a unit type, if it cant make it, save up until it can.
+			// have a max number of settlers to make sure things dont get stupid.
+
+			// 2: I can hard code a List to go with every city, and shuffle it
+			// this will make it so AI players can select a unit from this list and wait
+			// until they can create it
+		}
 		endTurn();
 	}
 
 	/**
 	 * Moves a unit from its old location to the new player-specified location.
 	 *
-	 * Unit moves one tile at a time
+	 * Unit moves one tile at a time. If enemy Unit or city on the location to move
+	 * to, the move is an attack.
 	 *
-	 * @param oldx int of old row location of unit
-	 * @param oldy int of old col location of unit
-	 * @param newx int of new row location of unit
-	 * @param newy int of new col location of unit
+	 * @param toMove the Unit that is attempting a move/attack
+	 * @param newx   int of new x location of unit
+	 * @param newy   int of new y location of unit
 	 * @return true if the unit successfully moved/attacked, false otherwise
 	 */
-	public boolean moveUnit(int oldX, int oldY, int newX, int newY) {
+	public boolean moveUnit(Unit toMove, int newX, int newY) {
+		int oldX = toMove.getX(), oldY = toMove.getY();
 		Tile moveFrom = getTileAt(oldX, oldY);
-		Unit unit = moveFrom.getUnit(); // unit to move
-		if (unit == null)
-			return false;
-		int movement = unit.getMovement();
+		int movement = toMove.getMovement();
 		// this conditional checks that the unit is only moving 1 space
 		if (Math.abs(newX - oldX) > 1 || Math.abs(newY - oldY) > 1)
 			return false;
 		Tile moveTo = getTileAt(newX, newY);
-		int cost = moveTo.getMovementModifier();
+		int cost = -moveTo.getMovementModifier();
 		if (cost + 1 > movement)
 			return false;
 		Unit onTile = moveTo.getUnit();
 		boolean movesOnto = true;
 		if (onTile != null) { // unit exists here, attack it
+			if (onTile.getOwner().equals(curPlayer))
+				return false;
 			movesOnto = attack(moveFrom, moveTo);
-			cost = unit.getMovement() - 1; // have to deplete to if successful move
-		}
-		// eventually have to change the city check to isCityTile()
-		else if (moveTo.getOwnerCity() != null
-				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
+			cost = toMove.getMovement() - 1; // have to deplete to if successful move
+		} else if (moveTo.isCityTile() && !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, attack
 			movesOnto = attack(moveFrom, moveTo.getOwnerCity());
 		if (movesOnto) {
 			moveFrom.setUnit(null); // unit gone
-			moveTo.setUnit(unit); // successfully moves to new tile
-			unit.move(cost + 1, newX, newY); // update costs and unit location
+			moveTo.setUnit(toMove); // successfully moves to new tile
+			toMove.move(cost + 1, newX, newY); // update costs and unit location
 			revealTiles(newX, newY); // reveal tiles around unit
 		}
 		model.changeAndNotify();
@@ -159,8 +207,8 @@ public class CivController {
 	 * Set all the tiles in a 1-tile radius around the given location as revealed
 	 * for the current player.
 	 *
-	 * @param row int of row location middle tile
-	 * @param col int of col location middle tile
+	 * @param x int of x location middle tile
+	 * @param y int of y location middle tile
 	 */
 	private void revealTiles(int x, int y) {
 		for (int i = -1; i < 2; i++) {
@@ -191,7 +239,7 @@ public class CivController {
 		double attack = attacker.getAttackValue();
 		attack *= attackerTile.getAttackModifier();
 		defender.takeAttack(attack);
-		if (defender.getHP() < 0) {
+		if (defender.getHP() <= 0) {
 			defender.getOwner().removeUnit(defender);
 			return true;
 		}
@@ -219,8 +267,8 @@ public class CivController {
 		attack *= attackerTile.getAttackModifier();
 		defender.takeAttack(attack);
 		if (defender.getRemainingHP() <= 0) {
-			curPlayer.removeCity(defender);
 			Player lostACity = defender.getOwner();
+			lostACity.removeCity(defender);
 			if (lostACity.getCities().size() == 0) {
 				model.removePlayer(lostACity); // player has no cities left, remove from game
 			}
@@ -233,36 +281,31 @@ public class CivController {
 	 * Creates a unit on the given tile if the city has enough in its production
 	 * reserve to make that unit.
 	 *
-	 * View should pass the correct Tile object when a player tries to create a unit
-	 * (i.e., only an actual city Tile can produce a unit). Updates the tile so that
-	 * it has the new unit on it.
+	 * View should pass the correct x,y when a player tries to create a unit (i.e.,
+	 * only an actual city Tile can produce a unit). Updates the tile so that it has
+	 * the new unit on it.
 	 *
-	 * @param tile     the Tile (city) creating a unit
+	 * @param x        int representing the x location of new unit
+	 * @param y        int representing the y location of new unit
 	 * @param unitType String representing the type of unit to create
-	 * @return true if the unit was successfully created and added to the board,
-	 *         false otherwise
 	 */
-	public boolean createUnit(int x, int y, String unitType) {
+	public void createUnit(int x, int y, String unitType) {
 		Tile tile = getTileAt(x, y);
 		City city = tile.getOwnerCity();
-		if (city.getProductionReserve() >= Unit.unitCosts.get(unitType)) {
-			Unit newUnit = city.produceUnit(unitType);
-			tile.setUnit(newUnit);
-			curPlayer.addUnit(newUnit);
-			model.changeAndNotify();
-			return true;
-		}
-		return false;
+		Unit newUnit = city.produceUnit(unitType);
+		tile.setUnit(newUnit);
+		curPlayer.addUnit(newUnit);
+		model.changeAndNotify();
 	}
 
 	/**
-	 * Found a city on the Tile at row, col on the board
+	 * Found a city on the Tile at x, y on the board
 	 *
 	 * Adds city to the current player's list of cities as well. Assumes that this
 	 * was only called on a valid tile (Settler on the tile).
 	 *
-	 * @param row int of row location of new city
-	 * @param col int of col location of new city
+	 * @param x int of x location of new city
+	 * @param y int of y location of new city
 	 */
 	public void foundCity(int x, int y) {
 		Tile tile = getTileAt(x, y);
@@ -270,6 +313,25 @@ public class CivController {
 		City city = settler.foundCity();
 		tile.foundCity(city);
 		model.changeAndNotify();
+	}
+
+	public HashSet<int[]> getValidMoves(Unit unit) {
+		HashSet<int[]> moves = new HashSet<int[]>();
+		int curX = unit.getX(), curY = unit.getY();
+		for (int i = -1; i < 2; i++) {
+			for (int j = -1; j < 2; j++) {
+				int newX = curX + i, newY = curY + j;
+				int movement = unit.getMovement();
+				Tile moveTo = getTileAt(newX, newY);
+				int cost = -moveTo.getMovementModifier();
+				if (cost + 1 <= movement) {
+					Unit unitOnMoveTile = moveTo.getUnit();
+					if (unitOnMoveTile == null || unitOnMoveTile.getOwner() != curPlayer)
+						moves.add(new int[] { newX, newY });
+				}
+			}
+		}
+		return moves;
 	}
 
 }
