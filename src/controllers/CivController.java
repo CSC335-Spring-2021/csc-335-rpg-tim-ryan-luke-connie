@@ -248,6 +248,11 @@ public class CivController {
 		double counterattack = defender.getAttackValue();
 		counterattack *= defenderTile.getAttackModifier();
 		attacker.takeAttack(counterattack);
+		if (attacker.getHP() <= 0) {
+			curPlayer.removeUnit(attacker);
+			getTileAt(attacker.getX(), attacker.getY()).setUnit(null);
+			return false;
+		}
 		attacker.move(attacker.getMovement(), attacker.getX(), attacker.getY()); // failed move
 		return false;
 	}
@@ -325,11 +330,13 @@ public class CivController {
 				int newX = curX + i, newY = curY + j;
 				int movement = unit.getMovement();
 				Tile moveTo = getTileAt(newX, newY);
-				int cost = -moveTo.getMovementModifier();
-				if (cost + 1 <= movement) {
-					Unit unitOnMoveTile = moveTo.getUnit();
-					if (unitOnMoveTile == null || unitOnMoveTile.getOwner() != curPlayer)
-						moves.add(new int[] { newX, newY });
+				if (moveTo != null) {
+					int cost = -moveTo.getMovementModifier();
+					if (cost + 1 <= movement) {
+						Unit unitOnMoveTile = moveTo.getUnit();
+						if (unitOnMoveTile == null || unitOnMoveTile.getOwner() != curPlayer)
+							moves.add(new int[] { newX, newY });
+					}
 				}
 			}
 		}
