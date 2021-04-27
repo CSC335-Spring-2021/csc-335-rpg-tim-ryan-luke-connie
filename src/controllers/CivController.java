@@ -93,6 +93,13 @@ public class CivController {
 		return model.getTileAt(x, y);
 	}
 
+	public void startGame() {
+		// place starting Settlers using model getStartingCoords
+		// remember to loop through the players until back to #1
+		startTurn();
+		model.changeAndNotify();
+	}
+
 	/**
 	 * Starts a player's turn by doing all of the "housekeeping" automatic game
 	 * events for a player turn
@@ -103,8 +110,6 @@ public class CivController {
 	 * @param player
 	 */
 	public void startTurn() {
-		if (gameOver())
-			System.exit(0);
 		curPlayer = model.getCurPlayer();
 		for (Unit u : curPlayer.getUnits()) {
 			u.resetMovement();
@@ -122,11 +127,11 @@ public class CivController {
 	 * will update the curPlayer for when the next turn begins.
 	 */
 	public void endTurn() {
-		boolean automaticStart = !curPlayer.isHuman();
+		if (gameOver())
+			model.changeAndNotify();
 		model.nextPlayer();
+		startTurn();
 		model.changeAndNotify();
-		if (automaticStart && !gameOver())
-			startTurn();
 	}
 
 	/**
@@ -311,6 +316,15 @@ public class CivController {
 	 * @param c computer city attempting to create units
 	 */
 	private void computerCityActions(City c) {
+		Tile tile = getTileAt(c.getX(), c.getY());
+		Unit unit = tile.getUnit();
+		// if unit on this city, move it out
+		if (unit != null) {
+			HashSet<int[]> validMoves = getValidMoves(unit);
+			Iterator<int[]> iterator = validMoves.iterator();
+			int[] move = iterator.next();
+			moveUnit(unit, move[0], move[1]);
+		}
 		createUnit(c.getX(), c.getY(), "Warrior");
 	}
 
@@ -394,7 +408,7 @@ public class CivController {
 		defender.takeAttack(attack);
 		if (defender.getHP() <= 0) {
 			defender.getOwner().removeUnit(defender);
-			return true;
+			return !defenderTile.isCityTile();
 		}
 		double counterattack = defender.getAttackValue();
 		counterattack *= defenderTile.getAttackModifier();
@@ -452,7 +466,7 @@ public class CivController {
 	public boolean createUnit(int x, int y, String unitType) {
 		Tile tile = getTileAt(x, y);
 		City city = tile.getOwnerCity();
-		if (city.getProductionReserve() >= Unit.unitCosts.get(unitType)) {
+		if (city.getProductionReserve() >= Unit.unitCosts.get(unitType) && tile.getUnit() == null) {
 			Unit newUnit = city.produceUnit(unitType);
 			tile.setUnit(newUnit);
 			curPlayer.addUnit(newUnit);
@@ -484,6 +498,16 @@ public class CivController {
 		return false;
 	}
 
+	/**
+	 * Returns a set of all the valid moves that the unit can currently make.
+	 * 
+	 * A unit can move onto a tile if it has enough movement left based on the cost
+	 * of moving (1) and the movement modifier for the tile. A unit can "move" onto
+	 * an tile with an enemy unit but cannot move onto a tile with a friendly unit.
+	 * 
+	 * @param unit the Unit whose valid moves are to be retrieved
+	 * @return HashSet of int[]s representing all the valid moves for the given unit
+	 */
 	public HashSet<int[]> getValidMoves(Unit unit) {
 		HashSet<int[]> moves = new HashSet<int[]>();
 		int curX = unit.getX(), curY = unit.getY();
