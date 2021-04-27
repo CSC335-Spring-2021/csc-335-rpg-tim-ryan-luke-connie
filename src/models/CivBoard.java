@@ -47,7 +47,7 @@ public class CivBoard {
 						board[i][j] = new Tile(Tile.terrainTypes.SWAMP,"");
 				}
 				else if (type <= 2  && (isTopCorner || isBottomCorner)) { 
-					board[i][j] = new Tile(Tile.terrainTypes.WATER);
+					board[i][j] = new Tile(Tile.terrainTypes.WATER, "");
 				}
 				else if (type > 3 && isMiddleStrip) { // diagonal strip down the middle is mostly hills
 					if (resource)
