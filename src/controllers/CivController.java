@@ -67,6 +67,10 @@ public class CivController {
 		model.getTileAt(14, 12).setUnit(warrior2);
 		curPlayer.addUnit(warrior2);
 
+		Settler settler2 = new Settler(model.getCurPlayer(), new Point(10, 12));
+		model.getTileAt(10, 12).setUnit(settler2);
+		curPlayer.addUnit(settler2);
+
 		City city2 = new City(model.getCurPlayer(), 14, 12);
 		model.getTileAt(14, 12).foundCity(city2);
 		city2.takeAttack(100);
@@ -116,8 +120,11 @@ public class CivController {
 	 * will update the curPlayer for when the next turn begins.
 	 */
 	public void endTurn() {
+		boolean automaticStart = !curPlayer.isHuman();
 		model.nextPlayer();
 		model.changeAndNotify();
+		if (automaticStart)
+			startTurn();
 	}
 
 	/**
@@ -129,26 +136,15 @@ public class CivController {
 		return model.numPlayers() == 1;
 	}
 
+	public boolean isHumanTurn() {
+		return curPlayer.isHuman();
+	}
+
 	/**
 	 * Perform AI turns
 	 *
 	 */
 	public void computerTurn() {
-		int firstFew = 2;
-		for (Unit u : curPlayer.getUnits()) {
-			if (u instanceof Settler) {
-				// move towards resource, if near, found city, if no resources, cry
-			}
-			if (firstFew > 0) {
-				// hang out around your cities
-			}
-			// unit is not one of the first few in the list, and is not a settler:
-			// move towards enemy cities, if a unit is within attack range, hit him
-
-			// try to avoid swamps if possible, but maybe this is ok
-
-			firstFew--;
-		}
 		for (City c : curPlayer.getCities()) {
 			// Manage production - there are two good options as I see it
 
@@ -159,8 +155,80 @@ public class CivController {
 			// this will make it so AI players can select a unit from this list and wait
 			// until they can create it
 		}
+		int firstFew = 2;
+		for (Unit u : curPlayer.getUnits()) {
+			if (u instanceof Settler) {
+				computerSettlerActions((Settler) u);
+			}
+			// these ones are defending the city
+			if (firstFew > 0) {
+				computerDefenderActions(u);
+				firstFew--;
+			} else {
+				// move towards enemy city/attack it
+				computerAttackerActions(u);
+			}
+		}
 		model.changeAndNotify();
 		endTurn();
+	}
+
+	/**
+	 * Actions for computer's settlers. Try to found a city as soon as possible.
+	 * Otherwise, move randomly and avoid trying to attack.
+	 * 
+	 * @param s the Settler that the computer player is controlling
+	 */
+	private void computerSettlerActions(Settler s) {
+		boolean founded = foundCity(s.getX(), s.getY()); // try to found a city
+		if (!founded) {
+			HashSet<int[]> validMoves = getValidMoves(s);
+			boolean moved = true;
+			while (validMoves.size() != 0 && moved) { // continue moving while able
+				moved = false;
+				for (int[] move : validMoves) { // random set of moves
+					if (getTileAt(move[0], move[1]).getUnit() == null) { // don't want to attack
+						moveUnit(s, move[0], move[1]);
+						moved = true;
+						break;
+					}
+				}
+				validMoves = getValidMoves(s);
+			}
+		}
+	}
+
+	/**
+	 * Actions that the computer takes for the first two non-settler units. These
+	 * units remain close to the city and defend it against attackers. They move out
+	 * of the city if there is no enemy attacking. Otherwise, they just don't move.
+	 * 
+	 * @param u
+	 */
+	private void computerDefenderActions(Unit u) {
+		HashSet<int[]> validMoves = getValidMoves(u);
+		for (int[] move : validMoves) { // random set of moves
+			if (getTileAt(move[0], move[1]).getUnit() != null) { // attack enemy unit
+				moveUnit(u, move[0], move[1]);
+				break;
+			}
+		}
+		// move the unit out of the city 1 space if there is no enemy attacking
+		if (getTileAt(u.getX(), u.getY()).isCityTile()) {
+			validMoves = getValidMoves(u);
+			for (int[] move : validMoves) { // random set of moves
+				moveUnit(u, move[0], move[1]);
+				break;
+			}
+		}
+	}
+
+	private void computerAttackerActions(Unit u) {
+		for (int i = 0; i < model.getSize(); i++) {
+			for (int j = 0; j < model.getSize(); j++) {
+
+			}
+		}
 	}
 
 	/**
@@ -314,13 +382,18 @@ public class CivController {
 	 *
 	 * @param x int of x location of new city
 	 * @param y int of y location of new city
+	 * @return true if a city was sucessfully founded; false otherwise
 	 */
-	public void foundCity(int x, int y) {
+	public boolean foundCity(int x, int y) {
 		Tile tile = getTileAt(x, y);
 		Settler settler = (Settler) tile.getUnit();
-		City city = settler.foundCity();
-		tile.foundCity(city);
-		model.changeAndNotify();
+		if (settler.getCharges() > 0 && tile.getOwnerCity() == null) {
+			City city = settler.foundCity();
+			tile.foundCity(city);
+			model.changeAndNotify();
+			return true;
+		}
+		return false;
 	}
 
 	public HashSet<int[]> getValidMoves(Unit unit) {
