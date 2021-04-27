@@ -26,6 +26,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -131,12 +132,6 @@ public class CivView extends Application implements Observer {
 		endTurnButton.setOnMouseClicked(ev -> {
 			if (controller.isHumanTurn()) {
 				controller.endTurn();
-				if (!controller.gameOver())
-					controller.startTurn();
-				else {
-					// TODO: endgame stuff
-					System.out.println("game over");
-				}
 			}
 		});
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
@@ -145,7 +140,7 @@ public class CivView extends Application implements Observer {
 				ev.consume();
 			}
 		});
-		controller.startTurn(); // begin the game
+		controller.startGame(); // begin the game
 		stage.show();
 	}
 
@@ -164,6 +159,13 @@ public class CivView extends Application implements Observer {
 			selectUnit(selectedUnit);
 		if (selectedCity != null)
 			selectCity(selectedCity);
+		// add endgame
+		if (controller.gameOver()) {
+			Alert endgame = new Alert(Alert.AlertType.INFORMATION);
+			endgame.setContentText("game over");
+			endgame.showAndWait();
+			System.exit(0);
+		}
 	}
 
 	/**

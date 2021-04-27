@@ -93,6 +93,13 @@ public class CivController {
 		return model.getTileAt(x, y);
 	}
 
+	public void startGame() {
+		// place starting Settlers using model getStartingCoords
+		// remember to loop through the players until back to #1
+		startTurn();
+		model.changeAndNotify();
+	}
+
 	/**
 	 * Starts a player's turn by doing all of the "housekeeping" automatic game
 	 * events for a player turn
@@ -103,8 +110,6 @@ public class CivController {
 	 * @param player
 	 */
 	public void startTurn() {
-		if (gameOver())
-			System.exit(0);
 		curPlayer = model.getCurPlayer();
 		for (Unit u : curPlayer.getUnits()) {
 			u.resetMovement();
@@ -122,11 +127,11 @@ public class CivController {
 	 * will update the curPlayer for when the next turn begins.
 	 */
 	public void endTurn() {
-		boolean automaticStart = !curPlayer.isHuman();
+		if (gameOver())
+			model.changeAndNotify();
 		model.nextPlayer();
+		startTurn();
 		model.changeAndNotify();
-		if (automaticStart && !gameOver())
-			startTurn();
 	}
 
 	/**
