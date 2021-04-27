@@ -100,8 +100,10 @@ public class CivController {
 	 */
 	public void startTurn() {
 		curPlayer = model.getCurPlayer();
-		for (Unit u : curPlayer.getUnits())
+		for (Unit u : curPlayer.getUnits()) {
 			u.resetMovement();
+			u.healUnit();
+		}
 		for (City c : curPlayer.getCities())
 			c.cityIncrement();
 		if (!curPlayer.isHuman())
