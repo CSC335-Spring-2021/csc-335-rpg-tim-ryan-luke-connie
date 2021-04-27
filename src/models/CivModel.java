@@ -1,5 +1,6 @@
 package models;
 
+import java.io.File;
 import java.util.Observable;
 
 import components.Tile;
@@ -27,10 +28,13 @@ public class CivModel extends Observable {
 	public CivModel(int playerCount) {
 		numPlayers = playerCount;
 		round = 0;
-		this.board = new CivBoard(20);
+		File f = new File(".");
+		String[] files = f.list();
+		this.board = new CivBoard("./src/models/Map1.txt");
 		head = new Node(new Player(1)); // make a human player
 		curPlayer = head;
 		if (playerCount == 1) { // if singleplayer
+			numPlayers = 2;
 			singlePlayer = true;
 			Node cpu = new Node(new Player(0)); // make a cpu player
 			head.next = cpu;
