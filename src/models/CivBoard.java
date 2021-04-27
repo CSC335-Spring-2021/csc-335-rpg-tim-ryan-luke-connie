@@ -2,6 +2,7 @@ package models;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -20,6 +21,7 @@ public class CivBoard {
 
 	public Tile[][] tiles;
 	public int size;
+	private ArrayList<int[]> playerStartingCoords;
 
 	/**
 	 * Constructor for our board
@@ -46,8 +48,10 @@ public class CivBoard {
 				if (type > 2  && (isTopCorner || isBottomCorner)){// top left and bot. right
 					if (resource) 
 						board[i][j] = new Tile(Tile.terrainTypes.SWAMP,"horse"); // corners are swamp or water
-					else
+					else if (type < 8)
 						board[i][j] = new Tile(Tile.terrainTypes.SWAMP,"");
+					else
+						board[i][j] = new Tile(Tile.terrainTypes.FIELD,"");
 				}
 				else if (type <= 2  && (isTopCorner || isBottomCorner)) { 
 					board[i][j] = new Tile(Tile.terrainTypes.WATER, "");
@@ -122,7 +126,6 @@ public class CivBoard {
 			else
 				resource = "wheat";
 			board[j][i] = new Tile(type, resource);
-			System.out.println("i = " + i + " j = " + j + " type = " + type);
 			j++;
 			if (j == size) {
 				i++;
