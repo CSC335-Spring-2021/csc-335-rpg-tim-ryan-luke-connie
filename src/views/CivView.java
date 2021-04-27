@@ -92,7 +92,6 @@ public class CivView extends Application implements Observer {
 	private int isoBoardWidth;
 	private int isoBoardHeight;
 
-
 	/**
 	 * Build the UI, start the game, and regulate game flow.
 	 *
@@ -100,7 +99,7 @@ public class CivView extends Application implements Observer {
 	 */
 	@Override
 	public void start(Stage stage) {
-		this.model = new CivModel(2);
+		this.model = new CivModel(1); // changed to test AI
 		this.controller = new CivController(model);
 		this.spriteImages = new ArrayList<>();
 		this.hpBars = new ArrayList<>();
@@ -130,12 +129,14 @@ public class CivView extends Application implements Observer {
 		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
 		mapCanvas.setOnMouseMoved(ev -> handleMapHover(ev));
 		endTurnButton.setOnMouseClicked(ev -> {
-			controller.endTurn();
-			if (!controller.gameOver())
-				controller.startTurn();
-			else {
-				// TODO: endgame stuff
-				System.out.println("game over");
+			if (controller.isHumanTurn()) {
+				controller.endTurn();
+				if (!controller.gameOver())
+					controller.startTurn();
+				else {
+					// TODO: endgame stuff
+					System.out.println("game over");
+				}
 			}
 		});
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
@@ -147,7 +148,6 @@ public class CivView extends Application implements Observer {
 		controller.startTurn(); // begin the game
 		stage.show();
 	}
-
 
 	/**
 	 * Update the UI when the model changes.
@@ -166,7 +166,6 @@ public class CivView extends Application implements Observer {
 			selectCity(selectedCity);
 	}
 
-
 	/**
 	 * Create and assemble the game UI.
 	 *
@@ -184,7 +183,8 @@ public class CivView extends Application implements Observer {
 		mapScrollContainer.getStyleClass().add("map");
 		window.getChildren().add(mapScrollContainer);
 
-		// pane to contain the map canvas. This interim layer lets us add padding without screwing
+		// pane to contain the map canvas. This interim layer lets us add padding
+		// without screwing
 		// up canvas click math, etc
 		mapElementContainer = new Pane();
 		mapElementContainer.setPadding(new Insets(0, SCROLL_GUTTER, SCROLL_GUTTER, 0));
@@ -220,7 +220,8 @@ public class CivView extends Application implements Observer {
 		mapElementContainer.getChildren().add(mapOverlayContainer);
 
 		try {
-			// store hover cursor image for later so we don't have to keep loading and unloading it
+			// store hover cursor image for later so we don't have to keep loading and
+			// unloading it
 			Image hoverCursorImage = new Image(new FileInputStream("src/assets/tiles/hover.png"));
 			mapHoverCursor = new ImageView(hoverCursorImage);
 			mapHoverCursor.setFitWidth(TILE_SIZE);
@@ -245,7 +246,8 @@ public class CivView extends Application implements Observer {
 			mapSelectedTransition.setAutoReverse(true);
 			mapSelectedTransition.setNode(mapSelectedCursor);
 
-			// and, finally, cache the in-range indicator image. We'll construct new ImageViews for
+			// and, finally, cache the in-range indicator image. We'll construct new
+			// ImageViews for
 			// it upon use
 			validMarker = new Image(new FileInputStream("src/assets/tiles/valid.png"));
 
@@ -275,7 +277,6 @@ public class CivView extends Application implements Observer {
 		window.getChildren().add(endTurnButton);
 	}
 
-
 	/**
 	 * Wipe and render the entire sprite layer.
 	 */
@@ -298,11 +299,11 @@ public class CivView extends Application implements Observer {
 		}
 	}
 
-
 	/**
 	 * Render a single city to the map.
 	 *
-	 * @param city The city to render. Position will be derived from the City's stored coords
+	 * @param city The city to render. Position will be derived from the City's
+	 *             stored coords
 	 */
 	private void renderCity(City city) {
 		int[] coords = gridToIso(city.getX(), city.getY());
@@ -321,11 +322,11 @@ public class CivView extends Application implements Observer {
 		}
 	}
 
-
 	/**
 	 * Render a single unit to the map.
 	 *
-	 * @param unit The unit to render. Position will be derived from the Unit's stored coords
+	 * @param unit The unit to render. Position will be derived from the Unit's
+	 *             stored coords
 	 */
 	private void renderUnit(Unit unit) {
 		int[] coords = gridToIso(unit.getX(), unit.getY());
@@ -351,7 +352,6 @@ public class CivView extends Application implements Observer {
 		renderSpriteHPBar(unit.getHP(), unit.getMaxHP(), coords[0], coords[1]);
 	}
 
-
 	/**
 	 * Place an inline HP bar above a certain map square
 	 *
@@ -369,7 +369,6 @@ public class CivView extends Application implements Observer {
 		hpBars.add(hpBar);
 	}
 
-
 	/**
 	 * Clear all currently rendered sprites.
 	 */
@@ -380,13 +379,13 @@ public class CivView extends Application implements Observer {
 		hpBars.clear();
 	}
 
-
 	/**
 	 * Center the map on a particular board index.
 	 *
 	 * @param x       The x index of the board grid to center on
 	 * @param y       The y index of the board grid to center on
-	 * @param animate True if this refocus should be smooth/animated, false if it should be instant
+	 * @param animate True if this refocus should be smooth/animated, false if it
+	 *                should be instant
 	 */
 	private void focusMap(int x, int y, boolean animate) {
 		int[] coords = gridToIso(x, y);
@@ -405,7 +404,6 @@ public class CivView extends Application implements Observer {
 			mapScrollContainer.setVvalue(targetV);
 		}
 	}
-
 
 	/**
 	 * Handle an arbitrary click on the map at any time.
@@ -430,17 +428,21 @@ public class CivView extends Application implements Observer {
 		if (tile.isCityTile())
 			targetCity = tile.getOwnerCity();
 
-		// if a friendly unit is already selected, we'll have different behaviors depending on if
+		// if a friendly unit is already selected, we'll have different behaviors
+		// depending on if
 		// the click was on an enemy unit in range, another friendly unit, or neither
 		if (selectedUnit != null) {
-			// NOTE: controller does checking for moves; the move function should take care of
-			// city, enemy, and empty tile cases and returns true for successful move/attack. Just
+			// NOTE: controller does checking for moves; the move function should take care
+			// of
+			// city, enemy, and empty tile cases and returns true for successful
+			// move/attack. Just
 			// deselect if unsuccessful choice.
 			if (!controller.moveUnit(selectedUnit, space[0], space[1])) {
 				deselect();
 
-			// if move was successful and we're moving out of a city, make sure focus is only on
-			// the unit
+				// if move was successful and we're moving out of a city, make sure focus is
+				// only on
+				// the unit
 			} else if (selectedCity != null) {
 				Unit tmp = selectedUnit;
 				deselect();
@@ -448,9 +450,11 @@ public class CivView extends Application implements Observer {
 			}
 		}
 
-		// if only a friendly city is already selected, another map click always deselects it. We
+		// if only a friendly city is already selected, another map click always
+		// deselects it. We
 		// might reselect it again right after, but don't care for now
-		if (selectedCity != null && selectedUnit == null) deselect();
+		if (selectedCity != null && selectedUnit == null)
+			deselect();
 
 		// select a new or different friendly unit
 		if (targetUnit != null && targetUnit.getOwner() == model.getCurPlayer()) {
@@ -463,7 +467,6 @@ public class CivView extends Application implements Observer {
 		}
 	}
 
-
 	/**
 	 * Give visual indication of hover within the map.
 	 *
@@ -472,7 +475,8 @@ public class CivView extends Application implements Observer {
 	private void handleMapHover(MouseEvent ev) {
 		mapHoverCursor.setVisible(false);
 
-		// "snap" to a grid space by getting its grid coord and re-translating to iso coords
+		// "snap" to a grid space by getting its grid coord and re-translating to iso
+		// coords
 		int[] space = isoToGrid(ev.getX(), ev.getY());
 
 		// reject events in the negative space left by the iso view
@@ -487,9 +491,9 @@ public class CivView extends Application implements Observer {
 		mapHoverCursor.setVisible(true);
 	}
 
-
 	/**
-	 * Deselect the currently selected unit and/or city. Also hides the respective detail pane(s)
+	 * Deselect the currently selected unit and/or city. Also hides the respective
+	 * detail pane(s)
 	 */
 	private void deselect() {
 		selectedUnit = null;
@@ -506,10 +510,10 @@ public class CivView extends Application implements Observer {
 		mapOverlayContainer.getChildren().clear();
 	}
 
-
 	/**
-	 * Select a unit. This involves marking said unit as selected, centering the map on it, and
-	 * building and showing a detail pane that displays the unit's properties.
+	 * Select a unit. This involves marking said unit as selected, centering the map
+	 * on it, and building and showing a detail pane that displays the unit's
+	 * properties.
 	 *
 	 * @param unit The Unit to select
 	 */
@@ -567,7 +571,8 @@ public class CivView extends Application implements Observer {
 
 		// show pane
 		unitPane.setVisible(true);
-		// javafx doesn't calculate this vbox's height correctly, so magic number for now
+		// javafx doesn't calculate this vbox's height correctly, so magic number for
+		// now
 		unitPane.setLayoutY((WINDOW_HEIGHT - 230) / 2.0);
 
 		// add selection indicator
@@ -577,10 +582,10 @@ public class CivView extends Application implements Observer {
 		addRangeIndicators(selectedUnit);
 	}
 
-
 	/**
-	 * Select a city. This involves marking said city as selected, centering the map on it, and
-	 * building and showing a detail pane that displays the city's properties.
+	 * Select a city. This involves marking said city as selected, centering the map
+	 * on it, and building and showing a detail pane that displays the city's
+	 * properties.
 	 *
 	 * @param city The City to select
 	 */
@@ -655,7 +660,6 @@ public class CivView extends Application implements Observer {
 		selectTile(city.getX(), city.getY());
 	}
 
-
 	/**
 	 * Add a selection indicator to a tile and center the view on it.
 	 *
@@ -674,9 +678,9 @@ public class CivView extends Application implements Observer {
 		focusMap(x, y, true);
 	}
 
-
 	/**
-	 * Add an indicator to each tile that a given unit can currently move to and/or attack.
+	 * Add an indicator to each tile that a given unit can currently move to and/or
+	 * attack.
 	 *
 	 * @param unit The unit to indicate valid moves for
 	 */
@@ -687,7 +691,7 @@ public class CivView extends Application implements Observer {
 
 		for (int[] move : validMoves) {
 			int[] coords = gridToIso(move[0], move[1]);
-			System.out.println(coords[0] + " " + coords[1]);
+			// System.out.println(coords[0] + " " + coords[1]);
 			ImageView markerView = new ImageView(validMarker);
 			markerView.setX(coords[0]);
 			markerView.setY(coords[1]);
@@ -696,16 +700,18 @@ public class CivView extends Application implements Observer {
 		}
 	}
 
-
 	/**
-	 * Assemble a TextFlow with a common layout for figures and their associated labels.
+	 * Assemble a TextFlow with a common layout for figures and their associated
+	 * labels.
 	 *
-	 * @param label The label text to render
-	 * @param figure The primary figure value
-	 * @param max If the figure has a max value, pass it here. Otherwise, pass a negative number
-	 * @param disposition The disposition class to render ("positive", "neutral", or "negative") or
-	 *                    an empty string if not applicable
-	 * @return The assembled TextFlow object containing the data inside new Text nodes
+	 * @param label       The label text to render
+	 * @param figure      The primary figure value
+	 * @param max         If the figure has a max value, pass it here. Otherwise,
+	 *                    pass a negative number
+	 * @param disposition The disposition class to render ("positive", "neutral", or
+	 *                    "negative") or an empty string if not applicable
+	 * @return The assembled TextFlow object containing the data inside new Text
+	 *         nodes
 	 */
 	private TextFlow createLabeledFigure(String label, int figure, int max, String disposition) {
 		TextFlow result = new TextFlow();
@@ -734,7 +740,6 @@ public class CivView extends Application implements Observer {
 		return result;
 	}
 
-
 	/**
 	 * Create a standardized structure representing an HP bar.
 	 *
@@ -757,21 +762,22 @@ public class CivView extends Application implements Observer {
 		return result;
 	}
 
-
 	/**
-	 * Create and assemble the nodes necessary to display a 'build' button with associated costs,
-	 * for display on a city detail pane.
+	 * Create and assemble the nodes necessary to display a 'build' button with
+	 * associated costs, for display on a city detail pane.
 	 *
-	 * <p>Styles the button and labels depending on whether enough resources exist to build the
-	 * unit.
+	 * <p>
+	 * Styles the button and labels depending on whether enough resources exist to
+	 * build the unit.
 	 *
 	 * @param city      The city this would build to
 	 * @param label     The label to add to the button
 	 * @param popCost   The population cost that building this unit requires
 	 * @param pointCost The production point cost that building this unit requires
-	 * @return A two-element node array. The first element is the containing GridPane for the
-	 * entire row so it can be added to the layout. The second element is the created Button so
-	 * the calling method can attach an event listener to it
+	 * @return A two-element node array. The first element is the containing
+	 *         GridPane for the entire row so it can be added to the layout. The
+	 *         second element is the created Button so the calling method can attach
+	 *         an event listener to it
 	 */
 	private Node[] createCityBuildButton(City city, String label, int popCost, double pointCost) {
 		GridPane container = new GridPane();
@@ -819,21 +825,22 @@ public class CivView extends Application implements Observer {
 		return result;
 	}
 
-
 	/**
-	 * Get a serialized list of board coordinates in diagonal-traversal order starting from the
-	 * top-left of the board.
+	 * Get a serialized list of board coordinates in diagonal-traversal order
+	 * starting from the top-left of the board.
 	 *
-	 * <p>This is necessary because the board must be drawn back-to-front in order for perspective
-	 * overlapping to appear correct.
+	 * <p>
+	 * This is necessary because the board must be drawn back-to-front in order for
+	 * perspective overlapping to appear correct.
 	 *
-	 * @return A list of two-element int arrays, where the first int is the board x index and the
-	 * second is the board y index
+	 * @return A list of two-element int arrays, where the first int is the board x
+	 *         index and the second is the board y index
 	 */
 	private List<int[]> getDrawTraversal() {
 		List<int[]> result = new ArrayList<>();
 
-		// we'll start slices from each edge space on the left and bottom (one shared). The slice
+		// we'll start slices from each edge space on the left and bottom (one shared).
+		// The slice
 		// starting at the bottom-left corner will be the turning point
 		int diagonalSlices = model.getSize() * 2 - 1;
 		int mid = diagonalSlices / 2;
@@ -863,24 +870,25 @@ public class CivView extends Application implements Observer {
 		return result;
 	}
 
-
 	/**
-	 * Given a set of grid space coordinates, return the pixel coordinates of the tile in our
-	 * isometric rendering space.
+	 * Given a set of grid space coordinates, return the pixel coordinates of the
+	 * tile in our isometric rendering space.
 	 *
-	 * <p>The coordinates returned indicate the top-left bound of the iso space. Use in combination
-	 * with this class' TILE_SIZE and ISO_FACTOR constants to do additional math afterwards (like
-	 * finding the center point of the space, etc).
+	 * <p>
+	 * The coordinates returned indicate the top-left bound of the iso space. Use in
+	 * combination with this class' TILE_SIZE and ISO_FACTOR constants to do
+	 * additional math afterwards (like finding the center point of the space, etc).
 	 *
 	 * @param x The x index of the space in the map grid to find
 	 * @param y The y index of the space in the map grid to find
-	 * @return A two-element int array containing the x and y coordinates of the top-left pixel of
-	 * the input tile in iso space
+	 * @return A two-element int array containing the x and y coordinates of the
+	 *         top-left pixel of the input tile in iso space
 	 */
 	private int[] gridToIso(int x, int y) {
 		int[] result = new int[2];
 
-		// our origin point is [half of the real rendered width, 0] (the very top corner of the
+		// our origin point is [half of the real rendered width, 0] (the very top corner
+		// of the
 		// rendered board)
 		int originX = isoBoardWidth / 2;
 		result[0] = originX;
@@ -899,17 +907,20 @@ public class CivView extends Application implements Observer {
 		return result;
 	}
 
-
 	/**
 	 * Translate absolute pixel coordinates in the isometric display to grid spaces.
 	 *
-	 * <p>Note that returned indices may be outside the real bounds of the grid due to the natural
-	 * negative space that any isometric view has in the corners. Since this method doesn't
-	 * necessarily return "safe" indices, make sure to check.
+	 * <p>
+	 * Note that returned indices may be outside the real bounds of the grid due to
+	 * the natural negative space that any isometric view has in the corners. Since
+	 * this method doesn't necessarily return "safe" indices, make sure to check.
 	 *
-	 * @param x The horizontal pixel offset of the coordinate from the left edge of the canvas
-	 * @param y The vertical pixel offset of the coordinate from the top edge of the canvas
-	 * @return A two-element int array containing the x and y indices of the space in the grid
+	 * @param x The horizontal pixel offset of the coordinate from the left edge of
+	 *          the canvas
+	 * @param y The vertical pixel offset of the coordinate from the top edge of the
+	 *          canvas
+	 * @return A two-element int array containing the x and y indices of the space
+	 *         in the grid
 	 */
 	private int[] isoToGrid(double x, double y) {
 		int[] result = new int[2];
@@ -928,15 +939,17 @@ public class CivView extends Application implements Observer {
 		return result;
 	}
 
-
 	/**
 	 * Get a tile image for a terrain type.
 	 *
-	 * <p>Since there can be many tile choices for a given terrain type, this method chooses one
-	 * randomly. Don't expect the same image for the same terrain type each time.
+	 * <p>
+	 * Since there can be many tile choices for a given terrain type, this method
+	 * chooses one randomly. Don't expect the same image for the same terrain type
+	 * each time.
 	 *
 	 * @param terrainType The terrain type to get a file for
-	 * @return An Image object containing the image data for a tile image matching the terrain type
+	 * @return An Image object containing the image data for a tile image matching
+	 *         the terrain type
 	 */
 	private Image getTileImage(Tile.terrainTypes terrainType) {
 		try {
