@@ -249,6 +249,7 @@ public class CivController {
 		counterattack *= defenderTile.getAttackModifier();
 		attacker.takeAttack(counterattack);
 		if (attacker.getHP() <= 0) {
+			attacker.move(attacker.getMovement(), attacker.getX(), attacker.getY());
 			curPlayer.removeUnit(attacker);
 			getTileAt(attacker.getX(), attacker.getY()).setUnit(null);
 			return false;
