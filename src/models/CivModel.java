@@ -31,7 +31,7 @@ public class CivModel extends Observable {
 		round = 0;
 		File f = new File(".");
 		String[] files = f.list();
-		this.board = new CivBoard("./src/models/Map1.txt");
+		this.board = new CivBoard("./src/models/Map2.txt");
 		head = new Node(new Player(1)); // make a human player
 		curPlayer = head;
 		if (playerCount == 1) { // if singleplayer
