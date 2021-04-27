@@ -691,7 +691,7 @@ public class CivView extends Application implements Observer {
 
 		for (int[] move : validMoves) {
 			int[] coords = gridToIso(move[0], move[1]);
-			System.out.println(coords[0] + " " + coords[1]);
+			// System.out.println(coords[0] + " " + coords[1]);
 			ImageView markerView = new ImageView(validMarker);
 			markerView.setX(coords[0]);
 			markerView.setY(coords[1]);

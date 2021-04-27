@@ -59,7 +59,6 @@ public class CivBoard {
 						board[i][j] = new Tile(Tile.terrainTypes.HILL, "");
 					else
 						board[i][j] = new Tile(Tile.terrainTypes.MOUNTAIN, "");
-
 				}
 				else { // rest are fields. 
 					if (resource)
