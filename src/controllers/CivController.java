@@ -201,7 +201,7 @@ public class CivController {
 			revealTiles(toMove); // reveal tiles around unit
 		}
 		model.changeAndNotify();
-		return true;
+		return moveFrom.getUnit() != null;
 	}
 
 	/**
