@@ -8,8 +8,6 @@ import models.Player;
 
 /**
  *
- * TODO: City handling for Tim
- *
  * Unit superclass.
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
@@ -19,10 +17,12 @@ public class Unit {
 
 	public static final Map<String, Integer> unitCosts = new HashMap<String, Integer>();
 	static {
-		// TODO: rebalance unit costs
-		unitCosts.put("Scout", 500);
-		unitCosts.put("Settler", 1000);
-		unitCosts.put("Warrior", 750);
+		unitCosts.put("Scout", 400);
+		unitCosts.put("Settler", 2500);
+		unitCosts.put("Warrior", 600);
+		unitCosts.put("Cavalry", 1100);
+		unitCosts.put("Swordsman", 900);
+		unitCosts.put("Milita", 200);
 		// add more as we add different types of Units
 	}
 
@@ -118,6 +118,15 @@ public class Unit {
 	 */
 	public double getMaxHP() {
 		return this.maxHP;
+	}
+
+	/**
+	 * Heal this unit by 5% of its max health
+	 */
+	public void healUnit() {
+		this.HP += this.maxHP / 20;
+		if (this.HP >= this.maxHP)
+			this.HP = maxHP;
 	}
 
 	/**

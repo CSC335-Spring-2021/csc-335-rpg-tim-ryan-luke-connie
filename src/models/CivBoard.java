@@ -34,13 +34,13 @@ public class CivBoard {
 			while (j < size - 1) {
 				int type = rng.nextInt(1);
 				if (type == 0 && (i < size / 2 || j < size / 2))
-					board[i][j] = new Tile(Tile.terrainTypes.FIELD);
+					board[i][j] = new Tile(Tile.terrainTypes.FIELD, "");
 				else if (type == 1 && (i < size / 2 || j < size / 2))
-					board[i][j] = new Tile(Tile.terrainTypes.HILL);
+					board[i][j] = new Tile(Tile.terrainTypes.HILL, "");
 				else if (type == 0 && (i >= size / 2 || j >= size / 2))
-					board[i][j] = new Tile(Tile.terrainTypes.SWAMP);
+					board[i][j] = new Tile(Tile.terrainTypes.SWAMP, "");
 				else
-					board[i][j] = new Tile(Tile.terrainTypes.HILL);
+					board[i][j] = new Tile(Tile.terrainTypes.HILL, "");
 				j++;
 			}
 			i++;
@@ -48,10 +48,10 @@ public class CivBoard {
 		i = 0;
 		j = 0;
 		while (i < size) { // set border to water
-			board[i][0] = new Tile(Tile.terrainTypes.WATER);
-			board[0][i] = new Tile(Tile.terrainTypes.WATER);
-			board[size - 1][i] = new Tile(Tile.terrainTypes.WATER);
-			board[i][size - 1] = new Tile(Tile.terrainTypes.WATER);
+			board[i][0] = new Tile(Tile.terrainTypes.WATER, "");
+			board[0][i] = new Tile(Tile.terrainTypes.WATER, "");
+			board[size - 1][i] = new Tile(Tile.terrainTypes.WATER, "");
+			board[i][size - 1] = new Tile(Tile.terrainTypes.WATER, "");
 			i++;
 		}
 		this.tiles = board;

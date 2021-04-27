@@ -123,3 +123,19 @@
   -fx-fill: #f46464;
   -fx-font-weight: bold;
 }
+
+.end-turn-button {
+  -fx-padding: 12 24;
+  -fx-font-size: 13;
+  -fx-font-weight: bold;
+  -fx-text-alignment: center;
+  -fx-text-fill: #fff;
+  -fx-background-color: #000;
+  -fx-border-width: 1;
+  -fx-border-color: rgba(255,255,255,0.9);
+  -fx-border-radius: 3;
+}
+.end-turn-button:hover {
+  -fx-border-color: #fff;
+  -fx-background-color: #222;
+}
