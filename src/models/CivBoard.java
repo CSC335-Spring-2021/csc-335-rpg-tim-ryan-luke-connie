@@ -83,11 +83,12 @@ public class CivBoard {
 		this.tiles = board;
 	}
 	
-	public CivBoard(File file) {
+	public CivBoard(String file) {
 		Scanner sc = null;
 		try {
-			sc = new Scanner(file);
-		} catch (FileNotFoundException e) {
+			File fileObj = new File(file);
+			sc = new Scanner(fileObj);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		String line = null;
@@ -121,22 +122,27 @@ public class CivBoard {
 				resource = "iron";
 			else
 				resource = "wheat";
-			board[i][j] = new Tile(type, resource);
+			board[j][i] = new Tile(type, resource);
+			System.out.println("i = " + i + " j = " + j + " type = " + type);
 			j++;
-			if (j == size - 1) {
+			if (j == size) {
 				i++;
 				j = 0;
 			}
-			if (i == size)
-				System.out.println("error with passed size");
+			if (i == size) {
+				break;
+				//System.out.println("error with passed size");
+			}
 		}
-			
+		this.tiles = board;
 		
 		
 	}
 
 	public Tile getTile(int x, int y) {
-		if (x < 0 || x >= size || y < 0 || y >= size) return null;
+		if (x < 0 || x >= size || y < 0 || y >= size) {
+			return null;
+		}
 		return this.tiles[y][x];
 	}
 
