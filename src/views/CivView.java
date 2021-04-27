@@ -62,6 +62,8 @@ public class CivView extends Application implements Observer {
 	private ScrollPane mapScrollContainer;
 	private Pane mapElementContainer;
 	private Canvas mapCanvas;
+	private Pane mapOverlayContainer;
+	private Image validMarker;
 	private ImageView mapHoverCursor;
 	private ImageView mapSelectedCursor;
 	private FadeTransition mapSelectedTransition;
@@ -209,6 +211,14 @@ public class CivView extends Application implements Observer {
 			context.drawImage(tileImage, isoCoords[0], isoCoords[1], TILE_SIZE, TILE_SIZE * ISO_FACTOR);
 		}
 
+		// claim a layer for tile indicators
+		mapOverlayContainer = new Pane();
+		mapOverlayContainer.setPrefSize(isoBoardWidth, isoBoardHeight);
+		mapOverlayContainer.setLayoutX(SCROLL_GUTTER);
+		mapOverlayContainer.setLayoutY(SCROLL_GUTTER);
+		mapOverlayContainer.setMouseTransparent(true);
+		mapElementContainer.getChildren().add(mapOverlayContainer);
+
 		try {
 			// store hover cursor image for later so we don't have to keep loading and unloading it
 			Image hoverCursorImage = new Image(new FileInputStream("src/assets/tiles/hover.png"));
@@ -234,6 +244,10 @@ public class CivView extends Application implements Observer {
 			mapSelectedTransition.setCycleCount(Integer.MAX_VALUE);
 			mapSelectedTransition.setAutoReverse(true);
 			mapSelectedTransition.setNode(mapSelectedCursor);
+
+			// and, finally, cache the in-range indicator image. We'll construct new ImageViews for
+			// it upon use
+			validMarker = new Image(new FileInputStream("src/assets/tiles/valid.png"));
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -484,6 +498,8 @@ public class CivView extends Application implements Observer {
 
 		mapSelectedCursor.setVisible(false);
 		mapSelectedTransition.pause();
+
+		mapOverlayContainer.getChildren().clear();
 	}
 
 
@@ -550,12 +566,11 @@ public class CivView extends Application implements Observer {
 		// javafx doesn't calculate this vbox's height correctly, so magic number for now
 		unitPane.setLayoutY((WINDOW_HEIGHT - 230) / 2.0);
 
+		// add selection indicator
 		selectTile(unit.getX(), unit.getY());
-		// TODO: highlight possible moves
-		HashSet<int[]> validMoves = controller.getValidMoves(selectedUnit);
-		for (int[] move : validMoves)
-			System.out.print("(" + move[0] + ", " + move[1] + ")");
-		System.out.println();
+
+		// add range indicators
+		addRangeIndicators(selectedUnit);
 	}
 
 
@@ -653,6 +668,28 @@ public class CivView extends Application implements Observer {
 
 		// center map on tile
 		focusMap(x, y, true);
+	}
+
+
+	/**
+	 * Add an indicator to each tile that a given unit can currently move to and/or attack.
+	 *
+	 * @param unit The unit to indicate valid moves for
+	 */
+	private void addRangeIndicators(Unit unit) {
+		HashSet<int[]> validMoves = controller.getValidMoves(unit);
+
+		mapOverlayContainer.getChildren().clear();
+
+		for (int[] move : validMoves) {
+			int[] coords = gridToIso(move[0], move[1]);
+			System.out.println(coords[0] + " " + coords[1]);
+			ImageView markerView = new ImageView(validMarker);
+			markerView.setX(coords[0]);
+			markerView.setY(coords[1]);
+			markerView.setMouseTransparent(true);
+			mapOverlayContainer.getChildren().add(markerView);
+		}
 	}
 
 
