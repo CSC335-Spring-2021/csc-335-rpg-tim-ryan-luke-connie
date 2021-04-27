@@ -29,18 +29,38 @@ public class CivBoard {
 		int i = 0;
 		int j;
 		Random rng = new Random();
+		int oneThird = size/3;
+		int twoThird = size * 2/3;
 		while (i < size - 1) {
 			j = 0;
 			while (j < size - 1) {
-				int type = rng.nextInt(1);
-				if (type == 0 && (i < size / 2 || j < size / 2))
-					board[i][j] = new Tile(Tile.terrainTypes.FIELD, "");
-				else if (type == 1 && (i < size / 2 || j < size / 2))
-					board[i][j] = new Tile(Tile.terrainTypes.HILL, "");
-				else if (type == 0 && (i >= size / 2 || j >= size / 2))
-					board[i][j] = new Tile(Tile.terrainTypes.SWAMP, "");
-				else
-					board[i][j] = new Tile(Tile.terrainTypes.HILL, "");
+				boolean isTopCorner = ((i < (oneThird) && j < (oneThird)));
+				boolean isBottomCorner = (i > twoThird) && (j > twoThird); 
+				int coordSum = i + j;
+				boolean isMiddleStrip = (coordSum < (size + oneThird)) && (coordSum > (size - oneThird));
+				int type = rng.nextInt(10);
+				boolean resource = (type == 4 || type == 7);
+				if (type > 2  && (isTopCorner || isBottomCorner)){// top left and bot. right
+					if (resource) 
+						board[i][j] = new Tile(Tile.terrainTypes.SWAMP,"horse"); // corners are swamp or water
+					else
+						board[i][j] = new Tile(Tile.terrainTypes.SWAMP,"");
+				}
+				else if (type <= 2  && (isTopCorner || isBottomCorner)) { 
+					//board[i][j] = new Tile(Tile.terrainTypes.WATER);
+				}
+				else if (type > 3 && isMiddleStrip) { // diagonal strip down the middle is mostly hills
+					if (resource)
+						board[i][j] = new Tile(Tile.terrainTypes.HILL, "iron");
+					else
+						board[i][j] = new Tile(Tile.terrainTypes.HILL, "");
+				}
+				else { // rest are fields. 
+					if (resource)
+						board[i][j] = new Tile(Tile.terrainTypes.FIELD, "wheat");
+					else
+						board[i][j] = new Tile(Tile.terrainTypes.FIELD, "");
+				}
 				j++;
 			}
 			i++;
