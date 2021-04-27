@@ -1,18 +1,18 @@
 20
+field n
+field n
+hill i
+field n
+hill n
+hill i
+field n
 hill n
 hill n
+field n
 hill i
 hill n
 hill n
-hill i
-hill n
-hill n
-hill n
-hill n
-hill i
-hill n
-hill n
-hill n
+field n
 hill i
 hill n
 mountain n
@@ -21,16 +21,16 @@ mountain n
 water n // end row 1
 hill n
 hill n
+field n
 hill n
+hill i
+field n
 hill n
 hill i
 hill n
 hill n
-hill i
 hill n
-hill n
-hill n
-hill n
+field n
 hill n
 field n
 field w
@@ -39,15 +39,15 @@ mountain n
 mountain n
 mountain n
 water n // end row 
+field n
 hill n
 hill n
-hill n
-hill n
+field n
 hill n
 hill n
 hill i
 hill n
-hill n
+field n
 hill n
 hill n
 hill n
@@ -60,14 +60,14 @@ mountain n
 hill n
 water n // end row 3
 mountain n 
+field n
+field n
+field n
 hill n
 hill n
+field n
 hill n
-hill n
-hill n
-hill n
-hill n
-hill n
+field n
 hill i
 hill n
 mountain n
@@ -83,7 +83,7 @@ mountain n
 mountain n
 hill n
 hill n
-hill n
+field n
 hill n
 hill n
 hill n
@@ -101,10 +101,10 @@ field w
 water n // end row 5
 mountain n
 mountain n
-hill n
-hill n
+field n
+field n
 hill i
-hill n
+field n
 hill n
 hill n
 mountain n
@@ -121,7 +121,7 @@ field n
 water n // end row 6
 mountain n
 hill n
-hill n
+field n
 hill n
 mountain n
 mountain n
@@ -274,7 +274,7 @@ water n
 water n
 water n
 swamp n
-swamp h
+field h
 swamp n
 water n
 swamp n
@@ -295,7 +295,7 @@ water n
 water n
 swamp n
 swamp n
-swamp n
+field n
 swamp n
 swamp h
 swamp n // end row 15
@@ -314,10 +314,10 @@ water n
 water n
 swamp n
 swamp h
+water n
 swamp n
 swamp n
-swamp n
-swamp n
+water n
 swamp n // end row 16
 hill i
 hill n
@@ -331,13 +331,13 @@ field n
 field w
 field n
 water n
+field n
 swamp n
 swamp n
-swamp n
-swamp h
-swamp n
+water h
 swamp n
 swamp n
+field n
 swamp n // end row 17
 hill n
 field n
@@ -353,12 +353,12 @@ swamp n
 water n
 swamp n
 swamp n
+water n
 swamp n
 swamp n
-swamp n
-swamp n
-swamp n
-swamp n // end row 18
+field n
+water n
+field n // end row 18
 hill n
 hill n
 hill n
@@ -371,14 +371,14 @@ field w
 field n
 swamp n
 swamp n
+field n
+swamp n
+swamp n
+water n
 swamp n
 swamp n
 swamp n
-swamp n
-swamp n
-swamp n
-swamp n
-swamp n // end row 19
+field n // end row 19
 hill n
 hill n
 field n
@@ -391,11 +391,11 @@ water n
 water n
 water n
 swamp n
+water n
+swamp n
+field n
 swamp n
 swamp n
-swamp n
-swamp n
-swamp n
-swamp n
+field n
 swamp n
 swamp n // end row 20
