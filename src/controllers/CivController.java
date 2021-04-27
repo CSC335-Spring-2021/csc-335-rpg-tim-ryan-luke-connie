@@ -394,7 +394,7 @@ public class CivController {
 		defender.takeAttack(attack);
 		if (defender.getHP() <= 0) {
 			defender.getOwner().removeUnit(defender);
-			return true;
+			return !defenderTile.isCityTile();
 		}
 		double counterattack = defender.getAttackValue();
 		counterattack *= defenderTile.getAttackModifier();
