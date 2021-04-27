@@ -1,6 +1,7 @@
 package models;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Observable;
 
 import components.Tile;
@@ -19,7 +20,7 @@ public class CivModel extends Observable {
 	private boolean singlePlayer;
 	private int round;
 	private int numPlayers;
-
+	private ArrayList<int[]> playerStartingCoords;
 	/**
 	 * Initialize a new model.
 	 * 
