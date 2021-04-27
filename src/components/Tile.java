@@ -66,6 +66,13 @@ public class Tile {
 		return false;
 	}
 
+	public void destroyCity() {
+		this.isCityTile = false;
+		// need to loop through every tile on the board and
+		// set owner city to null if owner city == this tile's owner city
+		this.ownerCity = null;
+	}
+
 	/**
 	 * Check if a city owns this tile, and this tile owns a resource, so the city
 	 * should have access to the resource.

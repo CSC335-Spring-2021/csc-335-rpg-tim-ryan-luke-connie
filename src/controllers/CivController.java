@@ -2,6 +2,7 @@ package controllers;
 
 import java.awt.Point;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import components.City;
 import components.Scout;
@@ -67,6 +68,14 @@ public class CivController {
 		model.getTileAt(17, 7).setUnit(settler2);
 		curPlayer.addUnit(settler2);
 
+		Warrior warrior3 = new Warrior(model.getCurPlayer(), new Point(17, 6));
+		model.getTileAt(17, 6).setUnit(warrior3);
+		curPlayer.addUnit(warrior3);
+
+		Warrior warrior4 = new Warrior(model.getCurPlayer(), new Point(16, 4));
+		model.getTileAt(16, 4).setUnit(warrior4);
+		curPlayer.addUnit(warrior4);
+
 		// go back to player 1 to start the game
 		model.nextPlayer();
 	}
@@ -94,6 +103,8 @@ public class CivController {
 	 * @param player
 	 */
 	public void startTurn() {
+		if (gameOver())
+			System.exit(0);
 		curPlayer = model.getCurPlayer();
 		for (Unit u : curPlayer.getUnits()) {
 			u.resetMovement();
@@ -114,7 +125,7 @@ public class CivController {
 		boolean automaticStart = !curPlayer.isHuman();
 		model.nextPlayer();
 		model.changeAndNotify();
-		if (automaticStart)
+		if (automaticStart && !gameOver())
 			startTurn();
 	}
 
@@ -146,7 +157,7 @@ public class CivController {
 		}
 		int firstFew = 2;
 		int i = 0;
-		while (i < curPlayer.getUnits().size()) {
+		while (!gameOver() && i < curPlayer.getUnits().size()) {
 			int oldSize = curPlayer.getUnits().size();
 			Unit u = curPlayer.getUnits().get(i);
 			if (u instanceof Settler) {
@@ -231,16 +242,19 @@ public class CivController {
 				Tile t = getTileAt(i, j);
 				if (t.isCityTile()) {
 					City c = t.getOwnerCity();
-					int dist = Math.max(c.getX() - u.getX(), c.getY() - u.getY());
-					if (dist < minDist) {
-						minDist = dist;
-						closest[0] = c.getX();
-						closest[1] = c.getY();
+					if (c.getOwner() != curPlayer) {
+						int dist = Math.max(c.getX() - u.getX(), c.getY() - u.getY());
+						if (dist < minDist) {
+							minDist = dist;
+							closest[0] = c.getX();
+							closest[1] = c.getY();
+						}
 					}
 				}
 			}
 		}
-
+		if (closest[0] == -1) // no cities left
+			return;
 		// if y distance to city is greater than x, move in the y direction
 		// and vice versa
 		// if equal, move diagonal
@@ -248,6 +262,8 @@ public class CivController {
 		// gets the unit at all closer
 		HashSet<int[]> validMoves = getValidMoves(u);
 		while (validMoves.size() != 0) {
+			if (getTileAt(closest[0], closest[1]).getOwnerCity() == null)
+				return;
 			int xDiff = closest[0] - u.getX();
 			int yDiff = closest[1] - u.getY();
 			int priority = 0; // give x direction priority
@@ -255,25 +271,36 @@ public class CivController {
 				priority = 1; // y diff is greater, so give y priority
 			int goodX = Integer.signum(xDiff) + u.getX(); // ideal x to go to
 			int goodY = Integer.signum(yDiff) + u.getY(); // ideal y to go to
+			boolean moved = false;
 			for (int[] move : validMoves) { // random set of moves
 				if ((move[0] == closest[0] && move[1] == closest[1]) || // city, attack
 						move[0] == goodX && move[1] == goodY) { // ideal move
 					moveUnit(u, move[0], move[1]);
+					moved = true;
 					break;
 				}
 				if (priority == 0) {
 					if (move[0] == goodX) {
 						moveUnit(u, move[0], move[1]);
+						moved = true;
 						break;
 					}
 				}
 				if (priority == 1) {
 					if (move[1] == goodY) {
 						moveUnit(u, move[0], move[1]);
+						moved = true;
 						break;
 					}
 				}
 			}
+			// got through all the moves, just make a random move
+			if (!moved) {
+				Iterator<int[]> iterator = validMoves.iterator();
+				int[] move = iterator.next();
+				moveUnit(u, move[0], move[1]);
+			}
+			validMoves = getValidMoves(u);
 		}
 
 	}
@@ -399,6 +426,7 @@ public class CivController {
 		attack *= attackerTile.getAttackModifier();
 		defender.takeAttack(attack);
 		if (defender.getRemainingHP() <= 0) {
+			getTileAt(defender.getX(), defender.getY()).destroyCity();
 			Player lostACity = defender.getOwner();
 			lostACity.removeCity(defender);
 			if (lostACity.getCities().size() == 0) {
