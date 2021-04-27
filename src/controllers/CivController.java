@@ -130,10 +130,35 @@ public class CivController {
 	}
 
 	/**
-	 * does all the computer turn's AI stuff
+	 * Perform AI turns
+	 *
 	 */
 	public void computerTurn() {
-		// TODO AI logic
+		int firstFew = 2;
+		for (Unit u : curPlayer.getUnits()) {
+			if (u instanceof Settler) {
+				// move towards resource, if near, found city, if no resources, cry
+			}
+			if (firstFew > 0) {
+				// hang out around your cities
+			}
+			// unit is not one of the first few in the list, and is not a settler:
+			// move towards enemy cities, if a unit is within attack range, hit him
+
+			// try to avoid swamps if possible, but maybe this is ok
+
+			firstFew--;
+		}
+		for (City c : curPlayer.getCities()) {
+			// Manage production - there are two good options as I see it
+
+			// 1: Randomly select a unit type, if it cant make it, save up until it can.
+			// have a max number of settlers to make sure things dont get stupid.
+
+			// 2: I can hard code a List to go with every city, and shuffle it
+			// this will make it so AI players can select a unit from this list and wait
+			// until they can create it
+		}
 		endTurn();
 	}
 
