@@ -43,38 +43,29 @@ public class CivController {
 	 * For testing -- delete this later
 	 */
 	public void placeStartingUnits() {
-		Settler settler = new Settler(model.getCurPlayer(), new Point(9, 9));
-		model.getTileAt(9, 9).setUnit(settler);
-		curPlayer.addUnit(settler);
-
-		Scout scout = new Scout(model.getCurPlayer(), new Point(10, 9));
-		model.getTileAt(10, 9).setUnit(scout);
+		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 3));
+		model.getTileAt(13, 3).setUnit(scout);
 		curPlayer.addUnit(scout);
 
-		Warrior warrior = new Warrior(model.getCurPlayer(), new Point(11, 12));
-		model.getTileAt(11, 12).setUnit(warrior);
-		curPlayer.addUnit(warrior);
+		// Warrior warrior = new Warrior(model.getCurPlayer(), new Point(16, 7));
+		// model.getTileAt(16, 7).setUnit(warrior);
+		// curPlayer.addUnit(warrior);
 
-		City city = new City(model.getCurPlayer(), 10, 10);
-		model.getTileAt(10, 10).foundCity(city);
+		City city = new City(model.getCurPlayer(), 12, 3);
+		model.getTileAt(12, 3).foundCity(city);
 		curPlayer.addCity(city);
 
 		// second player
 		model.nextPlayer();
 		curPlayer = model.getCurPlayer();
 
-		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(14, 12));
-		model.getTileAt(14, 12).setUnit(warrior2);
+		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(16, 5));
+		model.getTileAt(16, 5).setUnit(warrior2);
 		curPlayer.addUnit(warrior2);
 
-		Settler settler2 = new Settler(model.getCurPlayer(), new Point(10, 12));
-		model.getTileAt(10, 12).setUnit(settler2);
+		Settler settler2 = new Settler(model.getCurPlayer(), new Point(17, 7));
+		model.getTileAt(17, 7).setUnit(settler2);
 		curPlayer.addUnit(settler2);
-
-		City city2 = new City(model.getCurPlayer(), 14, 12);
-		model.getTileAt(14, 12).foundCity(city2);
-		city2.takeAttack(100);
-		curPlayer.addCity(city2);
 
 		// go back to player 1 to start the game
 		model.nextPlayer();
@@ -136,6 +127,11 @@ public class CivController {
 		return model.numPlayers() == 1;
 	}
 
+	/**
+	 * To determine if it is currently a human's turn or not
+	 * 
+	 * @return true if it's a human turn, false otherwise
+	 */
 	public boolean isHumanTurn() {
 		return curPlayer.isHuman();
 	}
@@ -146,28 +142,26 @@ public class CivController {
 	 */
 	public void computerTurn() {
 		for (City c : curPlayer.getCities()) {
-			// Manage production - there are two good options as I see it
-
-			// 1: Randomly select a unit type, if it cant make it, save up until it can.
-			// have a max number of settlers to make sure things dont get stupid.
-
-			// 2: I can hard code a List to go with every city, and shuffle it
-			// this will make it so AI players can select a unit from this list and wait
-			// until they can create it
+			computerCityActions(c);
 		}
 		int firstFew = 2;
-		for (Unit u : curPlayer.getUnits()) {
+		int i = 0;
+		while (i < curPlayer.getUnits().size()) {
+			int oldSize = curPlayer.getUnits().size();
+			Unit u = curPlayer.getUnits().get(i);
 			if (u instanceof Settler) {
 				computerSettlerActions((Settler) u);
 			}
 			// these ones are defending the city
-			if (firstFew > 0) {
+			else if (firstFew > 0) {
 				computerDefenderActions(u);
 				firstFew--;
 			} else {
 				// move towards enemy city/attack it
 				computerAttackerActions(u);
 			}
+			if (curPlayer.getUnits().size() == oldSize)
+				i++;
 		}
 		model.changeAndNotify();
 		endTurn();
@@ -213,7 +207,7 @@ public class CivController {
 				break;
 			}
 		}
-		// move the unit out of the city 1 space if there is no enemy attacking
+		// move the unit out of the city by 1 space if there is no enemy attacking
 		if (getTileAt(u.getX(), u.getY()).isCityTile()) {
 			validMoves = getValidMoves(u);
 			for (int[] move : validMoves) { // random set of moves
@@ -223,12 +217,74 @@ public class CivController {
 		}
 	}
 
+	/**
+	 * Units that move towards and attack human player's cities
+	 * 
+	 * @param u
+	 */
 	private void computerAttackerActions(Unit u) {
+		// search the entire map for the user's closest city
+		Integer[] closest = new Integer[] { -1, -1 };
+		int minDist = Integer.MAX_VALUE;
 		for (int i = 0; i < model.getSize(); i++) {
 			for (int j = 0; j < model.getSize(); j++) {
-
+				Tile t = getTileAt(i, j);
+				if (t.isCityTile()) {
+					City c = t.getOwnerCity();
+					int dist = Math.max(c.getX() - u.getX(), c.getY() - u.getY());
+					if (dist < minDist) {
+						minDist = dist;
+						closest[0] = c.getX();
+						closest[1] = c.getY();
+					}
+				}
 			}
 		}
+
+		// if y distance to city is greater than x, move in the y direction
+		// and vice versa
+		// if equal, move diagonal
+		// if no move exists for these "better" choices, choose a move that
+		// gets the unit at all closer
+		HashSet<int[]> validMoves = getValidMoves(u);
+		while (validMoves.size() != 0) {
+			int xDiff = closest[0] - u.getX();
+			int yDiff = closest[1] - u.getY();
+			int priority = 0; // give x direction priority
+			if (Math.abs(yDiff) > Math.abs(xDiff))
+				priority = 1; // y diff is greater, so give y priority
+			int goodX = Integer.signum(xDiff) + u.getX(); // ideal x to go to
+			int goodY = Integer.signum(yDiff) + u.getY(); // ideal y to go to
+			for (int[] move : validMoves) { // random set of moves
+				if ((move[0] == closest[0] && move[1] == closest[1]) || // city, attack
+						move[0] == goodX && move[1] == goodY) { // ideal move
+					moveUnit(u, move[0], move[1]);
+					break;
+				}
+				if (priority == 0) {
+					if (move[0] == goodX) {
+						moveUnit(u, move[0], move[1]);
+						break;
+					}
+				}
+				if (priority == 1) {
+					if (move[1] == goodY) {
+						moveUnit(u, move[0], move[1]);
+						break;
+					}
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * For now, computer cities will crank out warrior fodder
+	 * 
+	 * @param c computer city attempting to create units
+	 */
+	private void computerCityActions(City c) {
+		createUnit(c.getX(), c.getY(), "Warrior");
 	}
 
 	/**
@@ -286,7 +342,7 @@ public class CivController {
 				int toRevealRow = unit.getX() + i;
 				int toRevealCol = unit.getY() + j;
 				Tile toRevealTile = getTileAt(toRevealRow, toRevealCol);
-				if (!toRevealTile.canSeeTile(curPlayer))
+				if (toRevealTile != null && !toRevealTile.canSeeTile(curPlayer))
 					toRevealTile.revealTile(curPlayer);
 			}
 		}
@@ -354,9 +410,8 @@ public class CivController {
 	}
 
 	/**
-	 * Creates a unit on the given tile if the city has enough in its production
-	 * reserve to make that unit.
-	 *
+	 * Creates a unit on the given tile.
+	 * 
 	 * View should pass the correct x,y when a player tries to create a unit (i.e.,
 	 * only an actual city Tile can produce a unit). Updates the tile so that it has
 	 * the new unit on it.
@@ -364,14 +419,19 @@ public class CivController {
 	 * @param x        int representing the x location of new unit
 	 * @param y        int representing the y location of new unit
 	 * @param unitType String representing the type of unit to create
+	 * @return true if unit was successfully created; false otherwise
 	 */
-	public void createUnit(int x, int y, String unitType) {
+	public boolean createUnit(int x, int y, String unitType) {
 		Tile tile = getTileAt(x, y);
 		City city = tile.getOwnerCity();
-		Unit newUnit = city.produceUnit(unitType);
-		tile.setUnit(newUnit);
-		curPlayer.addUnit(newUnit);
-		model.changeAndNotify();
+		if (city.getProductionReserve() >= Unit.unitCosts.get(unitType)) {
+			Unit newUnit = city.produceUnit(unitType);
+			tile.setUnit(newUnit);
+			curPlayer.addUnit(newUnit);
+			model.changeAndNotify();
+			return true;
+		}
+		return false;
 	}
 
 	/**
