@@ -731,7 +731,8 @@ public class CivView extends Application implements Observer {
 
 		Button button = new Button(label);
 		button.getStyleClass().add("detail-pane__button");
-		if (popCost > city.getPopulation() || pointCost > city.getProductionReserve()) {
+		if (popCost > city.getPopulation() || pointCost > city.getProductionReserve()
+				|| controller.getTileAt(city.getX(), city.getY()).getUnit() != null) {
 			button.setDisable(true);
 			button.getStyleClass().add("detail-pane__button--disabled");
 		}

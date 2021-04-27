@@ -30,7 +30,6 @@ public class City {
 
 	private List<String> producableUnits;
 
-
 	public City(Player player, int row, int col) {
 		this.owner = player;
 		this.coord = new Point(row, col);
@@ -68,11 +67,11 @@ public class City {
 		if (unitType.equals("Settler")) {
 			// settlers decrease city population by 1
 			this.population -= 1;
-			retUnit = new Settler(owner, coord);
+			retUnit = new Settler(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Scout")) {
-			retUnit = new Scout(owner, coord);
+			retUnit = new Scout(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Warrior")) {
-			retUnit = new Warrior(owner, coord);
+			retUnit = new Warrior(owner, new Point(coord.x, coord.y));
 		}
 		this.productionReserve -= Unit.unitCosts.get(unitType);
 		return retUnit;
@@ -111,6 +110,7 @@ public class City {
 	public Player getOwner() {
 		return this.owner;
 	}
+
 	/**
 	 * Retrieve this city's X coordinate
 	 *
@@ -174,7 +174,6 @@ public class City {
 		return this.cityHPCur;
 	}
 
-
 	/**
 	 * Retrieve the city's turns before growth.
 	 *
@@ -183,6 +182,5 @@ public class City {
 	public int getTurnsBeforeGrowth() {
 		return this.turnsBeforeGrowth;
 	}
-
 
 }
