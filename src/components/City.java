@@ -75,6 +75,12 @@ public class City {
 			retUnit = new Scout(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Warrior")) {
 			retUnit = new Warrior(owner, new Point(coord.x, coord.y));
+		} else if (unitType.equals("Militia")) {
+			retUnit = new Milita(owner, new Point(coord.x, coord.y));
+		} else if (unitType.equals("Cavalry")) {
+			retUnit = new Cavalry(owner, new Point(coord.x, coord.y));
+		} else if (unitType.equals("Swordsman")) {
+			retUnit = new Swordsman(owner, new Point(coord.x, coord.y));
 		}
 		this.productionReserve -= Unit.unitCosts.get(unitType);
 		return retUnit;
