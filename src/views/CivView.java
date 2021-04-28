@@ -190,6 +190,7 @@ public class CivView extends Application implements Observer {
 		}
 	}
 
+
 	/**
 	 * Create and assemble the game UI.
 	 *
@@ -208,8 +209,7 @@ public class CivView extends Application implements Observer {
 		window.getChildren().add(mapScrollContainer);
 
 		// pane to contain the map canvas. This interim layer lets us add padding
-		// without screwing
-		// up canvas click math, etc
+		// without screwing up canvas click math, etc
 		mapElementContainer = new Pane();
 		mapElementContainer.setPadding(new Insets(0, SCROLL_GUTTER, SCROLL_GUTTER, 0));
 		mapScrollContainer.setContent(mapElementContainer);
@@ -271,8 +271,7 @@ public class CivView extends Application implements Observer {
 			mapSelectedTransition.setNode(mapSelectedCursor);
 
 			// and, finally, cache the in-range indicator image. We'll construct new
-			// ImageViews for
-			// it upon use
+			// ImageViews for it upon use
 			validMarker = new Image(new FileInputStream("src/assets/tiles/valid.png"));
 
 		} catch (FileNotFoundException e) {
@@ -448,20 +447,17 @@ public class CivView extends Application implements Observer {
 			targetCity = tile.getOwnerCity();
 
 		// if a friendly unit is already selected, we'll have different behaviors
-		// depending on if
-		// the click was on an enemy unit in range, another friendly unit, or neither
+		// depending on if the click was on an enemy unit in range, another
+		// friendly unit, or neither
 		if (selectedUnit != null) {
-			// NOTE: controller does checking for moves; the move function should take care
-			// of
-			// city, enemy, and empty tile cases and returns true for successful
-			// move/attack. Just
-			// deselect if unsuccessful choice.
+			// NOTE: controller does checking for moves; the move function should
+			// take care of city, enemy, and empty tile cases and returns true
+			// for successful move/attack. Just deselect if unsuccessful choice
 			if (!controller.moveUnit(selectedUnit, space[0], space[1])) {
 				deselect();
 
-				// if move was successful and we're moving out of a city, make sure focus is
-				// only on
-				// the unit
+				// if move was successful and we're moving out of a city, make
+				// sure focus is only on the unit
 			} else if (selectedCity != null) {
 				Unit tmp = selectedUnit;
 				deselect();
@@ -469,9 +465,9 @@ public class CivView extends Application implements Observer {
 			}
 		}
 
-		// if only a friendly city is already selected, another map click always
-		// deselects it. We
-		// might reselect it again right after, but don't care for now
+		// if only a friendly city is already selected, another map click
+		// always deselects it. We might reselect it again right after, but
+		// don't care for now
 		if (selectedCity != null && selectedUnit == null)
 			deselect();
 
@@ -494,8 +490,8 @@ public class CivView extends Application implements Observer {
 	private void handleMapHover(MouseEvent ev) {
 		mapHoverCursor.setVisible(false);
 
-		// "snap" to a grid space by getting its grid coord and re-translating to iso
-		// coords
+		// "snap" to a grid space by getting its grid coord and re-translating
+		// to iso coords
 		int[] space = isoToGrid(ev.getX(), ev.getY());
 
 		// reject events in the negative space left by the iso view
@@ -511,8 +507,8 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
-	 * Deselect the currently selected unit and/or city. Also hides the respective
-	 * detail pane(s)
+	 * Deselect the currently selected unit and/or city. Also hides the
+	 * respective detail pane(s)
 	 */
 	private void deselect() {
 		selectedUnit = null;
@@ -530,9 +526,9 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
-	 * Select a unit. This involves marking said unit as selected, centering the map
-	 * on it, and building and showing a detail pane that displays the unit's
-	 * properties.
+	 * Select a unit. This involves marking said unit as selected, centering
+	 * the map on it, and building and showing a detail pane that displays the
+	 * unit's properties.
 	 *
 	 * @param unit The Unit to select
 	 */
@@ -602,9 +598,9 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
-	 * Select a city. This involves marking said city as selected, centering the map
-	 * on it, and building and showing a detail pane that displays the city's
-	 * properties.
+	 * Select a city. This involves marking said city as selected, centering
+	 * the map on it, and building and showing a detail pane that displays the
+	 * city's properties.
 	 *
 	 * @param city The City to select
 	 */
@@ -652,7 +648,7 @@ public class CivView extends Application implements Observer {
 		prodRateFlow.getChildren().addAll(prodRate, prodRateLabel);
 
 		// pane actions
-		Pane spacer = new Pane(); // text nodes can't take padding, so we'll space with this
+		Pane spacer = new Pane(); // text nodes can't take padding, so we'llspace with this
 		spacer.getStyleClass().add("detail-pane__space-above");
 		Text buildLabel = new Text("Build:");
 		buildLabel.getStyleClass().add("detail-pane__label");
@@ -698,8 +694,8 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
-	 * Add an indicator to each tile that a given unit can currently move to and/or
-	 * attack.
+	 * Add an indicator to each tile that a given unit can currently move to
+	 * and/or attack.
 	 *
 	 * @param unit The unit to indicate valid moves for
 	 */
@@ -720,17 +716,18 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
-	 * Assemble a TextFlow with a common layout for figures and their associated
-	 * labels.
+	 * Assemble a TextFlow with a common layout for figures and their
+	 * associated labels.
 	 *
-	 * @param label       The label text to render
-	 * @param figure      The primary figure value
-	 * @param max         If the figure has a max value, pass it here. Otherwise,
-	 *                    pass a negative number
-	 * @param disposition The disposition class to render ("positive", "neutral", or
-	 *                    "negative") or an empty string if not applicable
-	 * @return The assembled TextFlow object containing the data inside new Text
-	 *         nodes
+	 * @param label The label text to render
+	 * @param figure The primary figure value
+	 * @param max If the figure has a max value, pass it here. Otherwise, pass
+	 *            a negative number
+	 * @param disposition The disposition class to render ("positive",
+	 *                    "neutral", or "negative") or an empty string if not
+	 *                    applicable
+	 * @return The assembled TextFlow object containing the data inside new
+	 * Text nodes
 	 */
 	private TextFlow createLabeledFigure(String label, int figure, int max, String disposition) {
 		TextFlow result = new TextFlow();
@@ -858,9 +855,9 @@ public class CivView extends Application implements Observer {
 	private List<int[]> getDrawTraversal() {
 		List<int[]> result = new ArrayList<>();
 
-		// we'll start slices from each edge space on the left and bottom (one shared).
-		// The slice
-		// starting at the bottom-left corner will be the turning point
+		// we'll start slices from each edge space on the left and bottom (one
+		// shared). The slice starting at the bottom-left corner will be the
+		// turning point
 		int diagonalSlices = model.getSize() * 2 - 1;
 		int mid = diagonalSlices / 2;
 		int sliceSize = 0;
@@ -906,9 +903,8 @@ public class CivView extends Application implements Observer {
 	private int[] gridToIso(int x, int y) {
 		int[] result = new int[2];
 
-		// our origin point is [half of the real rendered width, 0] (the very top corner
-		// of the
-		// rendered board)
+		// our origin point is [half of the real rendered width, 0] (the very
+		// top corner of the rendered board)
 		int originX = isoBoardWidth / 2;
 		result[0] = originX;
 
