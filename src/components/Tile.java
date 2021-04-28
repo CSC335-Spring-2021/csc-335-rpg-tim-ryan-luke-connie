@@ -138,6 +138,16 @@ public class Tile {
 	}
 
 	/**
+	 * If a city has expanded its radius to encompass this tile, make that city the
+	 * owner
+	 * 
+	 * @param city which now owns the tile
+	 */
+	public void setOwnerCity(City city) {
+		this.ownerCity = city;
+	}
+
+	/**
 	 * Getter for if this tile is a city tile, not to be confused with being owned
 	 * by a city
 	 * 
