@@ -368,7 +368,11 @@ public class CivController {
 			revealTiles(toMove); // reveal tiles around unit
 		}
 		model.changeAndNotify();
-		return moveFrom.getUnit() != null;
+		if (moveTo.getUnit() != null) { // died in counterattack
+			if (moveTo.getUnit().getOwner() != curPlayer && moveFrom.getUnit() == null)
+				return false;
+		}
+		return true;
 	}
 
 	/**
