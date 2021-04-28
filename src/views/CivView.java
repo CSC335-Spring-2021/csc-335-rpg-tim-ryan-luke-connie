@@ -2,11 +2,7 @@ package views;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 import components.City;
 import components.Scout;
@@ -70,8 +66,9 @@ public class CivView extends Application implements Observer {
 	private FadeTransition mapSelectedTransition;
 
 	// sprite hooks
-	private List<ImageView> spriteImages;
+	private List<ImageView> spriteNodes;
 	private List<GridPane> hpBars;
+	private Map<String, Image> spriteImages;
 
 	// ui hooks
 	private VBox unitPane;
@@ -102,7 +99,7 @@ public class CivView extends Application implements Observer {
 	public void start(Stage stage) {
 		this.model = new CivModel(1); // changed to test AI
 		this.controller = new CivController(model);
-		this.spriteImages = new ArrayList<>();
+		this.spriteNodes = new ArrayList<>();
 		this.hpBars = new ArrayList<>();
 
 		model.addObserver(this);
@@ -110,6 +107,9 @@ public class CivView extends Application implements Observer {
 		// calculate derived constants (less spaghetti later on)
 		isoBoardWidth = model.getSize() * TILE_SIZE;
 		isoBoardHeight = (int) (isoBoardWidth * ISO_FACTOR);
+
+		// preload and save references to sprite images
+		this.spriteImages = loadSpriteImages();
 
 		// assemble ui
 		Pane window = new Pane();
@@ -143,6 +143,28 @@ public class CivView extends Application implements Observer {
 		controller.startGame(); // begin the game
 		stage.show();
 	}
+
+
+	/**
+	 * Preload sprite images and return references to their Image objects. This
+	 * prevents us from continually loading new images as the sprite layer
+	 * refreshes, which is especially bad if javafx doesn't release them.
+	 *
+	 * @return A map of string keys to sprite Image references
+	 */
+	private Map<String, Image> loadSpriteImages() {
+		Map<String, Image> result = new HashMap<>();
+		try {
+			result.put("City", new Image(new FileInputStream("src/assets/sprites/city.png")));
+			result.put("Scout", new Image(new FileInputStream("src/assets/sprites/scout.png")));
+			result.put("Settler", new Image(new FileInputStream("src/assets/sprites/settler.png")));
+			result.put("Warrior", new Image(new FileInputStream("src/assets/sprites/warrior.png")));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
 
 	/**
 	 * Update the UI when the model changes.
@@ -309,19 +331,14 @@ public class CivView extends Application implements Observer {
 	 */
 	private void renderCity(City city) {
 		int[] coords = gridToIso(city.getX(), city.getY());
-		try {
-			Image cityImage = new Image(new FileInputStream("src/assets/sprites/city.png"));
-			ImageView cityImageView = new ImageView(cityImage);
-			cityImageView.setFitWidth(CITY_SIZE);
-			cityImageView.setFitHeight(CITY_SIZE);
-			cityImageView.setMouseTransparent(true);
-			cityImageView.setX(coords[0] + SCROLL_GUTTER + ((TILE_SIZE - CITY_SIZE) / 2.0));
-			cityImageView.setY(coords[1] + SCROLL_GUTTER - 34.0); // Magic Number, for now
-			mapElementContainer.getChildren().add(cityImageView);
-			spriteImages.add(cityImageView);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+		ImageView cityImageView = new ImageView(spriteImages.get("City"));
+		cityImageView.setFitWidth(CITY_SIZE);
+		cityImageView.setFitHeight(CITY_SIZE);
+		cityImageView.setMouseTransparent(true);
+		cityImageView.setX(coords[0] + SCROLL_GUTTER + ((TILE_SIZE - CITY_SIZE) / 2.0));
+		cityImageView.setY(coords[1] + SCROLL_GUTTER - 34.0); // Magic Number, for now
+		mapElementContainer.getChildren().add(cityImageView);
+		spriteNodes.add(cityImageView);
 	}
 
 	/**
@@ -331,25 +348,24 @@ public class CivView extends Application implements Observer {
 	 *             stored coords
 	 */
 	private void renderUnit(Unit unit) {
+		ImageView unitImageView;
 		int[] coords = gridToIso(unit.getX(), unit.getY());
-		String spriteImage = "src/assets/sprites/settler.png";
-		if (unit instanceof Scout)
-			spriteImage = "src/assets/sprites/scout.png";
-		if (unit instanceof Warrior)
-			spriteImage = "src/assets/sprites/warrior.png";
-		try {
-			Image unitImage = new Image(new FileInputStream(spriteImage));
-			ImageView unitImageView = new ImageView(unitImage);
-			unitImageView.setFitWidth(SPRITE_SIZE);
-			unitImageView.setFitHeight(SPRITE_SIZE);
-			unitImageView.setMouseTransparent(true);
-			unitImageView.setX(coords[0] + SCROLL_GUTTER + ((TILE_SIZE - SPRITE_SIZE) / 2.0));
-			unitImageView.setY(coords[1] + SCROLL_GUTTER - (SPRITE_SIZE / 4.0));
-			mapElementContainer.getChildren().add(unitImageView);
-			spriteImages.add(unitImageView);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+
+		if (unit instanceof Scout) {
+			unitImageView = new ImageView(spriteImages.get("Scout"));
+		} else if (unit instanceof Warrior) {
+			unitImageView = new ImageView(spriteImages.get("Warrior"));
+		} else {
+			unitImageView = new ImageView(spriteImages.get("Settler"));
 		}
+
+		unitImageView.setFitWidth(SPRITE_SIZE);
+		unitImageView.setFitHeight(SPRITE_SIZE);
+		unitImageView.setMouseTransparent(true);
+		unitImageView.setX(coords[0] + SCROLL_GUTTER + ((TILE_SIZE - SPRITE_SIZE) / 2.0));
+		unitImageView.setY(coords[1] + SCROLL_GUTTER - (SPRITE_SIZE / 4.0));
+		mapElementContainer.getChildren().add(unitImageView);
+		spriteNodes.add(unitImageView);
 
 		renderSpriteHPBar(unit.getHP(), unit.getMaxHP(), coords[0], coords[1]);
 	}
@@ -375,10 +391,11 @@ public class CivView extends Application implements Observer {
 	 * Clear all currently rendered sprites.
 	 */
 	private void clearAllSprites() {
-		mapElementContainer.getChildren().removeAll(spriteImages);
+		mapElementContainer.getChildren().removeAll(spriteNodes);
 		mapElementContainer.getChildren().removeAll(hpBars);
-		spriteImages.clear();
+		spriteNodes.clear();
 		hpBars.clear();
+		System.gc();
 	}
 
 	/**
