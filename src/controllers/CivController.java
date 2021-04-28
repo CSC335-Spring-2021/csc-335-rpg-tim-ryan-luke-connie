@@ -38,9 +38,9 @@ public class CivController {
 	/**
 	 * Configure the map with the units that should exist at the start of a new
 	 * game.
-	 * 
+	 *
 	 * Note that for testing, you have to add each unit/city to the current player.
-	 * 
+	 *
 	 * For testing -- delete this later
 	 */
 	public void placeStartingUnits() {
@@ -51,6 +51,10 @@ public class CivController {
 		// Warrior warrior = new Warrior(model.getCurPlayer(), new Point(16, 7));
 		// model.getTileAt(16, 7).setUnit(warrior);
 		// curPlayer.addUnit(warrior);
+
+		Settler settler = new Settler(model.getCurPlayer(), new Point(10, 5));
+		model.getTileAt(10, 5).setUnit(settler);
+		curPlayer.addUnit(settler);
 
 		City city = new City(model.getCurPlayer(), 12, 3);
 		model.getTileAt(12, 3).foundCity(city);
@@ -145,7 +149,7 @@ public class CivController {
 
 	/**
 	 * To determine if it is currently a human's turn or not
-	 * 
+	 *
 	 * @return true if it's a human turn, false otherwise
 	 */
 	public boolean isHumanTurn() {
@@ -186,7 +190,7 @@ public class CivController {
 	/**
 	 * Actions for computer's settlers. Try to found a city as soon as possible.
 	 * Otherwise, move randomly and avoid trying to attack.
-	 * 
+	 *
 	 * @param s the Settler that the computer player is controlling
 	 */
 	private void computerSettlerActions(Settler s) {
@@ -212,7 +216,7 @@ public class CivController {
 	 * Actions that the computer takes for the first two non-settler units. These
 	 * units remain close to the city and defend it against attackers. They move out
 	 * of the city if there is no enemy attacking. Otherwise, they just don't move.
-	 * 
+	 *
 	 * @param u
 	 */
 	private void computerDefenderActions(Unit u) {
@@ -235,7 +239,7 @@ public class CivController {
 
 	/**
 	 * Units that move towards and attack human player's cities
-	 * 
+	 *
 	 * @param u
 	 */
 	private void computerAttackerActions(Unit u) {
@@ -312,7 +316,7 @@ public class CivController {
 
 	/**
 	 * For now, computer cities will crank out warrior fodder
-	 * 
+	 *
 	 * @param c computer city attempting to create units
 	 */
 	private void computerCityActions(City c) {
@@ -453,7 +457,7 @@ public class CivController {
 
 	/**
 	 * Creates a unit on the given tile.
-	 * 
+	 *
 	 * View should pass the correct x,y when a player tries to create a unit (i.e.,
 	 * only an actual city Tile can produce a unit). Updates the tile so that it has
 	 * the new unit on it.
@@ -492,6 +496,8 @@ public class CivController {
 		if (settler.getCharges() > 0 && tile.getOwnerCity() == null) {
 			City city = settler.foundCity();
 			tile.foundCity(city);
+			curPlayer.removeUnit(settler);
+			tile.setUnit(null);
 			model.changeAndNotify();
 			return true;
 		}
@@ -500,11 +506,11 @@ public class CivController {
 
 	/**
 	 * Returns a set of all the valid moves that the unit can currently make.
-	 * 
+	 *
 	 * A unit can move onto a tile if it has enough movement left based on the cost
 	 * of moving (1) and the movement modifier for the tile. A unit can "move" onto
 	 * an tile with an enemy unit but cannot move onto a tile with a friendly unit.
-	 * 
+	 *
 	 * @param unit the Unit whose valid moves are to be retrieved
 	 * @return HashSet of int[]s representing all the valid moves for the given unit
 	 */
