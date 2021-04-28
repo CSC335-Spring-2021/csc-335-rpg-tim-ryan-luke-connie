@@ -4,11 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-import components.City;
-import components.Scout;
-import components.Tile;
-import components.Unit;
-import components.Warrior;
+import components.*;
 import controllers.CivController;
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
@@ -294,7 +290,7 @@ public class CivView extends Application implements Observer {
 
 		// 'end turn' button
 		endTurnButton = new Button("End Turn");
-		endTurnButton.getStyleClass().add("end-turn-button");
+		endTurnButton.getStyleClass().addAll("button", "end-turn-button");
 		endTurnButton.setLayoutX((WINDOW_WIDTH - 100) / 2.0); // getWidth() doesn't work
 		endTurnButton.setLayoutY(WINDOW_HEIGHT - 36 - 24); // nor does getHeight()
 		window.getChildren().add(endTurnButton);
@@ -538,6 +534,10 @@ public class CivView extends Application implements Observer {
 
 		Tile tile = controller.getTileAt(unit.getX(), unit.getY());
 
+		// javafx doesn't calc this pane height correctly, so we've got to do
+		// it ourselves
+		int estimatedHeight = 230;
+
 		selectedUnit = unit;
 
 		unitPane.getChildren().clear();
@@ -577,6 +577,7 @@ public class CivView extends Application implements Observer {
 			Text attackWhy = new Text("in " + tile.getTerrainType().name().toLowerCase() + "s");
 			attackHelp.getChildren().addAll(attackMod, attackWhy);
 			unitPane.getChildren().add(attackHelp);
+			estimatedHeight += 20;
 		}
 
 		// pane info: movement
@@ -584,11 +585,28 @@ public class CivView extends Application implements Observer {
 		moveFlow.getStyleClass().add("detail-pane__space-above");
 		unitPane.getChildren().add(moveFlow);
 
+		// settler action
+		if (unit instanceof Settler) {
+			Pane spacer = new Pane();
+			spacer.getStyleClass().add("detail-pane__space-above");
+
+			Button settleButton = new Button("Settle New City");
+			settleButton.getStyleClass().addAll("button", "detail-pane__settle-button");
+
+			unitPane.getChildren().addAll(spacer, settleButton);
+
+			settleButton.setOnMouseClicked(ev -> {
+				controller.foundCity(unit.getX(), unit.getY());
+				deselect();
+				renderAllSprites();
+			});
+
+			estimatedHeight += 50;
+		}
+
 		// show pane
 		unitPane.setVisible(true);
-		// javafx doesn't calculate this vbox's height correctly, so magic number for
-		// now
-		unitPane.setLayoutY((WINDOW_HEIGHT - 230) / 2.0);
+		unitPane.setLayoutY((WINDOW_HEIGHT - estimatedHeight) / 2.0);
 
 		// add selection indicator
 		selectTile(unit.getX(), unit.getY());
@@ -800,7 +818,7 @@ public class CivView extends Application implements Observer {
 		container.getStyleClass().add("detail-pane__build-row");
 
 		Button button = new Button(label);
-		button.getStyleClass().add("detail-pane__button");
+		button.getStyleClass().addAll("button", "detail-pane__button");
 		if (popCost > city.getPopulation() || pointCost > city.getProductionReserve()
 				|| controller.getTileAt(city.getX(), city.getY()).getUnit() != null) {
 			button.setDisable(true);
