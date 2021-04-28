@@ -115,8 +115,10 @@ public class CivController {
 			u.resetMovement();
 			u.healUnit();
 		}
-		for (City c : curPlayer.getCities())
+		for (City c : curPlayer.getCities()) {
 			c.cityIncrement();
+			updateCity(c);
+		}
 		if (!curPlayer.isHuman())
 			computerTurn();
 		model.changeAndNotify();
@@ -466,7 +468,8 @@ public class CivController {
 	public boolean createUnit(int x, int y, String unitType) {
 		Tile tile = getTileAt(x, y);
 		City city = tile.getOwnerCity();
-		if (city.getProductionReserve() >= Unit.unitCosts.get(unitType) && tile.getUnit() == null) {
+		if (city.getProductionReserve() >= Unit.unitCosts.get(unitType) && tile.getUnit() == null
+				&& city.getProducableUnits().contains(unitType)) {
 			Unit newUnit = city.produceUnit(unitType);
 			tile.setUnit(newUnit);
 			curPlayer.addUnit(newUnit);
@@ -496,6 +499,20 @@ public class CivController {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Expand the city's influence and check for resources on each added tile
+	 * 
+	 * @param c the City whose resources are to be updated
+	 */
+	private void updateCity(City c) {
+		int range = c.getControlRadius();
+		for (int i = -range; i <= range; i++) {
+			int x = c.getX() + i;
+			int y = c.getY() + i;
+
+		}
 	}
 
 	/**
