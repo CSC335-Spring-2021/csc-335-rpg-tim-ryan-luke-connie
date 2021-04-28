@@ -508,10 +508,25 @@ public class CivController {
 	 */
 	private void updateCity(City c) {
 		int range = c.getControlRadius();
+		int top = c.getY() - range;
+		int bottom = c.getY() + range;
+		int left = c.getX() - range;
+		int right = c.getX() + range;
+		int[] dirs = new int[] { top, bottom, left, right };
 		for (int i = -range; i <= range; i++) {
 			int x = c.getX() + i;
 			int y = c.getY() + i;
-
+			for (int j = 0; j < 4; j++) {
+				Tile t = null;
+				if (j == 0 || j == 1)
+					t = getTileAt(x, dirs[j]);
+				else
+					t = getTileAt(dirs[j], y);
+				if (t != null) {
+					t.setOwnerCity(c);
+					t.checkForNewResource();
+				}
+			}
 		}
 	}
 
