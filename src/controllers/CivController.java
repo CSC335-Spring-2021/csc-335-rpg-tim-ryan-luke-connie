@@ -5,11 +5,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import components.City;
-import components.Scout;
 import components.Settler;
 import components.Tile;
 import components.Unit;
-import components.Warrior;
 import models.CivModel;
 import models.Player;
 
@@ -44,41 +42,37 @@ public class CivController {
 	 * For testing -- delete this later
 	 */
 	public void placeStartingUnits() {
-		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 8));
-		model.getTileAt(13, 8).setUnit(scout);
-		curPlayer.addUnit(scout);
+//		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 8));
+//		model.getTileAt(13, 8).setUnit(scout);
+//		curPlayer.addUnit(scout);
 
 		// Warrior warrior = new Warrior(model.getCurPlayer(), new Point(16, 7));
 		// model.getTileAt(16, 7).setUnit(warrior);
 		// curPlayer.addUnit(warrior);
 
-		Settler settler = new Settler(model.getCurPlayer(), new Point(10, 10));
-		model.getTileAt(10, 10).setUnit(settler);
+		Settler settler = new Settler(model.getCurPlayer(), new Point(5, 9));
+		model.getTileAt(5, 9).setUnit(settler);
 		curPlayer.addUnit(settler);
-
-		City city = new City(model.getCurPlayer(), 12, 8);
-		model.getTileAt(12, 8).foundCity(city);
-		curPlayer.addCity(city);
 
 		// second player
 		model.nextPlayer();
 		curPlayer = model.getCurPlayer();
 
-		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(16, 5));
-		model.getTileAt(16, 5).setUnit(warrior2);
-		curPlayer.addUnit(warrior2);
+//		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(16, 5));
+//		model.getTileAt(16, 5).setUnit(warrior2);
+//		curPlayer.addUnit(warrior2);
 
-		Settler settler2 = new Settler(model.getCurPlayer(), new Point(17, 7));
-		model.getTileAt(17, 7).setUnit(settler2);
+		Settler settler2 = new Settler(model.getCurPlayer(), new Point(15, 9));
+		model.getTileAt(15, 9).setUnit(settler2);
 		curPlayer.addUnit(settler2);
 
-		Warrior warrior3 = new Warrior(model.getCurPlayer(), new Point(17, 6));
-		model.getTileAt(17, 6).setUnit(warrior3);
-		curPlayer.addUnit(warrior3);
-
-		Warrior warrior4 = new Warrior(model.getCurPlayer(), new Point(16, 4));
-		model.getTileAt(16, 4).setUnit(warrior4);
-		curPlayer.addUnit(warrior4);
+//		Warrior warrior3 = new Warrior(model.getCurPlayer(), new Point(17, 6));
+//		model.getTileAt(17, 6).setUnit(warrior3);
+//		curPlayer.addUnit(warrior3);
+//
+//		Warrior warrior4 = new Warrior(model.getCurPlayer(), new Point(16, 4));
+//		model.getTileAt(16, 4).setUnit(warrior4);
+//		curPlayer.addUnit(warrior4);
 
 		// go back to player 1 to start the game
 		model.nextPlayer();
@@ -373,8 +367,9 @@ public class CivController {
 		}
 		model.changeAndNotify();
 		if (moveTo.getUnit() != null) { // died in counterattack
-			if (moveTo.getUnit().getOwner() != curPlayer && moveFrom.getUnit() == null)
+			if (moveTo.getUnit().getOwner() != curPlayer && moveFrom.getUnit() == null) {
 				return false;
+			}
 		}
 		return true;
 	}
