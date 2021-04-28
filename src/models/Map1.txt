@@ -3,8 +3,8 @@ field n
 field n
 field n
 field n
-field n
-field n
+hill n
+hill n
 field n
 field n
 field w
@@ -13,8 +13,8 @@ field w
 field n
 swamp n
 swamp n
-swamp n
-swamp h
+field n
+water h
 swamp n
 water n
 water n
@@ -23,8 +23,8 @@ field n
 field n
 field n
 field n
-field n
-field n
+hill n
+hill n
 field w
 field n
 field n
@@ -32,7 +32,7 @@ field n
 field n
 field n
 swamp n
-swamp n
+field n
 swamp h
 swamp n
 water n
@@ -43,19 +43,19 @@ field n
 field n
 field n
 field n
-field n
+hill n
 field n
 field n
 field w
 field n
+hill n
 field n
 field n
+swamp n
+water n
+water h
+swamp n
 field n
-swamp n
-swamp n
-swamp h
-swamp n
-swamp n
 swamp n
 water n
 swamp n // end row 3
@@ -64,8 +64,8 @@ field n
 field n
 field n
 field n
-field n
-field n
+hill n
+hill n
 field n
 field n
 field n
@@ -74,7 +74,7 @@ field w
 swamp n
 swamp n
 swamp n
-swamp n
+water n
 swamp n
 swamp n
 water n
@@ -82,7 +82,7 @@ swamp n // end row 4
 field n
 field n
 field w
-field n
+hill n
 field n
 field n
 mountain n
@@ -95,13 +95,13 @@ field n
 swamp n
 swamp n
 swamp n
-swamp n
+field n
 swamp n
 swamp n
 swamp n // end row 5
 field n
 field n
-field n
+hill n
 field n
 field n
 field n
@@ -116,12 +116,12 @@ field n
 swamp n
 swamp n
 swamp n
-swamp n
+water n
 swamp n
 swamp n // end row 6
 field n
 field n
-field n
+hill n
 field w
 field n
 field n
@@ -135,7 +135,7 @@ hill n
 field n
 swamp n
 swamp n
-swamp n
+field n
 swamp n
 swamp n
 swamp n // end row 7
@@ -155,13 +155,13 @@ mountain n
 hill n
 swamp n
 swamp n
+water n
 swamp n
 swamp n
-swamp n
-swamp n // end row 8
+field n // end row 8
 field n
 field n
-field n
+hill n
 field n
 field n
 field n
@@ -178,7 +178,7 @@ swamp n
 swamp n
 swamp n
 swamp n
-swamp n // end row 9
+water n // end row 9
 field n
 field n
 field w
@@ -196,7 +196,7 @@ hill n
 hill n
 field n
 swamp n
-swamp n
+field n
 swamp h
 swamp n // end row 10
 field n
@@ -217,7 +217,7 @@ field n
 field n
 field n
 field w
-field n
+hill n
 field n // end row 11
 field n
 field n
@@ -239,7 +239,7 @@ field n
 field n
 field n
 field n // end row 12
-field n
+hill n
 field n
 field n
 field n
@@ -278,8 +278,8 @@ mountain n
 field n
 field n
 field n
-field n // end row 14
-field n
+hill n // end row 14
+hill n
 field n
 field n
 field n
@@ -290,15 +290,15 @@ hill i
 hill n
 field n
 field n
-field n
+hill n
 field n
 field n
 field n
 field w
 field n
 field n
-field n
-field n // end row 15
+hill n
+hill n // end row 15
 field n
 field n
 field n
@@ -310,7 +310,7 @@ field n
 field n
 field n
 field n
-field n
+hill n
 field n
 field w
 field n
@@ -324,14 +324,14 @@ field n
 field n
 hill n
 hill n
+hill n
+hill n
+field n
+hill n
 field n
 field n
 field n
-field n
-field n
-field n
-field n
-field n
+hill n
 field n
 field w
 field n
@@ -344,29 +344,29 @@ field n
 hill n
 field n
 field n
+hill n
 field n
 field n
 field n
-field n
-field n
+hill n
 field n
 field n
 field w
 field n
+hill n
 field n
-field n
-field n
+hill n
 field n
 field n
 field n // end row 18
 field n
 field n
 field n
+hill n
 field n
 field n
-field n
-field n
-field n
+hill n
+hill n
 field w
 field n
 field n
@@ -374,8 +374,8 @@ field n
 field n
 field n
 field n
-field n
-field n
+hill n
+hill n
 field n
 field n
 field n // end row 19
@@ -384,18 +384,18 @@ field n
 field n
 field n
 field n
-field n
+hill n
 field n
 field n
 field w
 field n
 field w
+hill n
 field n
 field n
 field n
+hill n
+fiehillld n
 field n
 field n
-field n
-field n
-field n
-field n // end row 20
+hill n // end row 20

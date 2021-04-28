@@ -1,6 +1,7 @@
 package models;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Observable;
 
 import components.Tile;
@@ -19,7 +20,7 @@ public class CivModel extends Observable {
 	private boolean singlePlayer;
 	private int round;
 	private int numPlayers;
-
+	private ArrayList<int[]> playerStartingCoords;
 	/**
 	 * Initialize a new model.
 	 * 
@@ -30,7 +31,7 @@ public class CivModel extends Observable {
 		round = 0;
 		File f = new File(".");
 		String[] files = f.list();
-		this.board = new CivBoard("./src/models/Map1.txt");
+		this.board = new CivBoard("./src/models/Thermopylae.txt");
 		head = new Node(new Player(1)); // make a human player
 		curPlayer = head;
 		if (playerCount == 1) { // if singleplayer
