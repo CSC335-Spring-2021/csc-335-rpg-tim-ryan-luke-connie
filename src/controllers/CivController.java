@@ -44,20 +44,20 @@ public class CivController {
 	 * For testing -- delete this later
 	 */
 	public void placeStartingUnits() {
-		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 3));
-		model.getTileAt(13, 3).setUnit(scout);
+		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 8));
+		model.getTileAt(13, 8).setUnit(scout);
 		curPlayer.addUnit(scout);
 
 		// Warrior warrior = new Warrior(model.getCurPlayer(), new Point(16, 7));
 		// model.getTileAt(16, 7).setUnit(warrior);
 		// curPlayer.addUnit(warrior);
 
-		Settler settler = new Settler(model.getCurPlayer(), new Point(10, 5));
-		model.getTileAt(10, 5).setUnit(settler);
+		Settler settler = new Settler(model.getCurPlayer(), new Point(10, 10));
+		model.getTileAt(10, 10).setUnit(settler);
 		curPlayer.addUnit(settler);
 
-		City city = new City(model.getCurPlayer(), 12, 3);
-		model.getTileAt(12, 3).foundCity(city);
+		City city = new City(model.getCurPlayer(), 12, 8);
+		model.getTileAt(12, 8).foundCity(city);
 		curPlayer.addCity(city);
 
 		// second player
@@ -119,8 +119,10 @@ public class CivController {
 			u.resetMovement();
 			u.healUnit();
 		}
-		for (City c : curPlayer.getCities())
+		for (City c : curPlayer.getCities()) {
 			c.cityIncrement();
+			updateCity(c);
+		}
 		if (!curPlayer.isHuman())
 			computerTurn();
 		model.changeAndNotify();
@@ -370,7 +372,11 @@ public class CivController {
 			revealTiles(toMove); // reveal tiles around unit
 		}
 		model.changeAndNotify();
-		return moveFrom.getUnit() != null;
+		if (moveTo.getUnit() != null) { // died in counterattack
+			if (moveTo.getUnit().getOwner() != curPlayer && moveFrom.getUnit() == null)
+				return false;
+		}
+		return true;
 	}
 
 	/**
@@ -410,17 +416,18 @@ public class CivController {
 		double attack = attacker.getAttackValue();
 		attack *= attackerTile.getAttackModifier();
 		defender.takeAttack(attack);
-		if (defender.getHP() <= 0) {
+		if ((int) defender.getHP() <= 0) {
+			defenderTile.setUnit(null);
 			defender.getOwner().removeUnit(defender);
 			return !defenderTile.isCityTile();
 		}
 		double counterattack = defender.getAttackValue();
 		counterattack *= defenderTile.getAttackModifier();
 		attacker.takeAttack(counterattack);
-		if (attacker.getHP() <= 0) {
+		if ((int) attacker.getHP() <= 0) {
 			attacker.move(attacker.getMovement(), attacker.getX(), attacker.getY());
 			curPlayer.removeUnit(attacker);
-			getTileAt(attacker.getX(), attacker.getY()).setUnit(null);
+			attackerTile.setUnit(null);
 			return false;
 		}
 		attacker.move(attacker.getMovement(), attacker.getX(), attacker.getY()); // failed move
@@ -443,7 +450,7 @@ public class CivController {
 		double attack = attacker.getAttackValue();
 		attack *= attackerTile.getAttackModifier();
 		defender.takeAttack(attack);
-		if (defender.getRemainingHP() <= 0) {
+		if ((int) defender.getRemainingHP() <= 0) {
 			getTileAt(defender.getX(), defender.getY()).destroyCity();
 			Player lostACity = defender.getOwner();
 			lostACity.removeCity(defender);
@@ -470,7 +477,8 @@ public class CivController {
 	public boolean createUnit(int x, int y, String unitType) {
 		Tile tile = getTileAt(x, y);
 		City city = tile.getOwnerCity();
-		if (city.getProductionReserve() >= Unit.unitCosts.get(unitType) && tile.getUnit() == null) {
+		if (city.getProductionReserve() >= Unit.unitCosts.get(unitType) && tile.getUnit() == null
+				&& city.getProducableUnits().contains(unitType)) {
 			Unit newUnit = city.produceUnit(unitType);
 			tile.setUnit(newUnit);
 			curPlayer.addUnit(newUnit);
@@ -502,6 +510,35 @@ public class CivController {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Expand the city's influence and check for resources on each added tile
+	 * 
+	 * @param c the City whose resources are to be updated
+	 */
+	private void updateCity(City c) {
+		int range = c.getControlRadius();
+		int top = c.getY() - range;
+		int bottom = c.getY() + range;
+		int left = c.getX() - range;
+		int right = c.getX() + range;
+		int[] dirs = new int[] { top, bottom, left, right };
+		for (int i = -range; i <= range; i++) {
+			int x = c.getX() + i;
+			int y = c.getY() + i;
+			for (int j = 0; j < 4; j++) {
+				Tile t = null;
+				if (j == 0 || j == 1)
+					t = getTileAt(x, dirs[j]);
+				else
+					t = getTileAt(dirs[j], y);
+				if (t != null) {
+					t.setOwnerCity(c);
+					t.checkForNewResource();
+				}
+			}
+		}
 	}
 
 	/**
