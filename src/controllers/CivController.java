@@ -528,7 +528,7 @@ public class CivController {
 					t = getTileAt(x, dirs[j]);
 				else
 					t = getTileAt(dirs[j], y);
-				if (t != null) {
+				if (t != null && t.getOwnerCity() == null) {
 					t.setOwnerCity(c);
 					t.checkForNewResource();
 				}
