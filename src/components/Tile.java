@@ -44,7 +44,7 @@ public class Tile {
 			this.attackMult = 1;
 		} else {
 			// terrain type is either a mountain or water, either way it is impassable.
-			this.movementBonus = Integer.MIN_VALUE;
+			this.movementBonus = -1000;
 			this.attackMult = 0;
 		}
 	}
