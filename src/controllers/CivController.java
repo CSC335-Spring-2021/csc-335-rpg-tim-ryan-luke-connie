@@ -496,6 +496,8 @@ public class CivController {
 		if (settler.getCharges() > 0 && tile.getOwnerCity() == null) {
 			City city = settler.foundCity();
 			tile.foundCity(city);
+			curPlayer.removeUnit(settler);
+			tile.setUnit(null);
 			model.changeAndNotify();
 			return true;
 		}
