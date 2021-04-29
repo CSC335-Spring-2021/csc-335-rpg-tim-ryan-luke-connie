@@ -260,9 +260,9 @@ public class CivView extends Application implements Observer {
 
 		// ... and its transition
 		mapSelectedTransition = new FadeTransition();
-		mapSelectedTransition.setDuration(Duration.millis(1200));
-		mapSelectedTransition.setFromValue(2);
-		mapSelectedTransition.setToValue(0.5);
+		mapSelectedTransition.setDuration(Duration.millis(1000));
+		mapSelectedTransition.setFromValue(4);
+		mapSelectedTransition.setToValue(0.7);
 		mapSelectedTransition.setCycleCount(Integer.MAX_VALUE);
 		mapSelectedTransition.setAutoReverse(true);
 		mapSelectedTransition.setNode(mapSelectedCursor);
