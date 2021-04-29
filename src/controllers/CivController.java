@@ -220,23 +220,63 @@ public class CivController {
 	 * units remain close to the city and defend it against attackers. They move out
 	 * of the city if there is no enemy attacking. Otherwise, they just don't move.
 	 *
-	 * @param u a Unit owned by the computer player
+	 * @param u a Unit owned by the computer player defending computer's city
 	 */
 	private void computerDefenderActions(Unit u) {
+		// should randomly move around the city until movement is depleted and always
+		// attack enemy units
+		// avoid moving into the city tile as well
 		HashSet<int[]> validMoves = getValidMoves(u);
-		for (int[] move : validMoves) { // random set of moves
-			if (getTileAt(move[0], move[1]).getUnit() != null) { // attack enemy unit
+		if (getTileAt(u.getX(), u.getY()).isCityTile()) { // if newly created unit, move out of city
+			validMoves = getValidMoves(u);
+			for (int[] move : validMoves) {
 				moveUnit(u, move[0], move[1]);
 				break;
 			}
 		}
-		// move the unit out of the city by 1 space if there is no enemy attacking
-		if (getTileAt(u.getX(), u.getY()).isCityTile()) {
-			validMoves = getValidMoves(u);
-			for (int[] move : validMoves) { // random set of moves
-				moveUnit(u, move[0], move[1]);
-				break;
+		// the unit should be no more than one tile away from the city it's defending
+		Integer[] cityCoords = new Integer[] { -1, -1 };
+		for (int i = -1; i <= 1; i++) {
+			for (int j = -1; j <= 1; j++) {
+				Tile t = getTileAt(u.getX() + i, u.getY() + j);
+				if (t != null && t.isCityTile()) {
+					cityCoords[0] = u.getX() + i;
+					cityCoords[1] = u.getY() + j;
+				}
 			}
+		}
+		validMoves = getValidMoves(u);
+		while (validMoves.size() != 0) { // continue moving while able
+			boolean moved = false;
+			for (int[] move : validMoves) {
+				// don't move too far away from the city
+				if (Math.abs(cityCoords[0] - move[0]) > 1 || Math.abs(cityCoords[1] - move[1]) > 1)
+					continue;
+				// don't move into the city
+				if (cityCoords[0] == move[0] && cityCoords[1] == move[1])
+					continue;
+				if (getTileAt(move[0], move[1]).getUnit() != null) { // always want to attack
+					moveUnit(u, move[0], move[1]);
+					moved = true;
+					break;
+				}
+			}
+			if (!moved) {
+				for (int[] move : validMoves) {
+					// don't move too far away from the city
+					if (Math.abs(cityCoords[0] - move[0]) > 1 || Math.abs(cityCoords[1] - move[1]) > 1)
+						continue;
+					// don't move into the city
+					if (cityCoords[0] == move[0] && cityCoords[1] == move[1])
+						continue;
+					moveUnit(u, move[0], move[1]); // take the first good move
+					moved = true;
+					break;
+				}
+			}
+			if (!moved)
+				return;
+			validMoves = getValidMoves(u);
 		}
 	}
 
@@ -246,7 +286,7 @@ public class CivController {
 	 * if possible and do that move; otherwise, do a good move; if these are both
 	 * impossible, make a random move. This is done until movement is depleted.
 	 *
-	 * @param u a Unit owned by the computer player
+	 * @param u a Unit owned by the computer player attacking enemy city
 	 */
 	private void computerAttackerActions(Unit u) {
 		// search the entire map for the user's closest city
@@ -270,17 +310,30 @@ public class CivController {
 		}
 		if (closest[0] == -1) // no cities left to attack
 			return;
-		// if y distance to city is greater than x, move in the y direction
-		// and vice versa
-		// if equal, move diagonal
-		// if no move exists for these "better" choices, choose a move that
-		// gets the unit at all closer
+		moveTowards(u, closest);
+	}
+
+	/**
+	 * Moves the unit towards the target by searching for the ideal move first, then
+	 * choosing any good move, and moving randomly if there is no "good" move. If
+	 * target is in range, attack target.
+	 * 
+	 * If y distance to target is greater than x distance, move in the y direction,
+	 * and vice versa. If equal, move diagonally. If no move exists for these
+	 * "better" choices, choose a random move. Continue moving until the unit's
+	 * movement is fully depleted.
+	 * 
+	 * @param u      the Unit to be moved
+	 * @param target Integer[] of size 2 representing the x,y target location that
+	 *               the unit is to be moved towards
+	 */
+	private void moveTowards(Unit u, Integer[] target) {
 		HashSet<int[]> validMoves = getValidMoves(u);
 		while (validMoves.size() != 0) {
-			if (getTileAt(closest[0], closest[1]).getOwnerCity() == null)
+			if (getTileAt(target[0], target[1]).getOwnerCity() == null)
 				return;
-			int xDiff = closest[0] - u.getX();
-			int yDiff = closest[1] - u.getY();
+			int xDiff = target[0] - u.getX();
+			int yDiff = target[1] - u.getY();
 			int priority = 0; // give x direction priority
 			if (Math.abs(yDiff) > Math.abs(xDiff))
 				priority = 1; // y diff is greater, so give y priority
@@ -288,7 +341,7 @@ public class CivController {
 			int goodY = Integer.signum(yDiff) + u.getY(); // ideal y to go to
 			boolean moved = false;
 			for (int[] move : validMoves) { // loop for the ideal move
-				if ((move[0] == closest[0] && move[1] == closest[1]) || // city, attack
+				if ((move[0] == target[0] && move[1] == target[1]) || // city, attack
 						move[0] == goodX && move[1] == goodY) { // ideal move
 					moveUnit(u, move[0], move[1]);
 					moved = true;
@@ -297,19 +350,10 @@ public class CivController {
 			}
 			if (!moved) { // if not moved, loop again for good move
 				for (int[] move : validMoves) {
-					if (priority == 0) {
-						if (move[0] == goodX) {
-							moveUnit(u, move[0], move[1]);
-							moved = true;
-							break;
-						}
-					}
-					if (priority == 1) {
-						if (move[1] == goodY) {
-							moveUnit(u, move[0], move[1]);
-							moved = true;
-							break;
-						}
+					if ((priority == 0 && move[0] == goodX) || (priority == 1 && move[1] == goodY)) {
+						moveUnit(u, move[0], move[1]);
+						moved = true;
+						break;
 					}
 				}
 			}
@@ -325,21 +369,14 @@ public class CivController {
 	}
 
 	/**
-	 * For now, computer cities will crank out warrior fodder
+	 * For now, computer cities will crank out warrior fodder.
 	 *
 	 * @param c computer city attempting to create units
 	 */
 	private void computerCityActions(City c) {
-		Tile tile = getTileAt(c.getX(), c.getY());
-		Unit unit = tile.getUnit();
-		// if unit on this city, move it out
-		if (unit != null) {
-			HashSet<int[]> validMoves = getValidMoves(unit);
-			Iterator<int[]> iterator = validMoves.iterator();
-			int[] move = iterator.next();
-			moveUnit(unit, move[0], move[1]);
-		}
 		createUnit(c.getX(), c.getY(), "Warrior");
+		// note that in defender and attacker actions, created units will be moved out
+		// of the city
 	}
 
 	/**
