@@ -2,9 +2,20 @@ package views;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 
-import components.*;
+import components.City;
+import components.Scout;
+import components.Settler;
+import components.Tile;
+import components.Unit;
+import components.Warrior;
 import controllers.CivController;
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
@@ -97,7 +108,7 @@ public class CivView extends Application implements Observer {
 		this.controller = new CivController(model);
 		this.spriteNodes = new ArrayList<>();
 		this.hpBars = new ArrayList<>();
-		
+
 		model.addObserver(this);
 
 		// calculate derived constants (less spaghetti later on)
@@ -123,8 +134,8 @@ public class CivView extends Application implements Observer {
 		stage.setTitle("Sid Meier's Civilization 0.5");
 
 		// add global events
-		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
-		mapCanvas.setOnMouseMoved(ev -> handleMapHover(ev));
+		mapCanvas.setOnMouseClicked(this::handleMapClick);
+		mapCanvas.setOnMouseMoved(this::handleMapHover);
 		endTurnButton.setOnMouseClicked(ev -> {
 			if (controller.isHumanTurn()) {
 				controller.endTurn();
@@ -139,7 +150,6 @@ public class CivView extends Application implements Observer {
 		controller.startGame(); // begin the game
 		stage.show();
 	}
-
 
 	/**
 	 * Preload sprite images and return references to their Image objects. This
@@ -161,7 +171,6 @@ public class CivView extends Application implements Observer {
 		return result;
 	}
 
-
 	/**
 	 * Update the UI when the model changes.
 	 *
@@ -171,6 +180,17 @@ public class CivView extends Application implements Observer {
 	@Override
 	public void update(Observable observable, Object o) {
 		renderAllSprites();
+
+		// update selectedUnit/selectedCity if they died in previous turn
+		if (selectedUnit != null) {
+			if ((int) selectedUnit.getHP() <= 0) {
+				deselect();
+			}
+		}
+		if (selectedCity != null) {
+			if ((int) selectedCity.getRemainingHP() <= 0)
+				deselect();
+		}
 
 		// refresh any open detail panes, as the selected unit's values may have changed
 		if (selectedUnit != null)
@@ -185,7 +205,6 @@ public class CivView extends Application implements Observer {
 			System.exit(0);
 		}
 	}
-
 
 	/**
 	 * Create and assemble the game UI.
@@ -503,8 +522,8 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
-	 * Deselect the currently selected unit and/or city. Also hides the
-	 * respective detail pane(s)
+	 * Deselect the currently selected unit and/or city. Also hides the respective
+	 * detail pane(s)
 	 */
 	private void deselect() {
 		selectedUnit = null;
@@ -522,9 +541,9 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
-	 * Select a unit. This involves marking said unit as selected, centering
-	 * the map on it, and building and showing a detail pane that displays the
-	 * unit's properties.
+	 * Select a unit. This involves marking said unit as selected, centering the map
+	 * on it, and building and showing a detail pane that displays the unit's
+	 * properties.
 	 *
 	 * @param unit The Unit to select
 	 */
@@ -574,7 +593,12 @@ public class CivView extends Application implements Observer {
 			attackHelp.getStyleClass().add("detail-pane__help");
 			Text attackMod = new Text((tile.getAttackModifier() > 1 ? "+" : "-") + " attack ");
 			attackMod.getStyleClass().add(tile.getAttackModifier() > 1 ? "positive" : "negative");
-			Text attackWhy = new Text("in " + tile.getTerrainType().name().toLowerCase() + "s");
+			Text attackWhy = new Text();
+			if (tile.isCityTile()) {
+				attackWhy.setText("inside a city");
+			} else {
+				attackWhy.setText("in " + tile.getTerrainType().name().toLowerCase() + "s");
+			}
 			attackHelp.getChildren().addAll(attackMod, attackWhy);
 			unitPane.getChildren().add(attackHelp);
 			estimatedHeight += 20;
@@ -616,9 +640,9 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
-	 * Select a city. This involves marking said city as selected, centering
-	 * the map on it, and building and showing a detail pane that displays the
-	 * city's properties.
+	 * Select a city. This involves marking said city as selected, centering the map
+	 * on it, and building and showing a detail pane that displays the city's
+	 * properties.
 	 *
 	 * @param city The City to select
 	 */
@@ -666,22 +690,22 @@ public class CivView extends Application implements Observer {
 		prodRateFlow.getChildren().addAll(prodRate, prodRateLabel);
 
 		// pane actions
-		Pane spacer = new Pane(); // text nodes can't take padding, so we'llspace with this
+		Pane spacer = new Pane(); // text nodes can't take padding, so we'll space with this
 		spacer.getStyleClass().add("detail-pane__space-above");
 		Text buildLabel = new Text("Build:");
 		buildLabel.getStyleClass().add("detail-pane__label");
 		Node[] scoutRow = createCityBuildButton(city, "Scout", 1, Unit.unitCosts.get("Scout"));
 		Node[] warriorRow = createCityBuildButton(city, "Warrior", 1, Unit.unitCosts.get("Warrior"));
 		Node[] settlerRow = createCityBuildButton(city, "Settler", 1, Unit.unitCosts.get("Settler"));
-		scoutRow[1].setOnMouseClicked(ev -> {
-			controller.createUnit(selectedCity.getX(), selectedCity.getY(), "Scout");
-		});
-		warriorRow[1].setOnMouseClicked(ev -> {
-			controller.createUnit(selectedCity.getX(), selectedCity.getY(), "Warrior");
-		});
-		settlerRow[1].setOnMouseClicked(ev -> {
-			controller.createUnit(selectedCity.getX(), selectedCity.getY(), "Settler");
-		});
+		scoutRow[1].setOnMouseClicked(ev -> controller.createUnit(
+				selectedCity.getX(), selectedCity.getY(), "Scout"
+		));
+		warriorRow[1].setOnMouseClicked(ev -> controller.createUnit(
+				selectedCity.getX(), selectedCity.getY(), "Warrior"
+		));
+		settlerRow[1].setOnMouseClicked(ev -> controller.createUnit(
+				selectedCity.getX(), selectedCity.getY(), "Settler"
+		));
 
 		// populate and show pane
 		cityPane.getChildren().addAll(name, hpFlow, hpBar, popCount, popLabel, prodFlow, prodRateFlow, spacer,
@@ -712,8 +736,8 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
-	 * Add an indicator to each tile that a given unit can currently move to
-	 * and/or attack.
+	 * Add an indicator to each tile that a given unit can currently move to and/or
+	 * attack.
 	 *
 	 * @param unit The unit to indicate valid moves for
 	 */
@@ -734,18 +758,17 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
-	 * Assemble a TextFlow with a common layout for figures and their
-	 * associated labels.
+	 * Assemble a TextFlow with a common layout for figures and their associated
+	 * labels.
 	 *
-	 * @param label The label text to render
-	 * @param figure The primary figure value
-	 * @param max If the figure has a max value, pass it here. Otherwise, pass
-	 *            a negative number
-	 * @param disposition The disposition class to render ("positive",
-	 *                    "neutral", or "negative") or an empty string if not
-	 *                    applicable
-	 * @return The assembled TextFlow object containing the data inside new
-	 * Text nodes
+	 * @param label       The label text to render
+	 * @param figure      The primary figure value
+	 * @param max         If the figure has a max value, pass it here. Otherwise,
+	 *                    pass a negative number
+	 * @param disposition The disposition class to render ("positive", "neutral", or
+	 *                    "negative") or an empty string if not applicable
+	 * @return The assembled TextFlow object containing the data inside new Text
+	 *         nodes
 	 */
 	private TextFlow createLabeledFigure(String label, int figure, int max, String disposition) {
 		TextFlow result = new TextFlow();

@@ -5,11 +5,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import components.City;
-import components.Scout;
 import components.Settler;
 import components.Tile;
 import components.Unit;
-import components.Warrior;
 import models.CivModel;
 import models.Player;
 
@@ -44,41 +42,37 @@ public class CivController {
 	 * For testing -- delete this later
 	 */
 	public void placeStartingUnits() {
-		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 8));
-		model.getTileAt(13, 8).setUnit(scout);
-		curPlayer.addUnit(scout);
+//		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 8));
+//		model.getTileAt(13, 8).setUnit(scout);
+//		curPlayer.addUnit(scout);
 
 		// Warrior warrior = new Warrior(model.getCurPlayer(), new Point(16, 7));
 		// model.getTileAt(16, 7).setUnit(warrior);
 		// curPlayer.addUnit(warrior);
 
-		Settler settler = new Settler(model.getCurPlayer(), new Point(10, 10));
-		model.getTileAt(10, 10).setUnit(settler);
+		Settler settler = new Settler(model.getCurPlayer(), new Point(5, 9));
+		model.getTileAt(5, 9).setUnit(settler);
 		curPlayer.addUnit(settler);
-
-		City city = new City(model.getCurPlayer(), 12, 8);
-		model.getTileAt(12, 8).foundCity(city);
-		curPlayer.addCity(city);
 
 		// second player
 		model.nextPlayer();
 		curPlayer = model.getCurPlayer();
 
-		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(16, 5));
-		model.getTileAt(16, 5).setUnit(warrior2);
-		curPlayer.addUnit(warrior2);
+//		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(16, 5));
+//		model.getTileAt(16, 5).setUnit(warrior2);
+//		curPlayer.addUnit(warrior2);
 
-		Settler settler2 = new Settler(model.getCurPlayer(), new Point(17, 7));
-		model.getTileAt(17, 7).setUnit(settler2);
+		Settler settler2 = new Settler(model.getCurPlayer(), new Point(15, 9));
+		model.getTileAt(15, 9).setUnit(settler2);
 		curPlayer.addUnit(settler2);
 
-		Warrior warrior3 = new Warrior(model.getCurPlayer(), new Point(17, 6));
-		model.getTileAt(17, 6).setUnit(warrior3);
-		curPlayer.addUnit(warrior3);
-
-		Warrior warrior4 = new Warrior(model.getCurPlayer(), new Point(16, 4));
-		model.getTileAt(16, 4).setUnit(warrior4);
-		curPlayer.addUnit(warrior4);
+//		Warrior warrior3 = new Warrior(model.getCurPlayer(), new Point(17, 6));
+//		model.getTileAt(17, 6).setUnit(warrior3);
+//		curPlayer.addUnit(warrior3);
+//
+//		Warrior warrior4 = new Warrior(model.getCurPlayer(), new Point(16, 4));
+//		model.getTileAt(16, 4).setUnit(warrior4);
+//		curPlayer.addUnit(warrior4);
 
 		// go back to player 1 to start the game
 		model.nextPlayer();
@@ -109,9 +103,7 @@ public class CivController {
 	 * events for a player turn
 	 *
 	 * All Units have their movement reset, all Cities owned by a Player are
-	 * incremented
-	 *
-	 * @param player
+	 * incremented and updated. Do computer turn if it is the computer's turn.
 	 */
 	public void startTurn() {
 		curPlayer = model.getCurPlayer();
@@ -129,8 +121,10 @@ public class CivController {
 	}
 
 	/**
-	 * Human player ends their turn, the model moves on to the next player. This
-	 * will update the curPlayer for when the next turn begins.
+	 * Player ends their turn, the model moves on to the next player. This will
+	 * update the curPlayer in model to be retrieved by controller for when the next
+	 * turn begins. Notify the model if the game is over so that view is updated
+	 * accordingly.
 	 */
 	public void endTurn() {
 		if (gameOver())
@@ -159,7 +153,12 @@ public class CivController {
 	}
 
 	/**
-	 * Perform AI turns
+	 * Perform AI turn actions.
+	 * 
+	 * Right now, the computer will loop through all the cities and do city actions,
+	 * then loop through all its units and do unit actions. Settlers found cities,
+	 * the first few units stay by their origin city and defend it, and the rest
+	 * move towards enemy cities to attack them.
 	 *
 	 */
 	public void computerTurn() {
@@ -191,9 +190,11 @@ public class CivController {
 
 	/**
 	 * Actions for computer's settlers. Try to found a city as soon as possible.
-	 * Otherwise, move randomly and avoid trying to attack.
+	 * Otherwise, move randomly and avoid attacking (this is only necessary if the
+	 * computer is producing settlers, as these new settlers must move out of the
+	 * city radius of control to found a new city).
 	 *
-	 * @param s the Settler that the computer player is controlling
+	 * @param s a Settler owned by the computer player
 	 */
 	private void computerSettlerActions(Settler s) {
 		boolean founded = foundCity(s.getX(), s.getY()); // try to found a city
@@ -219,30 +220,73 @@ public class CivController {
 	 * units remain close to the city and defend it against attackers. They move out
 	 * of the city if there is no enemy attacking. Otherwise, they just don't move.
 	 *
-	 * @param u
+	 * @param u a Unit owned by the computer player defending computer's city
 	 */
 	private void computerDefenderActions(Unit u) {
+		// should randomly move around the city until movement is depleted and always
+		// attack enemy units
+		// avoid moving into the city tile as well
 		HashSet<int[]> validMoves = getValidMoves(u);
-		for (int[] move : validMoves) { // random set of moves
-			if (getTileAt(move[0], move[1]).getUnit() != null) { // attack enemy unit
+		if (getTileAt(u.getX(), u.getY()).isCityTile()) { // if newly created unit, move out of city
+			validMoves = getValidMoves(u);
+			for (int[] move : validMoves) {
 				moveUnit(u, move[0], move[1]);
 				break;
 			}
 		}
-		// move the unit out of the city by 1 space if there is no enemy attacking
-		if (getTileAt(u.getX(), u.getY()).isCityTile()) {
-			validMoves = getValidMoves(u);
-			for (int[] move : validMoves) { // random set of moves
-				moveUnit(u, move[0], move[1]);
-				break;
+		// the unit should be no more than one tile away from the city it's defending
+		Integer[] cityCoords = new Integer[] { -1, -1 };
+		for (int i = -1; i <= 1; i++) {
+			for (int j = -1; j <= 1; j++) {
+				Tile t = getTileAt(u.getX() + i, u.getY() + j);
+				if (t != null && t.isCityTile()) {
+					cityCoords[0] = u.getX() + i;
+					cityCoords[1] = u.getY() + j;
+				}
 			}
+		}
+		validMoves = getValidMoves(u);
+		while (validMoves.size() != 0) { // continue moving while able
+			boolean moved = false;
+			for (int[] move : validMoves) {
+				// don't move too far away from the city
+				if (Math.abs(cityCoords[0] - move[0]) > 1 || Math.abs(cityCoords[1] - move[1]) > 1)
+					continue;
+				// don't move into the city
+				if (cityCoords[0] == move[0] && cityCoords[1] == move[1])
+					continue;
+				if (getTileAt(move[0], move[1]).getUnit() != null) { // always want to attack
+					moveUnit(u, move[0], move[1]);
+					moved = true;
+					break;
+				}
+			}
+			if (!moved) {
+				for (int[] move : validMoves) {
+					// don't move too far away from the city
+					if (Math.abs(cityCoords[0] - move[0]) > 1 || Math.abs(cityCoords[1] - move[1]) > 1)
+						continue;
+					// don't move into the city
+					if (cityCoords[0] == move[0] && cityCoords[1] == move[1])
+						continue;
+					moveUnit(u, move[0], move[1]); // take the first good move
+					moved = true;
+					break;
+				}
+			}
+			if (!moved)
+				return;
+			validMoves = getValidMoves(u);
 		}
 	}
 
 	/**
-	 * Units that move towards and attack human player's cities
+	 * Units that move towards and attack human player's cities. Find the closest
+	 * enemy city and move towards it. Movement heuristic is to find the best move
+	 * if possible and do that move; otherwise, do a good move; if these are both
+	 * impossible, make a random move. This is done until movement is depleted.
 	 *
-	 * @param u
+	 * @param u a Unit owned by the computer player attacking enemy city
 	 */
 	private void computerAttackerActions(Unit u) {
 		// search the entire map for the user's closest city
@@ -254,7 +298,7 @@ public class CivController {
 				if (t.isCityTile()) {
 					City c = t.getOwnerCity();
 					if (c.getOwner() != curPlayer) {
-						int dist = Math.max(c.getX() - u.getX(), c.getY() - u.getY());
+						int dist = Math.max(Math.abs(c.getX() - u.getX()), Math.abs(c.getY() - u.getY()));
 						if (dist < minDist) {
 							minDist = dist;
 							closest[0] = c.getX();
@@ -264,48 +308,56 @@ public class CivController {
 				}
 			}
 		}
-		if (closest[0] == -1) // no cities left
+		if (closest[0] == -1) // no cities left to attack
 			return;
-		// if y distance to city is greater than x, move in the y direction
-		// and vice versa
-		// if equal, move diagonal
-		// if no move exists for these "better" choices, choose a move that
-		// gets the unit at all closer
+		moveTowards(u, closest);
+	}
+
+	/**
+	 * Moves the unit towards the target by searching for the ideal move first, then
+	 * choosing any good move, and moving randomly if there is no "good" move. If
+	 * target is in range, attack target.
+	 * 
+	 * If y distance to target is greater than x distance, move in the y direction,
+	 * and vice versa. If equal, move diagonally. If no move exists for these
+	 * "better" choices, choose a random move. Continue moving until the unit's
+	 * movement is fully depleted.
+	 * 
+	 * @param u      the Unit to be moved
+	 * @param target Integer[] of size 2 representing the x,y target location that
+	 *               the unit is to be moved towards
+	 */
+	private void moveTowards(Unit u, Integer[] target) {
 		HashSet<int[]> validMoves = getValidMoves(u);
 		while (validMoves.size() != 0) {
-			if (getTileAt(closest[0], closest[1]).getOwnerCity() == null)
+			if (getTileAt(target[0], target[1]).getOwnerCity() == null)
 				return;
-			int xDiff = closest[0] - u.getX();
-			int yDiff = closest[1] - u.getY();
+			int xDiff = target[0] - u.getX();
+			int yDiff = target[1] - u.getY();
 			int priority = 0; // give x direction priority
 			if (Math.abs(yDiff) > Math.abs(xDiff))
 				priority = 1; // y diff is greater, so give y priority
 			int goodX = Integer.signum(xDiff) + u.getX(); // ideal x to go to
 			int goodY = Integer.signum(yDiff) + u.getY(); // ideal y to go to
 			boolean moved = false;
-			for (int[] move : validMoves) { // random set of moves
-				if ((move[0] == closest[0] && move[1] == closest[1]) || // city, attack
+			for (int[] move : validMoves) { // loop for the ideal move
+				if ((move[0] == target[0] && move[1] == target[1]) || // city, attack
 						move[0] == goodX && move[1] == goodY) { // ideal move
 					moveUnit(u, move[0], move[1]);
 					moved = true;
 					break;
 				}
-				if (priority == 0) {
-					if (move[0] == goodX) {
-						moveUnit(u, move[0], move[1]);
-						moved = true;
-						break;
-					}
-				}
-				if (priority == 1) {
-					if (move[1] == goodY) {
+			}
+			if (!moved) { // if not moved, loop again for good move
+				for (int[] move : validMoves) {
+					if ((priority == 0 && move[0] == goodX) || (priority == 1 && move[1] == goodY)) {
 						moveUnit(u, move[0], move[1]);
 						moved = true;
 						break;
 					}
 				}
 			}
-			// got through all the moves, just make a random move
+			// got through all the moves and didn't move, just make a random move
 			if (!moved) {
 				Iterator<int[]> iterator = validMoves.iterator();
 				int[] move = iterator.next();
@@ -317,21 +369,14 @@ public class CivController {
 	}
 
 	/**
-	 * For now, computer cities will crank out warrior fodder
+	 * For now, computer cities will crank out warrior fodder.
 	 *
 	 * @param c computer city attempting to create units
 	 */
 	private void computerCityActions(City c) {
-		Tile tile = getTileAt(c.getX(), c.getY());
-		Unit unit = tile.getUnit();
-		// if unit on this city, move it out
-		if (unit != null) {
-			HashSet<int[]> validMoves = getValidMoves(unit);
-			Iterator<int[]> iterator = validMoves.iterator();
-			int[] move = iterator.next();
-			moveUnit(unit, move[0], move[1]);
-		}
 		createUnit(c.getX(), c.getY(), "Warrior");
+		// note that in defender and attacker actions, created units will be moved out
+		// of the city
 	}
 
 	/**
@@ -373,8 +418,9 @@ public class CivController {
 		}
 		model.changeAndNotify();
 		if (moveTo.getUnit() != null) { // died in counterattack
-			if (moveTo.getUnit().getOwner() != curPlayer && moveFrom.getUnit() == null)
+			if (moveTo.getUnit().getOwner() != curPlayer && moveFrom.getUnit() == null) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -533,7 +579,7 @@ public class CivController {
 					t = getTileAt(x, dirs[j]);
 				else
 					t = getTileAt(dirs[j], y);
-				if (t != null) {
+				if (t != null && t.getOwnerCity() == null) {
 					t.setOwnerCity(c);
 					t.checkForNewResource();
 				}
