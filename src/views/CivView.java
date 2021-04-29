@@ -97,7 +97,7 @@ public class CivView extends Application implements Observer {
 		this.controller = new CivController(model);
 		this.spriteNodes = new ArrayList<>();
 		this.hpBars = new ArrayList<>();
-		
+
 		model.addObserver(this);
 
 		// calculate derived constants (less spaghetti later on)
@@ -123,8 +123,8 @@ public class CivView extends Application implements Observer {
 		stage.setTitle("Sid Meier's Civilization 0.5");
 
 		// add global events
-		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
-		mapCanvas.setOnMouseMoved(ev -> handleMapHover(ev));
+		mapCanvas.setOnMouseClicked(this::handleMapClick);
+		mapCanvas.setOnMouseMoved(this::handleMapHover);
 		endTurnButton.setOnMouseClicked(ev -> {
 			if (controller.isHumanTurn()) {
 				controller.endTurn();
@@ -574,7 +574,12 @@ public class CivView extends Application implements Observer {
 			attackHelp.getStyleClass().add("detail-pane__help");
 			Text attackMod = new Text((tile.getAttackModifier() > 1 ? "+" : "-") + " attack ");
 			attackMod.getStyleClass().add(tile.getAttackModifier() > 1 ? "positive" : "negative");
-			Text attackWhy = new Text("in " + tile.getTerrainType().name().toLowerCase() + "s");
+			Text attackWhy = new Text();
+			if (tile.isCityTile()) {
+				attackWhy.setText("inside a city");
+			} else {
+				attackWhy.setText("in " + tile.getTerrainType().name().toLowerCase() + "s");
+			}
 			attackHelp.getChildren().addAll(attackMod, attackWhy);
 			unitPane.getChildren().add(attackHelp);
 			estimatedHeight += 20;
@@ -666,22 +671,22 @@ public class CivView extends Application implements Observer {
 		prodRateFlow.getChildren().addAll(prodRate, prodRateLabel);
 
 		// pane actions
-		Pane spacer = new Pane(); // text nodes can't take padding, so we'llspace with this
+		Pane spacer = new Pane(); // text nodes can't take padding, so we'll space with this
 		spacer.getStyleClass().add("detail-pane__space-above");
 		Text buildLabel = new Text("Build:");
 		buildLabel.getStyleClass().add("detail-pane__label");
 		Node[] scoutRow = createCityBuildButton(city, "Scout", 1, Unit.unitCosts.get("Scout"));
 		Node[] warriorRow = createCityBuildButton(city, "Warrior", 1, Unit.unitCosts.get("Warrior"));
 		Node[] settlerRow = createCityBuildButton(city, "Settler", 1, Unit.unitCosts.get("Settler"));
-		scoutRow[1].setOnMouseClicked(ev -> {
-			controller.createUnit(selectedCity.getX(), selectedCity.getY(), "Scout");
-		});
-		warriorRow[1].setOnMouseClicked(ev -> {
-			controller.createUnit(selectedCity.getX(), selectedCity.getY(), "Warrior");
-		});
-		settlerRow[1].setOnMouseClicked(ev -> {
-			controller.createUnit(selectedCity.getX(), selectedCity.getY(), "Settler");
-		});
+		scoutRow[1].setOnMouseClicked(ev -> controller.createUnit(
+				selectedCity.getX(), selectedCity.getY(), "Scout"
+		));
+		warriorRow[1].setOnMouseClicked(ev -> controller.createUnit(
+				selectedCity.getX(), selectedCity.getY(), "Warrior"
+		));
+		settlerRow[1].setOnMouseClicked(ev -> controller.createUnit(
+				selectedCity.getX(), selectedCity.getY(), "Settler"
+		));
 
 		// populate and show pane
 		cityPane.getChildren().addAll(name, hpFlow, hpBar, popCount, popLabel, prodFlow, prodRateFlow, spacer,
