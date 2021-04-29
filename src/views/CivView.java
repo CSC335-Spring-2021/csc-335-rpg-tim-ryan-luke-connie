@@ -719,7 +719,9 @@ public class CivView extends Application implements Observer {
 			int[] coords = gridToIso(move[0], move[1]);
 			ImageView markerView;
 			Tile moveTile = controller.getTileAt(move[0], move[1]);
-			if (moveTile.getUnit() != null && moveTile.getUnit().getOwner() != model.getCurPlayer()) {
+			// indicate if there's an attackable unit or city in the space
+			if ((moveTile.getUnit() != null && moveTile.getUnit().getOwner() != model.getCurPlayer()) ||
+					(moveTile.isCityTile() && moveTile.getOwnerCity().getOwner() != model.getCurPlayer())) {
 				markerView = new ImageView(markerImages.get("attackable"));
 			} else if (moveTile.getMovementModifier() < 0) {
 				markerView = new ImageView(markerImages.get("costly"));
