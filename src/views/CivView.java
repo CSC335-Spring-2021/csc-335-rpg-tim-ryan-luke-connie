@@ -56,7 +56,7 @@ public class CivView extends Application implements Observer {
 	private Pane mapElementContainer;
 	private Canvas mapCanvas;
 	private Pane mapOverlayContainer;
-	private Image validMarker;
+	private Map<String, Image> markerImages;
 	private ImageView mapHoverCursor;
 	private ImageView mapSelectedCursor;
 	private FadeTransition mapSelectedTransition;
@@ -97,7 +97,7 @@ public class CivView extends Application implements Observer {
 		this.controller = new CivController(model);
 		this.spriteNodes = new ArrayList<>();
 		this.hpBars = new ArrayList<>();
-		
+
 		model.addObserver(this);
 
 		// calculate derived constants (less spaghetti later on)
@@ -105,7 +105,7 @@ public class CivView extends Application implements Observer {
 		isoBoardHeight = (int) (isoBoardWidth * ISO_FACTOR);
 
 		// preload and save references to sprite images
-		this.spriteImages = loadSpriteImages();
+		loadSpriteImages();
 
 		// assemble ui
 		Pane window = new Pane();
@@ -145,20 +145,24 @@ public class CivView extends Application implements Observer {
 	 * Preload sprite images and return references to their Image objects. This
 	 * prevents us from continually loading new images as the sprite layer
 	 * refreshes, which is especially bad if javafx doesn't release them.
-	 *
-	 * @return A map of string keys to sprite Image references
 	 */
-	private Map<String, Image> loadSpriteImages() {
-		Map<String, Image> result = new HashMap<>();
+	private void loadSpriteImages() {
+		spriteImages = new HashMap<>();
+		markerImages = new HashMap<>();
 		try {
-			result.put("City", new Image(new FileInputStream("src/assets/sprites/city.png")));
-			result.put("Scout", new Image(new FileInputStream("src/assets/sprites/scout.png")));
-			result.put("Settler", new Image(new FileInputStream("src/assets/sprites/settler.png")));
-			result.put("Warrior", new Image(new FileInputStream("src/assets/sprites/warrior.png")));
+			spriteImages.put("City", new Image(new FileInputStream("src/assets/sprites/city.png")));
+			spriteImages.put("Scout", new Image(new FileInputStream("src/assets/sprites/scout.png")));
+			spriteImages.put("Settler", new Image(new FileInputStream("src/assets/sprites/settler.png")));
+			spriteImages.put("Warrior", new Image(new FileInputStream("src/assets/sprites/warrior.png")));
+
+			markerImages.put("attackable", new Image(new FileInputStream("src/assets/tiles/attackable.png")));
+			markerImages.put("costly", new Image(new FileInputStream("src/assets/tiles/costly.png")));
+			markerImages.put("hover", new Image(new FileInputStream("src/assets/tiles/hover.png")));
+			markerImages.put("selected", new Image(new FileInputStream("src/assets/tiles/selected.png")));
+			markerImages.put("valid", new Image(new FileInputStream("src/assets/tiles/valid.png")));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		return result;
 	}
 
 
@@ -239,40 +243,29 @@ public class CivView extends Application implements Observer {
 		mapOverlayContainer.setMouseTransparent(true);
 		mapElementContainer.getChildren().add(mapOverlayContainer);
 
-		try {
-			// store hover cursor image for later so we don't have to keep loading and
-			// unloading it
-			Image hoverCursorImage = new Image(new FileInputStream("src/assets/tiles/hover.png"));
-			mapHoverCursor = new ImageView(hoverCursorImage);
-			mapHoverCursor.setFitWidth(TILE_SIZE);
-			mapHoverCursor.setFitHeight(TILE_SIZE * ISO_FACTOR);
-			mapHoverCursor.setMouseTransparent(true);
-			mapElementContainer.getChildren().add(mapHoverCursor);
+		// store hover cursor imageview for later so we don't have to keep
+		// creating and destroying it many times per second
+		mapHoverCursor = new ImageView(markerImages.get("hover"));
+		mapHoverCursor.setFitWidth(TILE_SIZE);
+		mapHoverCursor.setFitHeight(TILE_SIZE * ISO_FACTOR);
+		mapHoverCursor.setMouseTransparent(true);
+		mapElementContainer.getChildren().add(mapHoverCursor);
 
-			// same with "selected" image
-			Image selectedImage = new Image(new FileInputStream("src/assets/tiles/selected.png"));
-			mapSelectedCursor = new ImageView(selectedImage);
-			mapSelectedCursor.setFitWidth(TILE_SIZE);
-			mapSelectedCursor.setFitHeight(TILE_SIZE * ISO_FACTOR);
-			mapSelectedCursor.setMouseTransparent(true);
-			mapElementContainer.getChildren().add(mapSelectedCursor);
+		// same with "selected" image
+		mapSelectedCursor = new ImageView(markerImages.get("selected"));
+		mapSelectedCursor.setFitWidth(TILE_SIZE);
+		mapSelectedCursor.setFitHeight(TILE_SIZE * ISO_FACTOR);
+		mapSelectedCursor.setMouseTransparent(true);
+		mapElementContainer.getChildren().add(mapSelectedCursor);
 
-			// ... and its transition
-			mapSelectedTransition = new FadeTransition();
-			mapSelectedTransition.setDuration(Duration.millis(1200));
-			mapSelectedTransition.setFromValue(2);
-			mapSelectedTransition.setToValue(0.5);
-			mapSelectedTransition.setCycleCount(Integer.MAX_VALUE);
-			mapSelectedTransition.setAutoReverse(true);
-			mapSelectedTransition.setNode(mapSelectedCursor);
-
-			// and, finally, cache the in-range indicator image. We'll construct new
-			// ImageViews for it upon use
-			validMarker = new Image(new FileInputStream("src/assets/tiles/valid.png"));
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+		// ... and its transition
+		mapSelectedTransition = new FadeTransition();
+		mapSelectedTransition.setDuration(Duration.millis(1200));
+		mapSelectedTransition.setFromValue(2);
+		mapSelectedTransition.setToValue(0.5);
+		mapSelectedTransition.setCycleCount(Integer.MAX_VALUE);
+		mapSelectedTransition.setAutoReverse(true);
+		mapSelectedTransition.setNode(mapSelectedCursor);
 
 		// unit detail pane
 		unitPane = new VBox();
@@ -724,8 +717,15 @@ public class CivView extends Application implements Observer {
 
 		for (int[] move : validMoves) {
 			int[] coords = gridToIso(move[0], move[1]);
-			// System.out.println(coords[0] + " " + coords[1]);
-			ImageView markerView = new ImageView(validMarker);
+			ImageView markerView;
+			Tile moveTile = controller.getTileAt(move[0], move[1]);
+			if (moveTile.getUnit() != null && moveTile.getUnit().getOwner() != model.getCurPlayer()) {
+				markerView = new ImageView(markerImages.get("attackable"));
+			} else if (moveTile.getMovementModifier() < 0) {
+				markerView = new ImageView(markerImages.get("costly"));
+			} else {
+				markerView = new ImageView(markerImages.get("valid"));
+			}
 			markerView.setX(coords[0]);
 			markerView.setY(coords[1]);
 			markerView.setMouseTransparent(true);
