@@ -77,7 +77,7 @@
   -fx-padding: 24 0 0;
 }
 .detail-pane__pop-count {
-  -fx-hgap: 6;
+  -fx-spacing: 6;
   -fx-padding: 24 0 6;
 }
 .detail-pane__build-row {
