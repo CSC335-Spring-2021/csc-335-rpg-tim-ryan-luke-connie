@@ -103,9 +103,7 @@ public class CivController {
 	 * events for a player turn
 	 *
 	 * All Units have their movement reset, all Cities owned by a Player are
-	 * incremented
-	 *
-	 * @param player
+	 * incremented and updated. Do computer turn if it is the computer's turn.
 	 */
 	public void startTurn() {
 		curPlayer = model.getCurPlayer();
@@ -123,8 +121,10 @@ public class CivController {
 	}
 
 	/**
-	 * Human player ends their turn, the model moves on to the next player. This
-	 * will update the curPlayer for when the next turn begins.
+	 * Player ends their turn, the model moves on to the next player. This will
+	 * update the curPlayer in model to be retrieved by controller for when the next
+	 * turn begins. Notify the model if the game is over so that view is updated
+	 * accordingly.
 	 */
 	public void endTurn() {
 		if (gameOver())
@@ -153,7 +153,12 @@ public class CivController {
 	}
 
 	/**
-	 * Perform AI turns
+	 * Perform AI turn actions.
+	 * 
+	 * Right now, the computer will loop through all the cities and do city actions,
+	 * then loop through all its units and do unit actions. Settlers found cities,
+	 * the first few units stay by their origin city and defend it, and the rest
+	 * move towards enemy cities to attack them.
 	 *
 	 */
 	public void computerTurn() {
@@ -185,9 +190,11 @@ public class CivController {
 
 	/**
 	 * Actions for computer's settlers. Try to found a city as soon as possible.
-	 * Otherwise, move randomly and avoid trying to attack.
+	 * Otherwise, move randomly and avoid attacking (this is only necessary if the
+	 * computer is producing settlers, as these new settlers must move out of the
+	 * city radius of control to found a new city).
 	 *
-	 * @param s the Settler that the computer player is controlling
+	 * @param s a Settler owned by the computer player
 	 */
 	private void computerSettlerActions(Settler s) {
 		boolean founded = foundCity(s.getX(), s.getY()); // try to found a city
@@ -213,7 +220,7 @@ public class CivController {
 	 * units remain close to the city and defend it against attackers. They move out
 	 * of the city if there is no enemy attacking. Otherwise, they just don't move.
 	 *
-	 * @param u
+	 * @param u a Unit owned by the computer player
 	 */
 	private void computerDefenderActions(Unit u) {
 		HashSet<int[]> validMoves = getValidMoves(u);
@@ -234,9 +241,12 @@ public class CivController {
 	}
 
 	/**
-	 * Units that move towards and attack human player's cities
+	 * Units that move towards and attack human player's cities. Find the closest
+	 * enemy city and move towards it. Movement heuristic is to find the best move
+	 * if possible and do that move; otherwise, do a good move; if these are both
+	 * impossible, make a random move. This is done until movement is depleted.
 	 *
-	 * @param u
+	 * @param u a Unit owned by the computer player
 	 */
 	private void computerAttackerActions(Unit u) {
 		// search the entire map for the user's closest city
@@ -248,7 +258,7 @@ public class CivController {
 				if (t.isCityTile()) {
 					City c = t.getOwnerCity();
 					if (c.getOwner() != curPlayer) {
-						int dist = Math.max(c.getX() - u.getX(), c.getY() - u.getY());
+						int dist = Math.max(Math.abs(c.getX() - u.getX()), Math.abs(c.getY() - u.getY()));
 						if (dist < minDist) {
 							minDist = dist;
 							closest[0] = c.getX();
@@ -258,7 +268,7 @@ public class CivController {
 				}
 			}
 		}
-		if (closest[0] == -1) // no cities left
+		if (closest[0] == -1) // no cities left to attack
 			return;
 		// if y distance to city is greater than x, move in the y direction
 		// and vice versa
@@ -277,29 +287,33 @@ public class CivController {
 			int goodX = Integer.signum(xDiff) + u.getX(); // ideal x to go to
 			int goodY = Integer.signum(yDiff) + u.getY(); // ideal y to go to
 			boolean moved = false;
-			for (int[] move : validMoves) { // random set of moves
+			for (int[] move : validMoves) { // loop for the ideal move
 				if ((move[0] == closest[0] && move[1] == closest[1]) || // city, attack
 						move[0] == goodX && move[1] == goodY) { // ideal move
 					moveUnit(u, move[0], move[1]);
 					moved = true;
 					break;
 				}
-				if (priority == 0) {
-					if (move[0] == goodX) {
-						moveUnit(u, move[0], move[1]);
-						moved = true;
-						break;
+			}
+			if (!moved) { // if not moved, loop again for good move
+				for (int[] move : validMoves) {
+					if (priority == 0) {
+						if (move[0] == goodX) {
+							moveUnit(u, move[0], move[1]);
+							moved = true;
+							break;
+						}
 					}
-				}
-				if (priority == 1) {
-					if (move[1] == goodY) {
-						moveUnit(u, move[0], move[1]);
-						moved = true;
-						break;
+					if (priority == 1) {
+						if (move[1] == goodY) {
+							moveUnit(u, move[0], move[1]);
+							moved = true;
+							break;
+						}
 					}
 				}
 			}
-			// got through all the moves, just make a random move
+			// got through all the moves and didn't move, just make a random move
 			if (!moved) {
 				Iterator<int[]> iterator = validMoves.iterator();
 				int[] move = iterator.next();
