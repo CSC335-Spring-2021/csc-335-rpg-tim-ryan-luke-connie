@@ -45,14 +45,17 @@ public class CivController {
 //		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 8));
 //		model.getTileAt(13, 8).setUnit(scout);
 //		curPlayer.addUnit(scout);
+//		revealTiles(scout);
 
 		// Warrior warrior = new Warrior(model.getCurPlayer(), new Point(16, 7));
 		// model.getTileAt(16, 7).setUnit(warrior);
 		// curPlayer.addUnit(warrior);
+		// revealTiles(warrior);
 
 		Settler settler = new Settler(model.getCurPlayer(), new Point(5, 9));
 		model.getTileAt(5, 9).setUnit(settler);
 		curPlayer.addUnit(settler);
+		revealTiles(settler);
 
 		// second player
 		model.nextPlayer();
@@ -61,18 +64,22 @@ public class CivController {
 //		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(16, 5));
 //		model.getTileAt(16, 5).setUnit(warrior2);
 //		curPlayer.addUnit(warrior2);
+//		revealTiles(warrior2);
 
 		Settler settler2 = new Settler(model.getCurPlayer(), new Point(15, 9));
 		model.getTileAt(15, 9).setUnit(settler2);
 		curPlayer.addUnit(settler2);
+		revealTiles(settler2);
 
 //		Warrior warrior3 = new Warrior(model.getCurPlayer(), new Point(17, 6));
 //		model.getTileAt(17, 6).setUnit(warrior3);
 //		curPlayer.addUnit(warrior3);
+//		revealTiles(warrior3);
 //
 //		Warrior warrior4 = new Warrior(model.getCurPlayer(), new Point(16, 4));
 //		model.getTileAt(16, 4).setUnit(warrior4);
 //		curPlayer.addUnit(warrior4);
+//		revealTiles(warrior4);
 
 		// go back to player 1 to start the game
 		model.nextPlayer();
@@ -154,7 +161,7 @@ public class CivController {
 
 	/**
 	 * Perform AI turn actions.
-	 * 
+	 *
 	 * Right now, the computer will loop through all the cities and do city actions,
 	 * then loop through all its units and do unit actions. Settlers found cities,
 	 * the first few units stay by their origin city and defend it, and the rest
@@ -317,12 +324,12 @@ public class CivController {
 	 * Moves the unit towards the target by searching for the ideal move first, then
 	 * choosing any good move, and moving randomly if there is no "good" move. If
 	 * target is in range, attack target.
-	 * 
+	 *
 	 * If y distance to target is greater than x distance, move in the y direction,
 	 * and vice versa. If equal, move diagonally. If no move exists for these
 	 * "better" choices, choose a random move. Continue moving until the unit's
 	 * movement is fully depleted.
-	 * 
+	 *
 	 * @param u      the Unit to be moved
 	 * @param target Integer[] of size 2 representing the x,y target location that
 	 *               the unit is to be moved towards
@@ -560,7 +567,7 @@ public class CivController {
 
 	/**
 	 * Expand the city's influence and check for resources on each added tile
-	 * 
+	 *
 	 * @param c the City whose resources are to be updated
 	 */
 	private void updateCity(City c) {
