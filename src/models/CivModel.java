@@ -26,12 +26,7 @@ public class CivModel extends Observable {
 	 * 
 	 * @param playerCount indicates how many players this game will have
 	 */
-	public CivModel(int playerCount) {
-		numPlayers = playerCount;
-		round = 0;
-		File f = new File(".");
-		String[] files = f.list();
-		this.board = new CivBoard("./src/models/Thermopylae.txt");
+	public CivModel(int playerCount, int map, int size) {
 		head = new Node(new Player(1)); // make a human player
 		curPlayer = head;
 		if (playerCount == 1) { // if singleplayer
@@ -40,15 +35,27 @@ public class CivModel extends Observable {
 			Node cpu = new Node(new Player(0)); // make a cpu player
 			head.next = cpu;
 			cpu.next = head; // have them wrap around
-		} else {
-			singlePlayer = false;
-			for (int i = 0; i < playerCount - 1; i++) { // if not singleplayer, add playerCount - 1 more players
-				Node player = new Node(new Player(1)); // that are human
-				curPlayer.next = player; // set next
-				curPlayer = curPlayer.next; // iter
-			}
-			curPlayer.next = head; // have it wrap around
 		}
+		 else {
+				numPlayers = playerCount;
+				singlePlayer = false;
+				for (int i = 0; i < playerCount - 1; i++) { // if not singleplayer, add playerCount - 1 more players
+					Node player = new Node(new Player(1)); // that are human
+					curPlayer.next = player; // set next
+					curPlayer = curPlayer.next; // iter
+				}
+				curPlayer.next = head; // have it wrap around
+			}
+		String mapStr = initPlayerStartingCoords(map, size);
+		round = 0;
+		// System.out.println(mapStr);
+		if (map != 4) {
+			this.board = new CivBoard(mapStr);
+		}
+		else {
+			this.board = new CivBoard(size);
+		}
+
 	}
 
 	/**
@@ -126,6 +133,45 @@ public class CivModel extends Observable {
 	public int numPlayers() {
 		return numPlayers;
 	}
+	
+	private String initPlayerStartingCoords(int map, int size) {
+		ArrayList<int[]> allStartingCoords = new ArrayList<int[]>();
+		this.playerStartingCoords = new ArrayList<int[]>();
+		String mapName = "";
+		if (map == 1) { // Map1.txt starting locations
+			allStartingCoords.add(new int[] {1,1});
+			allStartingCoords.add(new int[] {18,18});
+			allStartingCoords.add(new int[] {18,1});
+			allStartingCoords.add(new int[] {1,18});
+			mapName = "./src/models/Map1.txt";
+		}
+		else if (map == 2) { // Map2.txt starting locations
+			allStartingCoords.add(new int[] {3,2});
+			allStartingCoords.add(new int[] {18,18});
+			allStartingCoords.add(new int[] {1,18});
+			mapName = "./src/models/Map2.txt";
+		}
+		else if (map == 3) {
+			allStartingCoords.add(new int[] {10,1});
+			allStartingCoords.add(new int[] {10,18});
+			mapName = "./src/models/Thermopylae.txt";
+		}
+		else if (map == 4) {
+			allStartingCoords.add(new int[] {1,1});
+			allStartingCoords.add(new int[] {size-1,size-1});
+			allStartingCoords.add(new int[] {size-1,1});
+			allStartingCoords.add(new int[] {1,size-1});
+			mapName = "";
+		}
+		for (int i = 0; i < numPlayers; i++) {
+			playerStartingCoords.add(allStartingCoords.get(i));
+		}
+		return mapName;
+		
+	}
+	public ArrayList<int[]> getPlayerStartingCoords() {
+		return this.playerStartingCoords;
+	}
 
 	/**
 	 * Node class for keeping a wrapped list of players
@@ -157,4 +203,5 @@ public class CivModel extends Observable {
 			return this.player;
 		}
 	}
+	
 }
