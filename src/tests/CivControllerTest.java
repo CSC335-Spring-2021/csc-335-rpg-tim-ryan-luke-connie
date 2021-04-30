@@ -1,7 +1,5 @@
 package tests;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import org.junit.jupiter.api.Test;
 
 import controllers.CivController;
@@ -18,8 +16,7 @@ public class CivControllerTest {
 	void testBasics() {
 		CivModel model = new CivModel(2);
 		CivController controller = new CivController(model);
-
-		assertNotNull(controller);
+		
 	}
 
 }

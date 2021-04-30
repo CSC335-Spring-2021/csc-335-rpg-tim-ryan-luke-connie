@@ -63,6 +63,13 @@ public class CivModel extends Observable {
 	}
 
 	/**
+	 * for JUnit testing
+	 */
+	public CivBoard getCivBoard() {
+		return this.board;
+	}
+
+	/**
 	 * getter method for the size of the board for move validity checking
 	 * 
 	 * @return integer specifying the height and width of our board
