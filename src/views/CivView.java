@@ -49,6 +49,7 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import models.CivModel;
+import models.Player;
 
 /**
  * A GUI, eventually.
@@ -64,17 +65,17 @@ public class CivView extends Application implements Observer {
 
 	// map hooks
 	private ScrollPane mapScrollContainer;
-	private Pane mapElementContainer;
 	private Canvas mapCanvas;
 	private Pane mapOverlayContainer;
 	private Map<String, Image> markerImages;
 	private ImageView mapHoverCursor;
 	private ImageView mapSelectedCursor;
 	private FadeTransition mapSelectedTransition;
+	private Canvas fogCanvas;
+	private Map<String, Image> fogImages;
 
 	// sprite hooks
-	private List<ImageView> spriteNodes;
-	private List<GridPane> hpBars;
+	private Pane spriteContainer;
 	private Map<String, Image> spriteImages;
 
 	// ui hooks
@@ -106,8 +107,6 @@ public class CivView extends Application implements Observer {
 	public void start(Stage stage) {
 		this.model = new CivModel(1); // changed to test AI
 		this.controller = new CivController(model);
-		this.spriteNodes = new ArrayList<>();
-		this.hpBars = new ArrayList<>();
 
 		model.addObserver(this);
 
@@ -121,11 +120,21 @@ public class CivView extends Application implements Observer {
 		// assemble ui
 		Pane window = new Pane();
 		buildUI(window);
-		focusMap(model.getSize() / 2, model.getSize() / 2, false);
 
 		// populate initial map state
 		controller.placeStartingUnits();
 		renderAllSprites();
+
+		// focus the map on any friendly unit so the player isn't lost in fog
+		if (model.getCurPlayer().getUnits().size() > 0) {
+			Unit unit = model.getCurPlayer().getUnits().get(0);
+			focusMap(unit.getX(), unit.getY(), false);
+		} else if (model.getCurPlayer().getCities().size() > 0) {
+			City city = model.getCurPlayer().getCities().get(0);
+			focusMap(city.getX(), city.getY(), false);
+		} else {
+			focusMap(model.getSize() / 2, model.getSize() / 2, false);
+		}
 
 		// build the application window
 		Scene scene = new Scene(window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -159,6 +168,7 @@ public class CivView extends Application implements Observer {
 	private void loadSpriteImages() {
 		spriteImages = new HashMap<>();
 		markerImages = new HashMap<>();
+		fogImages = new HashMap<>();
 		try {
 			spriteImages.put("City", new Image(new FileInputStream("src/assets/sprites/city.png")));
 			spriteImages.put("Scout", new Image(new FileInputStream("src/assets/sprites/scout.png")));
@@ -170,6 +180,15 @@ public class CivView extends Application implements Observer {
 			markerImages.put("hover", new Image(new FileInputStream("src/assets/tiles/hover.png")));
 			markerImages.put("selected", new Image(new FileInputStream("src/assets/tiles/selected.png")));
 			markerImages.put("valid", new Image(new FileInputStream("src/assets/tiles/valid.png")));
+
+			// we're keying fog images as essentially binary strings, with each
+			// cardinal direction able to be on or off to maintain continuity
+			for (int i = 0; i < 16; i++) {
+				// the +16 is to throw a 1 in the 16s place so this string
+				// isn't truncated too soon due to only leading 0s
+				String str = Integer.toBinaryString(i + 16).substring(1);
+				fogImages.put(str, new Image(new FileInputStream("src/assets/fog/fog-" + str + ".png")));
+			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -184,6 +203,7 @@ public class CivView extends Application implements Observer {
 	@Override
 	public void update(Observable observable, Object o) {
 		renderAllSprites();
+		renderFog();
 
 		// update selectedUnit/selectedCity if they died in previous turn
 		if (selectedUnit != null) {
@@ -229,7 +249,7 @@ public class CivView extends Application implements Observer {
 
 		// pane to contain the map canvas. This interim layer lets us add padding
 		// without screwing up canvas click math, etc
-		mapElementContainer = new Pane();
+		Pane mapElementContainer = new Pane();
 		mapElementContainer.setPadding(new Insets(0, SCROLL_GUTTER, SCROLL_GUTTER, 0));
 		mapScrollContainer.setContent(mapElementContainer);
 
@@ -285,6 +305,22 @@ public class CivView extends Application implements Observer {
 		mapSelectedTransition.setCycleCount(Integer.MAX_VALUE);
 		mapSelectedTransition.setAutoReverse(true);
 		mapSelectedTransition.setNode(mapSelectedCursor);
+
+		// sprite layer
+		spriteContainer = new Pane();
+		spriteContainer.setPrefWidth(isoBoardWidth);
+		spriteContainer.setPrefHeight(isoBoardHeight);
+		spriteContainer.setLayoutX(SCROLL_GUTTER);
+		spriteContainer.setLayoutY(SCROLL_GUTTER);
+		spriteContainer.setMouseTransparent(true);
+		mapElementContainer.getChildren().add(spriteContainer);
+
+		// fog of war layer
+		fogCanvas = new Canvas(isoBoardWidth, isoBoardHeight);
+		mapElementContainer.getChildren().add(fogCanvas);
+		fogCanvas.setLayoutX(SCROLL_GUTTER);
+		fogCanvas.setLayoutY(SCROLL_GUTTER);
+		fogCanvas.setMouseTransparent(true);
 
 		// unit detail pane
 		unitPane = new VBox();
@@ -342,10 +378,9 @@ public class CivView extends Application implements Observer {
 		cityImageView.setFitWidth(CITY_SIZE);
 		cityImageView.setFitHeight(CITY_SIZE);
 		cityImageView.setMouseTransparent(true);
-		cityImageView.setX(coords[0] + SCROLL_GUTTER + ((TILE_SIZE - CITY_SIZE) / 2.0));
-		cityImageView.setY(coords[1] + SCROLL_GUTTER - 34.0); // Magic Number, for now
-		mapElementContainer.getChildren().add(cityImageView);
-		spriteNodes.add(cityImageView);
+		cityImageView.setX(coords[0] + ((TILE_SIZE - CITY_SIZE) / 2.0));
+		cityImageView.setY(coords[1] - 34.0); // Magic Number, for now
+		spriteContainer.getChildren().add(cityImageView);
 	}
 
 	/**
@@ -369,10 +404,9 @@ public class CivView extends Application implements Observer {
 		unitImageView.setFitWidth(SPRITE_SIZE);
 		unitImageView.setFitHeight(SPRITE_SIZE);
 		unitImageView.setMouseTransparent(true);
-		unitImageView.setX(coords[0] + SCROLL_GUTTER + ((TILE_SIZE - SPRITE_SIZE) / 2.0));
-		unitImageView.setY(coords[1] + SCROLL_GUTTER - (SPRITE_SIZE / 4.0));
-		mapElementContainer.getChildren().add(unitImageView);
-		spriteNodes.add(unitImageView);
+		unitImageView.setX(coords[0] + ((TILE_SIZE - SPRITE_SIZE) / 2.0));
+		unitImageView.setY(coords[1] - (SPRITE_SIZE / 4.0));
+		spriteContainer.getChildren().add(unitImageView);
 
 		renderSpriteHPBar(unit.getHP(), unit.getMaxHP(), coords[0], coords[1]);
 	}
@@ -388,21 +422,109 @@ public class CivView extends Application implements Observer {
 	private void renderSpriteHPBar(double cur, double max, int x, int y) {
 		GridPane hpBar = createHPBar(cur, max);
 		hpBar.setPrefWidth(TILE_SIZE / 2.0);
-		hpBar.setLayoutX(x + SCROLL_GUTTER + TILE_SIZE / 4.0);
-		hpBar.setLayoutY(y + SCROLL_GUTTER + (TILE_SIZE * ISO_FACTOR) / 1.35);
-		mapElementContainer.getChildren().add(hpBar);
-		hpBars.add(hpBar);
+		hpBar.setLayoutX(x + TILE_SIZE / 4.0);
+		hpBar.setLayoutY(y + (TILE_SIZE * ISO_FACTOR) / 1.35);
+		spriteContainer.getChildren().add(hpBar);
 	}
 
 	/**
 	 * Clear all currently rendered sprites.
 	 */
 	private void clearAllSprites() {
-		mapElementContainer.getChildren().removeAll(spriteNodes);
-		mapElementContainer.getChildren().removeAll(hpBars);
-		spriteNodes.clear();
-		hpBars.clear();
+		spriteContainer.getChildren().clear();
 		System.gc();
+	}
+
+	/**
+	 * Render fog of war on top of the map and sprites based on what the
+	 * current player has already discovered.
+	 */
+	private void renderFog() {
+		GraphicsContext context = fogCanvas.getGraphicsContext2D();
+		Player player = model.getCurPlayer();
+		int size = model.getSize();
+
+		context.clearRect(0, 0, isoBoardWidth, isoBoardHeight);
+
+		for (int[] coords : getDrawTraversal()) {
+			Tile tile = model.getTileAt(coords[0], coords[1]);
+			if (tile == null || tile.canSeeTile(player))
+				continue;
+
+			// since we want some continuity to our fog but also want a little
+			// hint at its edge, we'll need to load a different image depending
+			// on what's bordering it. These images are named for the cardinal
+			// directions stemming from this tile: up, right, down, left. A 1
+			// in these places means to connect the fog in that direction (or
+			// it's at the edge of the board)
+			char[] imageDirs = { '0', '0', '0', '0' };
+
+			// up
+			if (coords[1] <= 0 || !model.getTileAt(coords[0], coords[1] - 1).canSeeTile(player)) {
+				imageDirs[0] = '1';
+			}
+			// right
+			if (coords[0] >= size - 1 || !model.getTileAt(coords[0] + 1, coords[1]).canSeeTile(player)) {
+				imageDirs[1] = '1';
+			}
+			// down
+			if (coords[1] >= size - 1 || !model.getTileAt(coords[0], coords[1] + 1).canSeeTile(player)) {
+				imageDirs[2] = '1';
+			}
+			// left
+			if (coords[0] <= 0 || !model.getTileAt(coords[0] - 1, coords[1]).canSeeTile(player)) {
+				imageDirs[3] = '1';
+			}
+
+			// draw the thing
+			Image fogImage = fogImages.get(new String(imageDirs));
+			int[] isoCoords = gridToIso(coords[0], coords[1]);
+			// images are 2px bigger so we can draw them with 1px of overlap.
+			// Otherwise, some underlying info can peek through
+			context.drawImage(
+					fogImage, isoCoords[0] - 1, isoCoords[1] - 1,
+					TILE_SIZE + 2, TILE_SIZE * ISO_FACTOR + 2
+			);
+		}
+
+		// since a group of four "full" images in a square will leave a small
+		// gap in the center due to the way these images are drawn to account
+		// for corners, we'll need to fill them in with a solid color. We could
+		// have accounted for this in the images themselves by reading
+		// diagonals, but it would have required 256 images to cover all
+		// permutations instead of 16, and ain't nobody got time for that
+		context.setFill(Color.BLACK);
+		int radius = 23;
+
+		// we're iterating on corners, not tiles, so inclusive high bound
+		for (int x = 0; x <= model.getSize(); x++) {
+			for (int y = 0; y <= model.getSize(); y++) {
+				// search each tile touching this gap on its diagonals
+				int diags = 0;
+
+				// top left
+				if (x == 0 || y == 0 || !model.getTileAt(x - 1, y - 1).canSeeTile(player))
+					diags++;
+				// top right
+				if (x >= size || y == 0 || !model.getTileAt(x, y - 1).canSeeTile(player))
+					diags++;
+				// bottom right
+				if (x >= size || y >= size || !model.getTileAt(x, y).canSeeTile(player))
+					diags++;
+				// bottom left
+				if (x == 0 || y >= size || !model.getTileAt(x - 1, y).canSeeTile(player))
+					diags++;
+
+				if (diags == 4) {
+					int[] coords = gridToIso(x, y);
+					context.fillOval(
+							coords[0] + TILE_SIZE / 2.0 - radius / 2.0,
+							coords[1] - radius / 2.0,
+							radius, radius
+					);
+				}
+			}
+		}
 	}
 
 	/**
