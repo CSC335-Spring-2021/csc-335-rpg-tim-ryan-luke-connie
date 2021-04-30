@@ -1,6 +1,8 @@
 package controllers;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -52,37 +54,50 @@ public class CivController {
 		// curPlayer.addUnit(warrior);
 		// revealTiles(warrior);
 
-		Settler settler = new Settler(model.getCurPlayer(), new Point(5, 9));
-		model.getTileAt(5, 9).setUnit(settler);
-		curPlayer.addUnit(settler);
-		revealTiles(settler);
+		// Settler settler = new Settler(model.getCurPlayer(), new Point(5, 9));
+		// model.getTileAt(5, 9).setUnit(settler);
+		// curPlayer.addUnit(settler);
+		// revealTiles(settler);
 
 		// second player
-		model.nextPlayer();
-		curPlayer = model.getCurPlayer();
+		// model.nextPlayer();
+		// curPlayer = model.getCurPlayer();
 
 //		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(16, 5));
 //		model.getTileAt(16, 5).setUnit(warrior2);
 //		curPlayer.addUnit(warrior2);
 //		revealTiles(warrior2);
 
-		Settler settler2 = new Settler(model.getCurPlayer(), new Point(15, 9));
-		model.getTileAt(15, 9).setUnit(settler2);
-		curPlayer.addUnit(settler2);
-		revealTiles(settler2);
+		// Settler settler2 = new Settler(model.getCurPlayer(), new Point(15, 9));
+		// model.getTileAt(15, 9).setUnit(settler2);
+		// curPlayer.addUnit(settler2);
+		// revealTiles(settler2);
 
 //		Warrior warrior3 = new Warrior(model.getCurPlayer(), new Point(17, 6));
 //		model.getTileAt(17, 6).setUnit(warrior3);
 //		curPlayer.addUnit(warrior3);
 //		revealTiles(warrior3);
 //
+		ArrayList<int[]> startingCoords = model.getPlayerStartingCoords();
+		for (int i = 0; i < startingCoords.size(); i++) {
+			int[] coord = startingCoords.get(i);
+			// System.out.println((coord[0] + " " + coord[1]));
+			Settler settler = new Settler(model.getCurPlayer(), new Point(coord[0], coord[1]));
+			model.getTileAt(coord[0],  coord[1]).setUnit(settler);
+			// System.out.println(model.getCurPlayer().getID());
+			model.getCurPlayer().addUnit(settler);
+			revealTiles(settler);
+			model.nextPlayer();
+			// curPlayer = model.getCurPlayer();
+		}
+		
 //		Warrior warrior4 = new Warrior(model.getCurPlayer(), new Point(16, 4));
 //		model.getTileAt(16, 4).setUnit(warrior4);
 //		curPlayer.addUnit(warrior4);
 //		revealTiles(warrior4);
 
 		// go back to player 1 to start the game
-		model.nextPlayer();
+		curPlayer = model.getHead();
 	}
 
 	/**

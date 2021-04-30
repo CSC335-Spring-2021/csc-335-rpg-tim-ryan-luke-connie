@@ -84,6 +84,10 @@ public class CivBoard implements Serializable {
 			board[i][size - 1] = new Tile(Tile.terrainTypes.WATER, "");
 			i++;
 		}
+		board[size-2][size-2] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[1][1] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[size-2][1] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[1][size-2] = new Tile(Tile.terrainTypes.FIELD, "");
 		this.tiles = board;
 	}
 	

@@ -27,29 +27,37 @@ public class CivModel extends Observable implements Serializable {
 	 * 
 	 * @param playerCount indicates how many players this game will have
 	 */
-	public CivModel(int playerCount) {
-		numPlayers = playerCount;
-		round = 0;
-		File f = new File(".");
-		String[] files = f.list();
-		this.board = new CivBoard("./src/models/Thermopylae.txt");
-		head = new Node(new Player(1)); // make a human player
+	public CivModel(int playerCount, int map, int size) {
+		head = new Node(new Player(1, new String("Player " + 1))); // make a human player
 		curPlayer = head;
 		if (playerCount == 1) { // if singleplayer
 			numPlayers = 2;
 			singlePlayer = true;
-			Node cpu = new Node(new Player(0)); // make a cpu player
+			Node cpu = new Node(new Player(0, "CPU Player")); // make a cpu player
 			head.next = cpu;
 			cpu.next = head; // have them wrap around
-		} else {
-			singlePlayer = false;
-			for (int i = 0; i < playerCount - 1; i++) { // if not singleplayer, add playerCount - 1 more players
-				Node player = new Node(new Player(1)); // that are human
-				curPlayer.next = player; // set next
-				curPlayer = curPlayer.next; // iter
-			}
-			curPlayer.next = head; // have it wrap around
 		}
+		 else {
+				numPlayers = playerCount;
+				singlePlayer = false;
+				for (int i = 0; i < playerCount - 1; i++) { // if not singleplayer, add playerCount - 1 more players
+					String playerID = "Player " + (i + 2);
+					Node player = new Node(new Player(1, playerID)); // that are human
+					curPlayer.next = player; // set next
+					curPlayer = curPlayer.next; // iter
+				}
+				curPlayer.next = head; // have it wrap around
+			}
+		String mapStr = initPlayerStartingCoords(map, size);
+		round = 0;
+		// System.out.println(mapStr);
+		if (map != 4) {
+			this.board = new CivBoard(mapStr);
+		}
+		else {
+			this.board = new CivBoard(size);
+		}
+		curPlayer = head;
 	}
 
 	/**
@@ -98,6 +106,7 @@ public class CivModel extends Observable implements Serializable {
 		if (curPlayer.equals(head)) {
 			round++;
 		}
+		// System.out.println(curPlayer.getPlayer().getID());
 	}
 
 	public boolean isComputer() {
@@ -126,6 +135,49 @@ public class CivModel extends Observable implements Serializable {
 
 	public int numPlayers() {
 		return numPlayers;
+	}
+	
+	private String initPlayerStartingCoords(int map, int size) {
+		ArrayList<int[]> allStartingCoords = new ArrayList<int[]>();
+		this.playerStartingCoords = new ArrayList<int[]>();
+		String mapName = "";
+		if (map == 1) { // Map1.txt starting locations
+			allStartingCoords.add(new int[] {1,1});
+			allStartingCoords.add(new int[] {18,18});
+			allStartingCoords.add(new int[] {18,1});
+			allStartingCoords.add(new int[] {1,18});
+			mapName = "./src/models/Map1.txt";
+		}
+		else if (map == 2) { // Map2.txt starting locations
+			allStartingCoords.add(new int[] {3,2});
+			allStartingCoords.add(new int[] {18,18});
+			allStartingCoords.add(new int[] {18,1});
+			mapName = "./src/models/Map2.txt";
+		}
+		else if (map == 3) {
+			allStartingCoords.add(new int[] {15,2});
+			allStartingCoords.add(new int[] {4,17});
+			mapName = "./src/models/Thermopylae.txt";
+		}
+		else if (map == 4) {
+			allStartingCoords.add(new int[] {1,1});
+			allStartingCoords.add(new int[] {size-2,size-2});
+			allStartingCoords.add(new int[] {size-2,1});
+			allStartingCoords.add(new int[] {1,size-2});
+			mapName = "";
+		}
+		for (int i = 0; i < numPlayers; i++) {
+			playerStartingCoords.add(allStartingCoords.get(i));
+		}
+		return mapName;
+		
+	}
+	public ArrayList<int[]> getPlayerStartingCoords() {
+		return this.playerStartingCoords;
+	}
+	
+	public Player getHead() {
+		return this.head.getPlayer();
 	}
 
 	/**
@@ -158,4 +210,5 @@ public class CivModel extends Observable implements Serializable {
 			return this.player;
 		}
 	}
+	
 }
