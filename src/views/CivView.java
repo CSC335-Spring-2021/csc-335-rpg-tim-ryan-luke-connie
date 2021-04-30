@@ -432,6 +432,7 @@ public class CivView extends Application implements Observer {
 	private void renderFog() {
 		GraphicsContext context = fogCanvas.getGraphicsContext2D();
 		Player player = model.getCurPlayer();
+		int size = model.getSize();
 
 		context.clearRect(0, 0, isoBoardWidth, isoBoardHeight);
 
@@ -453,11 +454,11 @@ public class CivView extends Application implements Observer {
 				imageDirs[0] = '1';
 			}
 			// right
-			if (coords[0] >= model.getSize() - 1 || !model.getTileAt(coords[0] + 1, coords[1]).canSeeTile(player)) {
+			if (coords[0] >= size - 1 || !model.getTileAt(coords[0] + 1, coords[1]).canSeeTile(player)) {
 				imageDirs[1] = '1';
 			}
 			// down
-			if (coords[1] >= model.getSize() - 1 || !model.getTileAt(coords[0], coords[1] + 1).canSeeTile(player)) {
+			if (coords[1] >= size - 1 || !model.getTileAt(coords[0], coords[1] + 1).canSeeTile(player)) {
 				imageDirs[2] = '1';
 			}
 			// left
@@ -468,7 +469,43 @@ public class CivView extends Application implements Observer {
 			Image fogImage = fogImages.get(new String(imageDirs));
 			int[] isoCoords = gridToIso(coords[0], coords[1]);
 
-			context.drawImage(fogImage, isoCoords[0], isoCoords[1], TILE_SIZE, TILE_SIZE * ISO_FACTOR);
+		// since a group of four "full" images in a square will leave a small
+		// gap in the center due to the way these images are drawn to account
+		// for corners, we'll need to fill them in with a solid color. We could
+		// have accounted for this in the images themselves by reading
+		// diagonals, but it would have required 256 images to cover all
+		// permutations instead of 16, and ain't nobody got time for that
+		context.setFill(Color.BLACK);
+		int radius = 23;
+
+		// we're iterating on corners, not tiles, so inclusive high bound
+		for (int x = 0; x <= model.getSize(); x++) {
+			for (int y = 0; y <= model.getSize(); y++) {
+				// search each tile touching this gap on its diagonals
+				int diags = 0;
+
+				// top left
+				if (x == 0 || y == 0 || !model.getTileAt(x - 1, y - 1).canSeeTile(player))
+					diags++;
+				// top right
+				if (x >= size || y == 0 || !model.getTileAt(x, y - 1).canSeeTile(player))
+					diags++;
+				// bottom right
+				if (x >= size || y >= size || !model.getTileAt(x, y).canSeeTile(player))
+					diags++;
+				// bottom left
+				if (x == 0 || y >= size || !model.getTileAt(x - 1, y).canSeeTile(player))
+					diags++;
+
+				if (diags == 4) {
+					int[] coords = gridToIso(x, y);
+					context.fillOval(
+							coords[0] + TILE_SIZE / 2.0 - radius / 2.0,
+							coords[1] - radius / 2.0,
+							radius, radius
+					);
+				}
+			}
 		}
 	}
 
