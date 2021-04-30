@@ -1,6 +1,7 @@
 package models;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Observable;
 
@@ -12,7 +13,7 @@ import components.Tile;
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  */
 @SuppressWarnings("deprecation")
-public class CivModel extends Observable {
+public class CivModel extends Observable implements Serializable {
 
 	private CivBoard board;
 	private Node curPlayer;
@@ -134,7 +135,7 @@ public class CivModel extends Observable {
 	 * @field player Player object associated with this node
 	 * @field next Next node that contains the player whose turn it is next
 	 */
-	private class Node {
+	private class Node implements Serializable {
 		Player player;
 		Node next;
 

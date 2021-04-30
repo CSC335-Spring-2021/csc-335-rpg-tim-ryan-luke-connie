@@ -2,6 +2,7 @@ package models;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -17,7 +18,7 @@ import components.Tile;
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  */
-public class CivBoard {
+public class CivBoard implements Serializable {
 
 	public Tile[][] tiles;
 	public int size;
@@ -26,7 +27,7 @@ public class CivBoard {
 	/**
 	 * Constructor for our board
 	 *
-	 * @param size
+	 * @param size 
 	 */
 	public CivBoard(int size) {
 		this.size = size;
