@@ -84,10 +84,11 @@ public class CivController {
 			// System.out.println((coord[0] + " " + coord[1]));
 			Settler settler = new Settler(model.getCurPlayer(), new Point(coord[0], coord[1]));
 			model.getTileAt(coord[0],  coord[1]).setUnit(settler);
-			curPlayer.addUnit(settler);
+			// System.out.println(model.getCurPlayer().getID());
+			model.getCurPlayer().addUnit(settler);
 			revealTiles(settler);
 			model.nextPlayer();
-			curPlayer = model.getCurPlayer();
+			// curPlayer = model.getCurPlayer();
 		}
 		
 //		Warrior warrior4 = new Warrior(model.getCurPlayer(), new Point(16, 4));
@@ -96,7 +97,7 @@ public class CivController {
 //		revealTiles(warrior4);
 
 		// go back to player 1 to start the game
-		model.nextPlayer();
+		curPlayer = model.getHead();
 	}
 
 	/**

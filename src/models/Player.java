@@ -9,14 +9,16 @@ public class Player {
 	private ArrayList<Unit> units;
 	private ArrayList<City> cities;
 	private boolean isHuman;
+	String ID;
 
-	public Player(int isHuman) {
+	public Player(int isHuman, String ID) {
 		units = new ArrayList<Unit>();
 		cities = new ArrayList<City>();
 		if (isHuman == 1)
 			this.isHuman = true;
 		else
 			this.isHuman = false;
+		this.ID = ID;
 	}
 
 	public void addCity(City city) {
@@ -45,5 +47,8 @@ public class Player {
 
 	public void removeCity(City city) {
 		this.cities.remove(city);
+	}
+	public String getID() {
+		return this.ID;
 	}
 }

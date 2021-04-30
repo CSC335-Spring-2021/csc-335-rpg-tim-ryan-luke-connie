@@ -105,7 +105,7 @@ public class CivView extends Application implements Observer {
 	 */
 	@Override
 	public void start(Stage stage) {
-		this.model = new CivModel(1,1, 0); // changed to test AI
+		this.model = new CivModel(1,4, 30); // changed to test AI
 		this.controller = new CivController(model);
 
 		model.addObserver(this);
