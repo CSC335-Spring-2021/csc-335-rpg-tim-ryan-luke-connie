@@ -120,11 +120,21 @@ public class CivView extends Application implements Observer {
 		// assemble ui
 		Pane window = new Pane();
 		buildUI(window);
-		focusMap(model.getSize() / 2, model.getSize() / 2, false);
 
 		// populate initial map state
 		controller.placeStartingUnits();
 		renderAllSprites();
+
+		// focus the map on any friendly unit so the player isn't lost in fog
+		if (model.getCurPlayer().getUnits().size() > 0) {
+			Unit unit = model.getCurPlayer().getUnits().get(0);
+			focusMap(unit.getX(), unit.getY(), false);
+		} else if (model.getCurPlayer().getCities().size() > 0) {
+			City city = model.getCurPlayer().getCities().get(0);
+			focusMap(city.getX(), city.getY(), false);
+		} else {
+			focusMap(model.getSize() / 2, model.getSize() / 2, false);
+		}
 
 		// build the application window
 		Scene scene = new Scene(window, WINDOW_WIDTH, WINDOW_HEIGHT);
