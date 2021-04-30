@@ -446,6 +446,9 @@ public class CivView extends Application implements Observer {
 
 		context.clearRect(0, 0, isoBoardWidth, isoBoardHeight);
 
+		if (!controller.isHumanTurn())
+			return;
+
 		for (int[] coords : getDrawTraversal()) {
 			Tile tile = model.getTileAt(coords[0], coords[1]);
 			if (tile == null || tile.canSeeTile(player))
