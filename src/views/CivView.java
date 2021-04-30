@@ -466,8 +466,16 @@ public class CivView extends Application implements Observer {
 				imageDirs[3] = '1';
 			}
 
+			// draw the thing
 			Image fogImage = fogImages.get(new String(imageDirs));
 			int[] isoCoords = gridToIso(coords[0], coords[1]);
+			// images are 2px bigger so we can draw them with 1px of overlap.
+			// Otherwise, some underlying info can peek through
+			context.drawImage(
+					fogImage, isoCoords[0] - 1, isoCoords[1] - 1,
+					TILE_SIZE + 2, TILE_SIZE * ISO_FACTOR + 2
+			);
+		}
 
 		// since a group of four "full" images in a square will leave a small
 		// gap in the center due to the way these images are drawn to account
