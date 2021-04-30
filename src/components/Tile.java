@@ -44,7 +44,7 @@ public class Tile {
 			this.attackMult = 1;
 		} else {
 			// terrain type is either a mountain or water, either way it is impassable.
-			this.movementBonus = Integer.MIN_VALUE;
+			this.movementBonus = -1000;
 			this.attackMult = 0;
 		}
 	}
@@ -135,6 +135,16 @@ public class Tile {
 	 */
 	public City getOwnerCity() {
 		return this.ownerCity;
+	}
+
+	/**
+	 * If a city has expanded its radius to encompass this tile, make that city the
+	 * owner
+	 * 
+	 * @param city which now owns the tile
+	 */
+	public void setOwnerCity(City city) {
+		this.ownerCity = city;
 	}
 
 	/**
