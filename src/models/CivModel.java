@@ -210,7 +210,7 @@ public class CivModel extends Observable implements Serializable {
 		}
 		else if (map == 3) {
 			allStartingCoords.add(new int[] {15,2});
-			allStartingCoords.add(new int[] {4,17});
+			allStartingCoords.add(new int[] {2,13});
 			mapName = "./src/models/Thermopylae.txt";
 		}
 		else if (map == 4) {
