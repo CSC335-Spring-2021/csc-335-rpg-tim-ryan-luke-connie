@@ -9,6 +9,8 @@ import models.Player;
 
 /**
  *
+ * TODO: City handling for Tim
+ *
  * Unit superclass.
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
@@ -128,6 +130,7 @@ public class Unit implements Serializable {
 		this.HP += this.maxHP / 20;
 		if (this.HP >= this.maxHP)
 			this.HP = maxHP;
+		return;
 	}
 
 	/**

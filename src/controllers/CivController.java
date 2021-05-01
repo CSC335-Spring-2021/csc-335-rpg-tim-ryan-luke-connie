@@ -10,8 +10,11 @@ import components.City;
 import components.Settler;
 import components.Tile;
 import components.Unit;
+import components.*;
 import models.CivModel;
 import models.Player;
+
+import java.awt.*;
 
 /**
  * Provides methods to calculate data about game state or act as a computer
@@ -35,6 +38,11 @@ public class CivController {
 		curPlayer = model.getCurPlayer();
 	}
 
+
+	/**
+	 * Configure the map with the units that should exist at the start of a new game.
+	 */
+	
 	/**
 	 * Configure the map with the units that should exist at the start of a new
 	 * game.
@@ -42,6 +50,13 @@ public class CivController {
 	 * Note that for testing, you have to add each unit/city to the current player.
 	 *
 	 * For testing -- delete this later
+	 * Returns the Tile located at the board location row, col
+	 *
+	 * @param row int for row of board positionn
+	 * @param col int for col of board position
+	 *
+	 * @return the Tile at row,col on the board
+	 *
 	 */
 	public void placeStartingUnits() {
 //		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 8));
@@ -126,6 +141,7 @@ public class CivController {
 	 *
 	 * All Units have their movement reset, all Cities owned by a Player are
 	 * incremented and updated. Do computer turn if it is the computer's turn.
+	 * @param player
 	 */
 	public void startTurn() {
 		curPlayer = model.getCurPlayer();
@@ -147,6 +163,8 @@ public class CivController {
 	 * update the curPlayer in model to be retrieved by controller for when the next
 	 * turn begins. Notify the model if the game is over so that view is updated
 	 * accordingly.
+	 * Human player ends their turn, the model moves on to the next player. This
+	 * will update the curPlayer for when the next turn begins.
 	 */
 	public void endTurn() {
 		if (gameOver())
@@ -182,6 +200,7 @@ public class CivController {
 	 * the first few units stay by their origin city and defend it, and the rest
 	 * move towards enemy cities to attack them.
 	 *
+	 * does all the computer turn's AI stuff
 	 */
 	public void computerTurn() {
 		for (City c : curPlayer.getCities()) {
@@ -217,6 +236,15 @@ public class CivController {
 	 * city radius of control to found a new city).
 	 *
 	 * @param s a Settler owned by the computer player
+	 * Moves a unit from its old location to the new player-specified location.
+	 *
+	 * Unit moves one tile at a time
+	 *
+	 * @param oldx int of old row location of unit
+	 * @param oldy int of old col location of unit
+	 * @param newx int of new row location of unit
+	 * @param newy int of new col location of unit
+	 * @return true if the unit successfully moved/attacked, false otherwise
 	 */
 	private void computerSettlerActions(Settler s) {
 		boolean founded = foundCity(s.getX(), s.getY()); // try to found a city
@@ -233,6 +261,58 @@ public class CivController {
 					}
 				}
 				validMoves = getValidMoves(s);
+			}
+		} //POSSIBLE BRACKETING ISSUE
+	}
+				
+	public boolean moveUnit(int oldX, int oldY, int newX, int newY) {
+		Tile moveFrom = getTileAt(oldX, oldY);
+		Unit unit = moveFrom.getUnit(); // unit to move
+		if (unit == null)
+			return false;
+		int movement = unit.getMovement();
+		// this conditional checks that the unit is only moving 1 space
+		if (Math.abs(newX - oldX) > 1 || Math.abs(newY - oldY) > 1)
+			return false;
+		Tile moveTo = getTileAt(newX, newY);
+		int cost = moveTo.getMovementModifier();
+		if (cost + 1 > movement)
+			return false;
+		Unit onTile = moveTo.getUnit();
+		boolean movesOnto = true;
+		if (onTile != null) { // unit exists here, attack it
+			movesOnto = attack(moveFrom, moveTo);
+			cost = unit.getMovement() - 1; // have to deplete to if successful move
+		}
+		// eventually have to change the city check to isCityTile()
+		else if (moveTo.getOwnerCity() != null
+				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
+			movesOnto = attack(moveFrom, moveTo.getOwnerCity());
+		if (movesOnto) {
+			moveFrom.setUnit(null); // unit gone
+			moveTo.setUnit(unit); // successfully moves to new tile
+			unit.move(cost + 1, newX, newY); // update costs and unit location
+			revealTiles(newX, newY); // reveal tiles around unit
+		}
+		model.changeAndNotify();
+		return true;
+	}
+
+	/**
+	 * Set all the tiles in a 1-tile radius around the given location as revealed
+	 * for the current player.
+	 *
+	 * @param row int of row location middle tile
+	 * @param col int of col location middle tile
+	 */
+	private void revealTiles(int x, int y) {
+		for (int i = -1; i < 2; i++) {
+			for (int j = -1; j < 2; j++) {
+				int toRevealRow = x + i;
+				int toRevealCol = y + j;
+				Tile toRevealTile = getTileAt(toRevealRow, toRevealCol);
+				if (!toRevealTile.canSeeTile(curPlayer))
+					toRevealTile.revealTile(curPlayer);
 			}
 		}
 	}
@@ -468,6 +548,8 @@ public class CivController {
 	}
 
 	/**
+=======
+>>>>>>> refs/remotes/origin/component_updates
 	 * Unit on attakcerTile attacks the Unit on defenderTile.
 	 *
 	 * Unit gets attack modifier based on its current terrain; defender gets to
@@ -499,8 +581,11 @@ public class CivController {
 			return false;
 		}
 		attacker.move(attacker.getMovement(), attacker.getX(), attacker.getY()); // failed move
+		attacker.move(attacker.getMovement(), attacker.getX(), attacker.getY()); // failed move
 		return false;
 	}
+
+
 
 	/**
 	 * Overloaded method, to be called when attacking a City
@@ -512,7 +597,7 @@ public class CivController {
 	 * @param attackerTile
 	 * @param defender
 	 * @return
-	 */
+	*/
 	private boolean attack(Tile attackerTile, City defender) {
 		Unit attacker = attackerTile.getUnit();
 		double attack = attacker.getAttackValue();

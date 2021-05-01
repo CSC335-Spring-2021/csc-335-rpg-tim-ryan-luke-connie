@@ -14,7 +14,7 @@ public class CivModelTest {
 
 	@Test
 	void testBasics() {
-		CivModel model = new CivModel(2);
+		CivModel model = new CivModel(2,2, 0);
 
 		assertNotNull(model);
 	}

@@ -30,7 +30,11 @@ public class CivBoard implements Serializable {
 	/**
 	 * Constructor for our board
 	 *
+<<<<<<< HEAD
 	 * @param size 
+=======
+	 * @param size
+>>>>>>> refs/remotes/origin/component_updates
 	 */
 	public CivBoard(int size) {
 		this.size = size;
@@ -93,8 +97,14 @@ public class CivBoard implements Serializable {
 		board[1][size-2] = new Tile(Tile.terrainTypes.FIELD, "");
 		this.tiles = board;
 	}
+	
 	public CivBoard(ObjectInputStream ois) throws ClassNotFoundException, IOException {
 		unserializeBoard(ois);
+	}
+
+	public Tile getTile(int x, int y) {
+		if (x < 0 || x >= size || y < 0 || y >= size) return null;
+		return this.tiles[y][x];
 	}
 	public CivBoard(String file) {
 		Scanner sc = null;
@@ -151,16 +161,11 @@ public class CivBoard implements Serializable {
 		
 	}
 
-	public Tile getTile(int x, int y) {
-		if (x < 0 || x >= size || y < 0 || y >= size) {
-			return null;
-		}
-		return this.tiles[y][x];
-	}
 
 	public int getSize() {
 		return this.size;
 	}
+
 	
 	public void serializeBoard(ObjectOutputStream oos) throws IOException {
 		oos.writeObject(this.tiles);

@@ -52,6 +52,13 @@ public class Tile implements Serializable {
 
 	/**
 	 * Found a city on this tile. Returns false if failed.
+<<<<<<< HEAD
+=======
+	 *
+	 * TODO: This code does not interact with settlers correctly and needs to be
+	 * updated depending on how Tim wants cities to work. Should the controller use
+	 * a settler charge then immediately call this, or should the settler do that?
+>>>>>>> refs/remotes/origin/component_updates
 	 *
 	 * @param city city created by a settler attempting to be made on this tile.
 	 * @return boolean representing whether city founding was a success
@@ -60,8 +67,8 @@ public class Tile implements Serializable {
 		if (this.ownerCity == null) { // && this.unitHere instanceOf Settler?
 			this.ownerCity = city;
 			this.isCityTile = true;
-			this.movementBonus = 0;
-			this.attackMult = 1.5; // subject to change
+			this.movementBonus = 0; // TODO: figure out bonuses for units in cities
+			this.attackMult = 1; // subject to change
 			return true;
 		}
 		return false;
@@ -139,6 +146,7 @@ public class Tile implements Serializable {
 	}
 
 	/**
+<<<<<<< HEAD
 	 * If a city has expanded its radius to encompass this tile, make that city the
 	 * owner
 	 * 
@@ -154,7 +162,16 @@ public class Tile implements Serializable {
 	 * 
 	 * @return boolean representing if this tile contains a city.
 	 */
-	public boolean isCityTile() {
+	public boolean isCityTile() { 
+		return this.isCityTile;
+	}
+	/**
+	 * Determine if this tile contains the city itself
+	 * 
+	 * @return boolean representing it this tile contains a city object
+	 */
+	public boolean isThisACity() {
+
 		return this.isCityTile;
 	}
 

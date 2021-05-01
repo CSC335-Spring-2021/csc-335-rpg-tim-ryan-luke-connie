@@ -10,6 +10,7 @@ public class Player implements Serializable {
 	private ArrayList<Unit> units;
 	private ArrayList<City> cities;
 	private boolean isHuman;
+
 	String ID;
 
 	public Player(int isHuman, String ID) {

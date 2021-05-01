@@ -23,4 +23,10 @@ public class Warrior extends Unit {
 		attackValue = 25;
 	}
 
+
+	@Override
+	public double getMaxHP() {
+		return 100;
+	}
+
 }

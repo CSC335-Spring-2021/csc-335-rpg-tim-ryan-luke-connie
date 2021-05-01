@@ -51,7 +51,7 @@ public class CivModel extends Observable implements Serializable {
 					curPlayer = curPlayer.next; // iter
 				}
 				curPlayer.next = head; // have it wrap around
-			}
+		} 
 		String mapStr = initPlayerStartingCoords(map, size);
 		round = 0;
 		// System.out.println(mapStr);
@@ -152,6 +152,7 @@ public class CivModel extends Observable implements Serializable {
 	 * 	Allows the model to know when to level-up cities and more.
 	 * @return an int specifying how many times we have made it through all of the players
 	 */
+
 	public int roundNumber() {
 		return round;
 	}
@@ -160,6 +161,7 @@ public class CivModel extends Observable implements Serializable {
 	 * @param deadGuy The player whose city was just killed
 	 * @return true if it worked, false if it didn't
 	 */
+
 	public boolean removePlayer(Player deadGuy) {
 		Node prev = head;
 		Node cur = head.next;
@@ -182,7 +184,7 @@ public class CivModel extends Observable implements Serializable {
 	public int numPlayers() {
 		return numPlayers;
 	}
-	
+
 	/**
 	 * Initialize player starting coordinates based on map and number of players
 	 * @param map int specifying which map the user has selected (1-4)

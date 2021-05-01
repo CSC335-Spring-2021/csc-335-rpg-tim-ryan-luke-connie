@@ -8,6 +8,35 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import components.*;
+import controllers.CivController;
+import javafx.animation.*;
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+import models.CivModel;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -90,6 +119,7 @@ public class CivView extends Application implements Observer {
 	private FadeTransition mapSelectedTransition;
 	private Canvas fogCanvas;
 	private Map<String, Image> fogImages;
+	private Pane mapElementContainer;
 
 	// sprite hooks
 	private Pane spriteContainer;
@@ -115,17 +145,22 @@ public class CivView extends Application implements Observer {
 	private int isoBoardWidth;
 	private int isoBoardHeight;
 
+	private List<GridPane> hpBars;
+
+
 	/**
 	 * Build the UI, start the game, and regulate game flow.
 	 *
 	 * @param stage The stage automatically passed when called Application.launch()
 	 */
-	@Override 
+	@Override
 	public void start(Stage stage) {
 		buildMenu(stage);
 	}
 	public void startGame(Stage stage) {
 		this.controller = new CivController(model);
+		this.spriteImages = new HashMap<String, Image>();
+		this.hpBars = new ArrayList<>();
 
 		model.addObserver(this);
 
@@ -195,6 +230,15 @@ public class CivView extends Application implements Observer {
 			}
 		});
 		controller.startGame(); // begin the game
+		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
+		mapCanvas.setOnMouseMoved(ev -> handleMapHover(ev));
+		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
+			if (ev.getCode() == KeyCode.ESCAPE) {
+				deselect();
+				ev.consume();
+			}
+		});
+
 		stage.show();
 	}
 
@@ -1642,5 +1686,4 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
-
 }

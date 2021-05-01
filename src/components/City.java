@@ -201,6 +201,7 @@ public class City implements Serializable{
 	}
 
 	/**
+<<<<<<< HEAD
 	 * retrieve a set of all units that can be made in this city
 	 * 
 	 * @return a set containing strings which represent the unit names
@@ -221,4 +222,5 @@ public class City implements Serializable{
 		if (resource.equals("Horses"))
 			producableUnits.add("Cavalry");
 	}
+
 }
