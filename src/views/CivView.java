@@ -59,6 +59,7 @@ public class CivView extends Application implements Observer {
 	private Map<String, Image> markerImages;
 	private ImageView mapHoverCursor;
 	private ImageView mapSelectedCursor;
+	private ImageView mapOwnedCursor;
 	private FadeTransition mapSelectedTransition;
 	private Canvas fogCanvas;
 	private Map<String, Image> fogImages;
@@ -198,6 +199,7 @@ public class CivView extends Application implements Observer {
 			markerImages.put("attackable", new Image(new FileInputStream("src/assets/tiles/attackable.png")));
 			markerImages.put("costly", new Image(new FileInputStream("src/assets/tiles/costly.png")));
 			markerImages.put("hover", new Image(new FileInputStream("src/assets/tiles/hover.png")));
+			markerImages.put("owned", new Image(new FileInputStream("src/assets/tiles/owned.png")));
 			markerImages.put("selected", new Image(new FileInputStream("src/assets/tiles/selected.png")));
 			markerImages.put("valid", new Image(new FileInputStream("src/assets/tiles/valid.png")));
 
@@ -234,10 +236,12 @@ public class CivView extends Application implements Observer {
 		}
 
 		// refresh any open detail panes, as the selected unit's values may have changed
-		if (selectedUnit != null)
-			selectUnit(selectedUnit);
 		if (selectedCity != null)
 			selectCity(selectedCity);
+		if (selectedUnit != null)
+			selectUnit(selectedUnit);
+
+		mapOverlayContainer.getChildren().clear();
 
 		// add endgame
 		if (controller.gameOver()) {
@@ -854,7 +858,11 @@ public class CivView extends Application implements Observer {
 		// another magic number because HBox.getHeight() is incorrect
 		cityPane.setLayoutY((WINDOW_HEIGHT - 470) / 2.0);
 
+		// add selection indicator
 		selectTile(city.getX(), city.getY());
+
+		// show ownership/influence range
+		addOwnershipIndicators(selectedCity);
 	}
 
 	/**
@@ -903,6 +911,25 @@ public class CivView extends Application implements Observer {
 			markerView.setY(coords[1]);
 			markerView.setMouseTransparent(true);
 			mapOverlayContainer.getChildren().add(markerView);
+		}
+	}
+
+	/**
+	 * Add an indicator to each tile under a given city's ownership/influence
+	 *
+	 * @param city The city to add indicators for
+	 */
+	private void addOwnershipIndicators(City city) {
+		for (int[] space : getDrawTraversal()) {
+			Tile tile = controller.getTileAt(space[0], space[1]);
+			if (tile.getOwnerCity() == city) {
+				int[] coords = gridToIso(space[0], space[1]);
+				ImageView markerView = new ImageView(markerImages.get("owned"));
+				markerView.setX(coords[0]);
+				markerView.setY(coords[1]);
+				markerView.setMouseTransparent(true);
+				mapOverlayContainer.getChildren().add(markerView);
+			}
 		}
 	}
 
