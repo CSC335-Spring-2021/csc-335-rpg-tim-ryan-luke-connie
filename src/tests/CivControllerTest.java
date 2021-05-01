@@ -64,8 +64,6 @@ public class CivControllerTest {
 		// scout attacked and should eventually be killed by a defending unit
 		// insert enemy unit and move it onto the city
 
-		// TODO: This line is fucking everything up but its the only way to make it the
-		// AI's turn so i can insert a settler.
 		model.nextPlayer();
 		for (int i = 0; i < 40; i++) {
 			controller.getTileAt(15, 9).getOwnerCity().cityIncrement();
@@ -83,10 +81,8 @@ public class CivControllerTest {
 		}
 
 		assertFalse(controller.gameOver());
-		// TODO: This is supposed to exercise the enemy AI, and should bring us to 90%
-		// coverage, but the AI doesnt do anything. Not sure why.
-		// make myself die
-		for (int i = 0; i < 50; i++) {
+		// TODO: make the game end painlessly
+		for (int i = 0; i < 30; i++) {
 			controller.endTurn();
 		}
 		// assertTrue(controller.gameOver());
