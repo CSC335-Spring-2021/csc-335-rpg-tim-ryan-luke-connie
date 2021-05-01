@@ -167,8 +167,10 @@ public class CivController {
 	 * will update the curPlayer for when the next turn begins.
 	 */
 	public void endTurn() {
-		if (gameOver())
+		if (gameOver()) {
 			model.changeAndNotify();
+			return;
+		}
 		model.nextPlayer();
 		startTurn();
 		model.changeAndNotify();
@@ -634,7 +636,7 @@ public class CivController {
 				&& city.getProducableUnits().contains(unitType)) {
 			Unit newUnit = city.produceUnit(unitType);
 			tile.setUnit(newUnit);
-			curPlayer.addUnit(newUnit);
+			city.getOwner().addUnit(newUnit);
 			model.changeAndNotify();
 			return true;
 		}
@@ -654,7 +656,7 @@ public class CivController {
 	public boolean foundCity(int x, int y) {
 		Tile tile = getTileAt(x, y);
 		Settler settler = (Settler) tile.getUnit();
-		if (settler.getCharges() > 0 && tile.getOwnerCity() == null) {
+		if (settler != null && settler.getCharges() > 0 && tile.getOwnerCity() == null) {
 			City city = settler.foundCity();
 			tile.foundCity(city);
 			curPlayer.removeUnit(settler);
