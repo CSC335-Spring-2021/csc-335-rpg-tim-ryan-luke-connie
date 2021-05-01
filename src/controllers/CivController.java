@@ -37,11 +37,6 @@ public class CivController {
 	/**
 	 * Configure the map with the units that should exist at the start of a new
 	 * game.
-	 */
-
-	/**
-	 * Configure the map with the units that should exist at the start of a new
-	 * game.
 	 *
 	 * Note that for testing, you have to add each unit/city to the current player.
 	 *
@@ -55,58 +50,17 @@ public class CivController {
 	 *
 	 */
 	public void placeStartingUnits() {
-//		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 8));
-//		model.getTileAt(13, 8).setUnit(scout);
-//		curPlayer.addUnit(scout);
-//		revealTiles(scout);
-
-		// Warrior warrior = new Warrior(model.getCurPlayer(), new Point(16, 7));
-		// model.getTileAt(16, 7).setUnit(warrior);
-		// curPlayer.addUnit(warrior);
-		// revealTiles(warrior);
-
-		// Settler settler = new Settler(model.getCurPlayer(), new Point(5, 9));
-		// model.getTileAt(5, 9).setUnit(settler);
-		// curPlayer.addUnit(settler);
-		// revealTiles(settler);
-
-		// second player
-		// model.nextPlayer();
-		// curPlayer = model.getCurPlayer();
-
-//		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(16, 5));
-//		model.getTileAt(16, 5).setUnit(warrior2);
-//		curPlayer.addUnit(warrior2);
-//		revealTiles(warrior2);
-
-		// Settler settler2 = new Settler(model.getCurPlayer(), new Point(15, 9));
-		// model.getTileAt(15, 9).setUnit(settler2);
-		// curPlayer.addUnit(settler2);
-		// revealTiles(settler2);
-
-//		Warrior warrior3 = new Warrior(model.getCurPlayer(), new Point(17, 6));
-//		model.getTileAt(17, 6).setUnit(warrior3);
-//		curPlayer.addUnit(warrior3);
-//		revealTiles(warrior3);
-//
 		ArrayList<int[]> startingCoords = model.getPlayerStartingCoords();
 		for (int i = 0; i < startingCoords.size(); i++) {
 			int[] coord = startingCoords.get(i);
 			// System.out.println((coord[0] + " " + coord[1]));
 			Settler settler = new Settler(model.getCurPlayer(), new Point(coord[0], coord[1]));
 			model.getTileAt(coord[0], coord[1]).setUnit(settler);
-			// System.out.println(model.getCurPlayer().getID());
 			model.getCurPlayer().addUnit(settler);
 			revealTiles(settler);
 			model.nextPlayer();
 			// curPlayer = model.getCurPlayer();
 		}
-
-//		Warrior warrior4 = new Warrior(model.getCurPlayer(), new Point(16, 4));
-//		model.getTileAt(16, 4).setUnit(warrior4);
-//		curPlayer.addUnit(warrior4);
-//		revealTiles(warrior4);
-
 		// go back to player 1 to start the game
 		curPlayer = model.getHead();
 	}
@@ -122,13 +76,6 @@ public class CivController {
 	 */
 	public Tile getTileAt(int x, int y) {
 		return model.getTileAt(x, y);
-	}
-
-	public void startGame() {
-		// place starting Settlers using model getStartingCoords
-		// remember to loop through the players until back to #1
-		startTurn();
-		model.changeAndNotify();
 	}
 
 	/**
