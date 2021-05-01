@@ -381,6 +381,8 @@ public class CivView extends Application implements Observer {
 		cityImageView.setX(coords[0] + ((TILE_SIZE - CITY_SIZE) / 2.0));
 		cityImageView.setY(coords[1] - 34.0); // Magic Number, for now
 		spriteContainer.getChildren().add(cityImageView);
+
+		renderSpriteHPBar(city.getRemainingHP(), city.getMaxHP(), coords[0], coords[1] + 6);
 	}
 
 	/**
