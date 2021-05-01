@@ -1,6 +1,7 @@
 package components;
 
 import java.awt.Point;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,12 +9,14 @@ import models.Player;
 
 /**
  *
+ * TODO: City handling for Tim
+ *
  * Unit superclass.
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
  */
-public class Unit {
+public class Unit implements Serializable {
 
 	public static final Map<String, Integer> unitCosts = new HashMap<String, Integer>();
 	static {
@@ -127,6 +130,7 @@ public class Unit {
 		this.HP += this.maxHP / 20;
 		if (this.HP >= this.maxHP)
 			this.HP = maxHP;
+		return;
 	}
 
 	/**

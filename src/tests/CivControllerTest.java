@@ -24,8 +24,8 @@ import models.Player;
 public class CivControllerTest {
 
 	@Test
-	void testMovementOfPlayerAndAIAction() {
-		CivModel model = new CivModel(1);
+	void testBasics() {
+		CivModel model = new CivModel(2,2,0);
 		CivController controller = new CivController(model);
 		controller.placeStartingUnits();
 		// basic checks

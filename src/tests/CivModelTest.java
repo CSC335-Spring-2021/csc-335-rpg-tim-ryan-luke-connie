@@ -22,8 +22,8 @@ public class CivModelTest {
 	 * Test that the model returns the appropriate values while reaching 100% branch
 	 * coverage. Does not mess with player and board completely yet.
 	 */
-	void testModel() {
-		CivModel model = new CivModel(1);
+	void testBasics() {
+		CivModel model = new CivModel(2,2, 0);
 		CivBoard board = model.getCivBoard(); // maybe make tests using a new board as well
 
 		// model and board are looking at same tiles
