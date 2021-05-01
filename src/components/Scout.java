@@ -15,13 +15,19 @@ public class Scout extends Unit {
 	public Scout(Player player, Point coord) {
 		super(player, coord);
 		label = "Scout";
-		HP = 60;
+		HP = 50;
 		maxHP = HP;
+		// TODO: Rebalance default values
 		maxMovement = 4;
 		resetMovement();
 		sight = 4;
 		attackValue = 15;
 	}
 
+
+	@Override
+	public double getMaxHP() {
+		return 50;
+	}
 
 }

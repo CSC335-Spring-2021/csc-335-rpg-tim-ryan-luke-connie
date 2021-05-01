@@ -2,6 +2,10 @@ package models;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -17,7 +21,7 @@ import components.Tile;
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  */
-public class CivBoard {
+public class CivBoard implements Serializable {
 
 	public Tile[][] tiles;
 	public int size;
@@ -26,7 +30,11 @@ public class CivBoard {
 	/**
 	 * Constructor for our board
 	 *
+<<<<<<< HEAD
+	 * @param size 
+=======
 	 * @param size
+>>>>>>> refs/remotes/origin/component_updates
 	 */
 	public CivBoard(int size) {
 		this.size = size;
@@ -83,9 +91,21 @@ public class CivBoard {
 			board[i][size - 1] = new Tile(Tile.terrainTypes.WATER, "");
 			i++;
 		}
+		board[size-2][size-2] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[1][1] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[size-2][1] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[1][size-2] = new Tile(Tile.terrainTypes.FIELD, "");
 		this.tiles = board;
 	}
 	
+	public CivBoard(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+		unserializeBoard(ois);
+	}
+
+	public Tile getTile(int x, int y) {
+		if (x < 0 || x >= size || y < 0 || y >= size) return null;
+		return this.tiles[y][x];
+	}
 	public CivBoard(String file) {
 		Scanner sc = null;
 		try {
@@ -141,15 +161,21 @@ public class CivBoard {
 		
 	}
 
-	public Tile getTile(int x, int y) {
-		if (x < 0 || x >= size || y < 0 || y >= size) {
-			return null;
-		}
-		return this.tiles[y][x];
-	}
 
 	public int getSize() {
 		return this.size;
+	}
+
+	
+	public void serializeBoard(ObjectOutputStream oos) throws IOException {
+		oos.writeObject(this.tiles);
+		oos.writeObject(this.size);
+		oos.writeObject(this.playerStartingCoords);
+	}
+	public void unserializeBoard(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+		this.tiles = (Tile[][]) ois.readObject();
+		this.size = (int) ois.readObject();
+		this.playerStartingCoords = (ArrayList<int[]>) ois.readObject();
 	}
 
 }
