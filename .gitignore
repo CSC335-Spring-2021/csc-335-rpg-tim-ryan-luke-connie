@@ -2,6 +2,9 @@
 bin/
 out/
 
+# game data
+save_game.dat
+
 # eclipse and intellij
 .classpath
 .idea/
