@@ -1244,7 +1244,14 @@ public class CivView extends Application implements Observer {
 	private int getRandInt(int min, int max) {
 		return (int) (Math.random() * (max - min + 1) + min);
 	}
-	
+	/**
+	 * buildMenu builds the main menu of our game with 
+	 * 	New Game
+	 * 	Load Game
+	 * 	Exit
+	 * 		options. 
+	 * @param stage our stage for our javafx environment
+	 */
 	private void buildMenu(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1302,7 +1309,14 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
-	
+	/**
+	 * newGameMapSelection builds the menu screen to allow uses to select a map upon new game
+	 * 	Map1 - 2-4 Player map
+	 * 	Map2 - 2-3 Player map
+	 * 	Map3 - 2   Player map
+	 * 	Map4 - 2-4 Player map of user specified size
+	 * @param stage our stage for our javafx environment
+	 */
 	private void newGameMapSelection(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1408,6 +1422,12 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
+	/**
+	 * attemptLoadGame checks the build path for a file called save_game.dat.
+	 * 	if it exists, it loads the saved game state into our game and starts
+	 * 	if it doesn't, it informs the user that no game state exists and waits
+	 * @param stage our stage for our javafx environment
+	 */
 	private void attemptLoadGame(Stage stage) {
 		try {
 			this.model = new CivModel();
@@ -1418,6 +1438,11 @@ public class CivView extends Application implements Observer {
 			noGame.showAndWait();
 		}
 	}
+	/**
+	 * queryMapSize builds a menu allowing a user to specify which map size they'd
+	 * 	like for our variably-sized map, then builds the queryPlayerCount menu
+	 * @param stage our stage for our javafx environment
+	 */
 	private void queryMapSize(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1489,6 +1514,13 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
+	/**
+	 * queryPlayerCount4 builds a menu that allows the user to choose between
+	 * 	1 Pl v CPU, 2 Pl v Pl
+	 * 	3 Pl v Pl v Pl
+	 * 	4 Pl v Pl v Pl v Pl
+	 * @param stage our stage for our javafx environment
+	 */
 	private void queryPlayerCount4(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1564,7 +1596,12 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
-	
+	/**
+	 * queryPlayerCount3 builds a menu that allows the user to choose between
+	 * 	1 Pl v CPU, 2 Pl v Pl
+	 * 	3 Pl v Pl v Pl
+	 * @param stage our stage for our javafx environment
+	 */
 	private void queryPlayerCount3(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1630,7 +1667,11 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
-	
+	/**
+	 * queryPlayerCount2 builds a menu that allows the user to choose between
+	 * 	1 Pl v CPU, 2 Pl v Pl
+	 * @param stage our stage for our javafx environment
+	 */
 	private void queryPlayerCount2(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
