@@ -554,7 +554,7 @@ public class CivController {
 	public boolean foundCity(int x, int y) {
 		Tile tile = getTileAt(x, y);
 		Settler settler = (Settler) tile.getUnit();
-		if (settler.getCharges() > 0 && tile.getOwnerCity() == null) {
+		if (settler != null && settler.getCharges() > 0 && tile.getOwnerCity() == null) {
 			City city = settler.foundCity();
 			tile.foundCity(city);
 			curPlayer.removeUnit(settler);

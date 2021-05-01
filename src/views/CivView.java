@@ -570,6 +570,9 @@ public class CivView extends Application implements Observer {
 		int[] space = isoToGrid(ev.getX(), ev.getY());
 		Tile tile = controller.getTileAt(space[0], space[1]);
 
+		System.out.print("x: " + space[0] + "  ");
+		System.out.println("y: " + space[1]);
+
 		// reject clicks in the negative space left by the iso view
 		if (tile == null)
 			return;

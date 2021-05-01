@@ -19,9 +19,7 @@ public class CivModelTest {
 	@Test
 	/**
 	 * Test that the model returns the appropriate values while reaching 100% branch
-	 * coverage.
-	 * 
-	 * TODO: Do we need to do the same for board and player? Probably not?
+	 * coverage. Does not mess with player and board completely yet.
 	 */
 	void testModel() {
 		CivModel model = new CivModel(1);
