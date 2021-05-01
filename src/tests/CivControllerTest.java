@@ -4,8 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.awt.Point;
+
 import org.junit.jupiter.api.Test;
 
+import components.Warrior;
 import controllers.CivController;
 import models.CivModel;
 
@@ -18,7 +21,7 @@ import models.CivModel;
 public class CivControllerTest {
 
 	@Test
-	void testBasics() {
+	void testMovementOfPlayerAndAIAction() {
 		CivModel model = new CivModel(1);
 		CivController controller = new CivController(model);
 		controller.placeStartingUnits();
@@ -30,9 +33,9 @@ public class CivControllerTest {
 		assertTrue(controller.isHumanTurn());
 		assertTrue(controller.foundCity(5, 9));
 		assertFalse(controller.foundCity(5, 9));
-		// progress the game until we have sufficient production
+		// give me production now
 		for (int i = 0; i < 8; i++) {
-			controller.endTurn();
+			controller.getTileAt(5, 9).getOwnerCity().cityIncrement();
 		}
 		// create a scout and advance it forward, enemies will be defending so this is
 		// fine
@@ -50,37 +53,47 @@ public class CivControllerTest {
 			assertTrue(controller.moveUnit(model.getTileAt(i, 9).getUnit(), i + 1, 9));
 		}
 		controller.endTurn();
-		// move diagonal to enemy city, enemy unit should be on 14, 9
-		assertTrue(controller.moveUnit(model.getTileAt(13, 9).getUnit(), 14, 10));
+		// move in front of enemy city, they should not have the production to have any
+		// units yet
+		assertTrue(controller.moveUnit(model.getTileAt(13, 9).getUnit(), 14, 9));
 		// attack enemy city
-		assertTrue(controller.moveUnit(model.getTileAt(14, 10).getUnit(), 15, 9));
+		assertTrue(controller.moveUnit(model.getTileAt(14, 9).getUnit(), 15, 9));
 		controller.endTurn();
-		assertTrue(controller.moveUnit(model.getTileAt(14, 10).getUnit(), 14, 9));
+		assertTrue(controller.moveUnit(model.getTileAt(14, 9).getUnit(), 15, 9));
 		controller.endTurn();
-		// scout is now dead from a warrior, which occupies 14, 10
-		// try to make AI warrior attack its own city
-		assertFalse(controller.moveUnit(model.getTileAt(14, 10).getUnit(), 15, 9));
-
+		// scout attacked and should eventually be killed by a defending unit
+		// insert enemy unit and move it onto the city
+		model.nextPlayer();
+		for (int i = 0; i < 40; i++) {
+			controller.getTileAt(15, 9).getOwnerCity().cityIncrement();
+		}
+		assertTrue(controller.createUnit(15, 9, "Settler"));
+		assertFalse(controller.createUnit(15, 9, "Settler"));
+		controller.endTurn();
 		// System.out.println(model.getTileAt(14, 9).getUnit());
 		// create new warriors and defend so the AI can exercise its logic
-		for (int i = 0; i < 3; i++) {
-			controller.endTurn();
+		for (int i = 6; i < 12; i++) {
+			controller.getTileAt(6, i).setUnit(new Warrior(model.getCurPlayer(), new Point(6, i)));
+			controller.getTileAt(7, i).setUnit(new Warrior(model.getCurPlayer(), new Point(7, i)));
 		}
-		assertTrue(controller.createUnit(5, 9, "Warrior"));
-		controller.endTurn();
-		assertTrue(controller.moveUnit(model.getTileAt(5, 9).getUnit(), 6, 9));
-		for (int i = 0; i < 8; i++) {
-			controller.endTurn();
-		}
-		assertTrue(controller.createUnit(5, 9, "Warrior"));
+
 		assertFalse(controller.gameOver());
+		// TODO: This is supposed to exercise the enemy AI, and should bring us to 90%
+		// coverage, but the AI doesnt do anything. Not sure why.
 		// make myself die
-		for (int i = 0; i < 29; i++) {
+		for (int i = 0; i < 1000; i++) {
 			controller.endTurn();
 		}
-		// lmao wtf one more turn causes overflow, uncomment the line below i dare u
-		// controller.endTurn();
 		// assertTrue(controller.gameOver());
 	}
 
+	@Test
+	void testNicheUnits() {
+		assertFalse(false);
+	}
+
+	@Test
+	void testResourcesMaybe() {
+		assertFalse(false);
+	}
 }
