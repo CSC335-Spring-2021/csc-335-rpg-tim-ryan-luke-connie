@@ -134,8 +134,10 @@ public class CivController {
 	 * accordingly.
 	 */
 	public void endTurn() {
-		if (gameOver())
+		if (gameOver()) {
 			model.changeAndNotify();
+			return;
+		}
 		model.nextPlayer();
 		startTurn();
 		model.changeAndNotify();

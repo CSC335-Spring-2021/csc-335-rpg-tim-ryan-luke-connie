@@ -8,9 +8,12 @@ import java.awt.Point;
 
 import org.junit.jupiter.api.Test;
 
+import components.City;
+import components.Unit;
 import components.Warrior;
 import controllers.CivController;
 import models.CivModel;
+import models.Player;
 
 /**
  * Tests the methods of CivController. This is setup to work with current
@@ -79,13 +82,46 @@ public class CivControllerTest {
 			controller.getTileAt(7, i).setUnit(new Warrior(model.getCurPlayer(), new Point(7, i)));
 			model.getCurPlayer().addUnit(model.getTileAt(7, i).getUnit());
 		}
+		// hit a few more branches in moveUnit
+		Unit u = controller.getTileAt(6, 8).getUnit();
+		assertFalse(controller.moveUnit(u, 6, 9));
+		assertFalse(controller.moveUnit(u, 10, 10));
 
 		assertFalse(controller.gameOver());
 		// TODO: make the game end painlessly
-		for (int i = 0; i < 30; i++) {
+		for (int i = 0; i < 25; i++) {
 			controller.endTurn();
 		}
 		// assertTrue(controller.gameOver());
+	}
+
+	// game over should work just fine
+	@Test
+	void testComputerDestroyCity() {
+		CivModel model = new CivModel(1);
+		CivController controller = new CivController(model);
+		City city = new City(model.getCurPlayer(), 5, 9);
+		model.getCurPlayer().addCity(city);
+		model.getTileAt(5, 9).foundCity(city);
+		model.nextPlayer();
+		assertFalse(model.getCurPlayer().isHuman());
+		Player computer = model.getCurPlayer();
+		// these warriors are in horny jail
+		Warrior w1 = new Warrior(computer, new Point(1, 1));
+		Warrior w2 = new Warrior(computer, new Point(0, 0));
+		// this warrior will take over human city
+		Warrior w3 = new Warrior(computer, new Point(5, 10));
+		model.getCurPlayer().addUnit(w1);
+		model.getCurPlayer().addUnit(w2);
+		model.getCurPlayer().addUnit(w3);
+		model.getTileAt(1, 1).setUnit(w1);
+		model.getTileAt(0, 0).setUnit(w2);
+		model.getTileAt(5, 10).setUnit(w3);
+		model.nextPlayer(); // back to the first player
+		controller.startGame();
+		assertFalse(controller.gameOver());
+		for (int i = 0; i < 4; i++)
+			controller.endTurn();
 	}
 
 	@Test
