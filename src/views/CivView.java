@@ -59,7 +59,6 @@ public class CivView extends Application implements Observer {
 	private Map<String, Image> markerImages;
 	private ImageView mapHoverCursor;
 	private ImageView mapSelectedCursor;
-	private ImageView mapOwnedCursor;
 	private FadeTransition mapSelectedTransition;
 	private Canvas fogCanvas;
 	private Map<String, Image> fogImages;
