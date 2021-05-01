@@ -1,22 +1,19 @@
 package views;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import components.*;
 import controllers.CivController;
 import javafx.animation.*;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -32,66 +29,12 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import models.CivModel;
+import models.Player;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-
-import components.City;
-import components.Scout;
-import components.Settler;
-import components.Tile;
-import components.Unit;
-import components.Warrior;
-import controllers.CivController;
-import javafx.animation.Animation;
-import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.event.EventHandler;
-import javafx.event.ActionEvent;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-import javafx.util.Duration;
-import models.CivModel;
-import models.Player;
+import java.util.*;
 
 /**
  * A GUI, eventually.
@@ -119,7 +62,6 @@ public class CivView extends Application implements Observer {
 	private FadeTransition mapSelectedTransition;
 	private Canvas fogCanvas;
 	private Map<String, Image> fogImages;
-	private Pane mapElementContainer;
 
 	// sprite hooks
 	private Pane spriteContainer;
@@ -145,8 +87,6 @@ public class CivView extends Application implements Observer {
 	private int isoBoardWidth;
 	private int isoBoardHeight;
 
-	private List<GridPane> hpBars;
-
 
 	/**
 	 * Build the UI, start the game, and regulate game flow.
@@ -157,10 +97,10 @@ public class CivView extends Application implements Observer {
 	public void start(Stage stage) {
 		buildMenu(stage);
 	}
+
 	public void startGame(Stage stage) {
 		this.controller = new CivController(model);
-		this.spriteImages = new HashMap<String, Image>();
-		this.hpBars = new ArrayList<>();
+		this.spriteImages = new HashMap<>();
 
 		model.addObserver(this);
 
@@ -211,27 +151,25 @@ public class CivView extends Application implements Observer {
 				ev.consume();
 			}
 		});
-		stage.setOnCloseRequest(new EventHandler<WindowEvent>() { // handle WindowClose event
-			@Override
-			public void handle(WindowEvent e) {
-				boolean saved = controller.close(); // serialize board
-				String msg;
-				if (saved) {
-					msg = "Game state was sucessfully saved.";
-				}
-				else {
-					msg = "Game state was not saved";
-				}
-				Alert endgame = new Alert(Alert.AlertType.INFORMATION);
-				endgame.setContentText(msg);
-				endgame.showAndWait();
-				Platform.exit();
-				System.exit(0);
+		// handle WindowClose event
+		stage.setOnCloseRequest(ev -> {
+			boolean saved = controller.close(); // serialize board
+			String msg;
+			if (saved) {
+				msg = "Game state was successfully saved.";
 			}
+			else {
+				msg = "Game state was not saved";
+			}
+			Alert endgame = new Alert(Alert.AlertType.INFORMATION);
+			endgame.setContentText(msg);
+			endgame.showAndWait();
+			Platform.exit();
+			System.exit(0);
 		});
 		controller.startGame(); // begin the game
-		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
-		mapCanvas.setOnMouseMoved(ev -> handleMapHover(ev));
+		mapCanvas.setOnMouseClicked(this::handleMapClick);
+		mapCanvas.setOnMouseMoved(this::handleMapHover);
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
 			if (ev.getCode() == KeyCode.ESCAPE) {
 				deselect();
@@ -285,17 +223,14 @@ public class CivView extends Application implements Observer {
 	@Override
 	public void update(Observable observable, Object o) {
 		renderAllSprites();
-		// renderFog();
+		renderFog();
 
 		// update selectedUnit/selectedCity if they died in previous turn
-		if (selectedUnit != null) {
-			if ((int) selectedUnit.getHP() <= 0) {
-				deselect();
-			}
+		if (selectedUnit != null && selectedUnit.getHP() <= 0) {
+			deselect();
 		}
-		if (selectedCity != null) {
-			if ((int) selectedCity.getRemainingHP() <= 0)
-				deselect();
+		if (selectedCity != null && selectedCity.getRemainingHP() <= 0) {
+			deselect();
 		}
 
 		// refresh any open detail panes, as the selected unit's values may have changed
@@ -303,6 +238,7 @@ public class CivView extends Application implements Observer {
 			selectUnit(selectedUnit);
 		if (selectedCity != null)
 			selectCity(selectedCity);
+
 		// add endgame
 		if (controller.gameOver()) {
 			Alert endgame = new Alert(Alert.AlertType.INFORMATION);
@@ -1249,14 +1185,14 @@ public class CivView extends Application implements Observer {
 	private int getRandInt(int min, int max) {
 		return (int) (Math.random() * (max - min + 1) + min);
 	}
-	
+
 	private void buildMenu(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
 		scene.getStylesheets().add("assets/CivView.css");
 		stage.setScene(scene);
 		stage.setTitle("Sid Meier's Civilization 0.5");
-		
+
 		VBox garbageLeft = new VBox();
 		VBox garbageTop = new VBox();
 		VBox MenuOptions = new VBox();
@@ -1264,36 +1200,27 @@ public class CivView extends Application implements Observer {
 		Button newGame = new Button("New Game");
 		//newGame.setOnAction(new EventHandler);
 		newGame.getStyleClass().addAll("button", "detail-pane__button");
-		newGame.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				isNewGame = true;
-				newGameMapSelection(stage);
-			}
+		newGame.setOnAction(ev -> {
+			isNewGame = true;
+			newGameMapSelection(stage);
 		});
 		Button loadGame = new Button("Load Game");
 		loadGame.getStyleClass().addAll("button", "detail-pane__button");
-		loadGame.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				isNewGame = false;
-				attemptLoadGame(stage);
-			}
+		loadGame.setOnAction(ev -> {
+			isNewGame = false;
+			attemptLoadGame(stage);
 		});
 		Button exit = new Button("Exit");
 		exit.getStyleClass().addAll("button", "detail-pane__button");
-		exit.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				Platform.exit();
-				System.exit(0);
-			}
+		exit.setOnAction(ev -> {
+			Platform.exit();
+			System.exit(0);
 		});
 		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
 		MenuOptions.setBackground(new Background(myBI));
-	
+
 		Window.setBackground(new Background(myBI));
 		MenuOptions.setSpacing(20);
 		MenuOptions.getChildren().addAll(title, newGame, loadGame, exit);
@@ -1307,7 +1234,7 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
-	
+
 	private void newGameMapSelection(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1331,13 +1258,10 @@ public class CivView extends Application implements Observer {
 		GraphicsContext context1 = canvas1.getGraphicsContext2D();
 		context1.drawImage(image1, 0, 0);
 		map1.getStyleClass().addAll("button", "detail-pane__button");
-		map1.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				mapNum = 1;
-				mapSize = 0;
-				queryPlayerCount4(stage);
-			}
+		map1.setOnAction(ev -> {
+			mapNum = 1;
+			mapSize = 0;
+			queryPlayerCount4(stage);
 		});
 		col1.getChildren().addAll(canvas1, map1, label1);
 		VBox col2 = new VBox();
@@ -1348,13 +1272,10 @@ public class CivView extends Application implements Observer {
 		GraphicsContext context2 = canvas2.getGraphicsContext2D();
 		context2.drawImage(image2, 0, 0);
 		map2.getStyleClass().addAll("button", "detail-pane__button");
-		map2.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				mapNum = 2;
-				mapSize = 0;
-				queryPlayerCount3(stage);
-			}
+		map2.setOnAction(ev -> {
+			mapNum = 2;
+			mapSize = 0;
+			queryPlayerCount3(stage);
 		});
 		col2.getChildren().addAll(canvas2, map2, label2);
 		VBox col3 = new VBox();
@@ -1365,13 +1286,10 @@ public class CivView extends Application implements Observer {
 		GraphicsContext context3 = canvas3.getGraphicsContext2D();
 		context3.drawImage(image3, 0, 0);
 		map3.getStyleClass().addAll("button", "detail-pane__button");
-		map3.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				mapNum = 3;
-				mapSize = 0;
-				queryPlayerCount2(stage);
-			}
+		map3.setOnAction(ev -> {
+			mapNum = 3;
+			mapSize = 0;
+			queryPlayerCount2(stage);
 		});
 		col3.getChildren().addAll(canvas3, map3, label3);
 		VBox col4 = new VBox();
@@ -1382,12 +1300,9 @@ public class CivView extends Application implements Observer {
 		GraphicsContext context4 = canvas4.getGraphicsContext2D();
 		context4.drawImage(image4, 0, 0);
 		map4.getStyleClass().addAll("button", "detail-pane__button");
-		map4.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				mapNum = 4;
-				queryMapSize(stage);
-			}
+		map4.setOnAction(ev -> {
+			mapNum = 4;
+			queryMapSize(stage);
 		});
 		col4.getChildren().addAll(canvas4, map4, label4);
 		col1.setSpacing(10);
@@ -1441,45 +1356,33 @@ public class CivView extends Application implements Observer {
 		Window.setTop(garbageTop);
 		Button button1 = new Button("Map: 20 x 20");
 		//button1.getStyleClass().addAll("button", "detail-pane__button");
-		button1.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				mapSize = 20;
-				queryPlayerCount4(stage);
-			}
+		button1.setOnAction(ev -> {
+			mapSize = 20;
+			queryPlayerCount4(stage);
 		});
 		Button button2 = new Button("Map: 30 x 30");
 		//button2.getStyleClass().addAll("button", "detail-pane__button");
-		button2.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				mapSize = 30;
-				queryPlayerCount4(stage);
-			}
+		button2.setOnAction(ev -> {
+			mapSize = 30;
+			queryPlayerCount4(stage);
 		});
 		Button button3 = new Button("Map: 40 x 40");
 		//button3.getStyleClass().addAll("button", "detail-pane__button");
-		button3.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				mapSize = 40;
-				queryPlayerCount4(stage);
-			}
+		button3.setOnAction(ev -> {
+			mapSize = 40;
+			queryPlayerCount4(stage);
 		});
 		Button button4 = new Button("Map: 50 x 50");
 		//button4.getStyleClass().addAll("button", "detail-pane__button");
-		button4.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				mapSize = 50;
-				queryPlayerCount4(stage);
-			}
+		button4.setOnAction(ev -> {
+			mapSize = 50;
+			queryPlayerCount4(stage);
 		});
 		playerCountSelection.getChildren().addAll(button1, button2, button3, button4);
 		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
-		Window.setBackground(new Background(myBI));		
+		Window.setBackground(new Background(myBI));
 		Window.setCenter(playerCountSelection);
 		Button mainMenu = new Button("Return to Menu");
 		mainMenu.setOnAction(new EventHandler<ActionEvent>() {
@@ -1512,49 +1415,37 @@ public class CivView extends Application implements Observer {
 		Window.setTop(garbageTop);
 		Button button1 = new Button("Player v. CPU Player");
 		//button1.getStyleClass().addAll("button", "detail-pane__button");
-		button1.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				numPlayers = 1;
-				model = new CivModel(numPlayers, mapNum, mapSize);
-				startGame(stage);
-			}
+		button1.setOnAction(ev -> {
+			numPlayers = 1;
+			model = new CivModel(numPlayers, mapNum, mapSize);
+			startGame(stage);
 		});
 		Button button2 = new Button("Player v. Player (2)");
 		//button2.getStyleClass().addAll("button", "detail-pane__button");
-		button2.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				numPlayers = 2;
-				model = new CivModel(numPlayers, mapNum, mapSize);
-				startGame(stage);
-			}
+		button2.setOnAction(ev -> {
+			numPlayers = 2;
+			model = new CivModel(numPlayers, mapNum, mapSize);
+			startGame(stage);
 		});
 		Button button3 = new Button("Player v. Player (3)");
 		//button3.getStyleClass().addAll("button", "detail-pane__button");
-		button3.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				numPlayers = 3;
-				model = new CivModel(numPlayers, mapNum, mapSize);
-				startGame(stage);
-			}
+		button3.setOnAction(ev -> {
+			numPlayers = 3;
+			model = new CivModel(numPlayers, mapNum, mapSize);
+			startGame(stage);
 		});
 		Button button4 = new Button("Player v. Player (4)");
 		//button4.getStyleClass().addAll("button", "detail-pane__button");
-		button4.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				numPlayers = 4;
-				model = new CivModel(numPlayers, mapNum, mapSize);
-				startGame(stage);
-			}
+		button4.setOnAction(ev -> {
+			numPlayers = 4;
+			model = new CivModel(numPlayers, mapNum, mapSize);
+			startGame(stage);
 		});
 		playerCountSelection.getChildren().addAll(button1, button2, button3, button4);
 		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
-		Window.setBackground(new Background(myBI));		
+		Window.setBackground(new Background(myBI));
 		Window.setCenter(playerCountSelection);
 		Button mainMenu = new Button("Return to Menu");
 		mainMenu.setOnAction(new EventHandler<ActionEvent>() {
@@ -1569,7 +1460,7 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
-	
+
 	private void queryPlayerCount3(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1588,54 +1479,40 @@ public class CivView extends Application implements Observer {
 		Window.setTop(garbageTop);
 		Button button1 = new Button("Player v. CPU Player");
 		//button1.getStyleClass().addAll("button", "detail-pane__button");
-		button1.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				numPlayers = 1;
-				model = new CivModel(numPlayers, mapNum, mapSize);
-				startGame(stage);
-			}
+		button1.setOnAction(ev -> {
+			numPlayers = 1;
+			model = new CivModel(numPlayers, mapNum, mapSize);
+			startGame(stage);
 		});
 		Button button2 = new Button("Player v. Player (2)");
 		//button2.getStyleClass().addAll("button", "detail-pane__button");
-		button2.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				numPlayers = 2;
-				model = new CivModel(numPlayers, mapNum, mapSize);
-				startGame(stage);
-			}
+		button2.setOnAction(ev -> {
+			numPlayers = 2;
+			model = new CivModel(numPlayers, mapNum, mapSize);
+			startGame(stage);
 		});
 		Button button3 = new Button("Player v. Player (3)");
 		//button3.getStyleClass().addAll("button", "detail-pane__button");
-		button3.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				numPlayers = 3;
-				model = new CivModel(numPlayers, mapNum, mapSize);
-				startGame(stage);
-			}
+		button3.setOnAction(ev -> {
+			numPlayers = 3;
+			model = new CivModel(numPlayers, mapNum, mapSize);
+			startGame(stage);
 		});
 		playerCountSelection.getChildren().addAll(button1, button2, button3);
 		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
-		Window.setBackground(new Background(myBI));		
+		Window.setBackground(new Background(myBI));
 		Window.setCenter(playerCountSelection);
 		Button mainMenu = new Button("Return to Menu");
-		mainMenu.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				buildMenu(stage);
-			}
-		});
+		mainMenu.setOnAction(ev -> buildMenu(stage));
 		Window.setAlignment(mainMenu, Pos.CENTER);
 		Window.setMargin(mainMenu, new Insets(25,25,25,25));
 		Window.setBottom(mainMenu);
 		stage.setScene(scene);
 		stage.show();
 	}
-	
+
 	private void queryPlayerCount2(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1654,37 +1531,26 @@ public class CivView extends Application implements Observer {
 		Window.setTop(garbageTop);
 		Button button1 = new Button("Player v. CPU Player");
 		//button1.getStyleClass().addAll("button", "detail-pane__button");
-		button1.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				numPlayers = 1;
-				model = new CivModel(numPlayers, mapNum, mapSize);
-				startGame(stage);
-			}
+		button1.setOnAction(ev -> {
+			numPlayers = 1;
+			model = new CivModel(numPlayers, mapNum, mapSize);
+			startGame(stage);
 		});
 		Button button2 = new Button("Player v. Player (2)");
 		//button2.getStyleClass().addAll("button", "detail-pane__button");
-		button2.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				numPlayers = 2;
-				model = new CivModel(numPlayers, mapNum, mapSize);
-				startGame(stage);
-			}
+		button2.setOnAction(ev -> {
+			numPlayers = 2;
+			model = new CivModel(numPlayers, mapNum, mapSize);
+			startGame(stage);
 		});
 		playerCountSelection.getChildren().addAll(button1, button2);
 		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
-		Window.setBackground(new Background(myBI));		
+		Window.setBackground(new Background(myBI));
 		Window.setCenter(playerCountSelection);
 		Button mainMenu = new Button("Return to Menu");
-		mainMenu.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				buildMenu(stage);
-			}
-		});
+		mainMenu.setOnAction(ev -> buildMenu(stage));
 		Window.setAlignment(mainMenu, Pos.CENTER);
 		Window.setMargin(mainMenu, new Insets(25,25,25,25));
 		Window.setBottom(mainMenu);
