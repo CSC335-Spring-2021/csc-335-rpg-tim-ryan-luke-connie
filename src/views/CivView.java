@@ -1,5 +1,6 @@
 package views;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -7,6 +8,35 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import components.*;
+import controllers.CivController;
+import javafx.animation.*;
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+import models.CivModel;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -24,7 +54,11 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -32,11 +66,18 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -47,6 +88,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import models.CivModel;
 import models.Player;
@@ -62,6 +104,10 @@ public class CivView extends Application implements Observer {
 	// game data + controller
 	private CivController controller;
 	private CivModel model;
+	private int mapNum;
+	private int numPlayers;
+	private int mapSize;
+	private boolean isNewGame;
 
 	// map hooks
 	private ScrollPane mapScrollContainer;
@@ -73,6 +119,7 @@ public class CivView extends Application implements Observer {
 	private FadeTransition mapSelectedTransition;
 	private Canvas fogCanvas;
 	private Map<String, Image> fogImages;
+	private Pane mapElementContainer;
 
 	// sprite hooks
 	private Pane spriteContainer;
@@ -98,6 +145,9 @@ public class CivView extends Application implements Observer {
 	private int isoBoardWidth;
 	private int isoBoardHeight;
 
+	private List<GridPane> hpBars;
+
+
 	/**
 	 * Build the UI, start the game, and regulate game flow.
 	 *
@@ -105,8 +155,12 @@ public class CivView extends Application implements Observer {
 	 */
 	@Override
 	public void start(Stage stage) {
-		this.model = new CivModel(1); // changed to test AI
+		buildMenu(stage);
+	}
+	public void startGame(Stage stage) {
 		this.controller = new CivController(model);
+		this.spriteImages = new HashMap<String, Image>();
+		this.hpBars = new ArrayList<>();
 
 		model.addObserver(this);
 
@@ -122,7 +176,8 @@ public class CivView extends Application implements Observer {
 		buildUI(window);
 
 		// populate initial map state
-		controller.placeStartingUnits();
+		if (isNewGame)
+			controller.placeStartingUnits();
 		renderAllSprites();
 
 		// focus the map on any friendly unit so the player isn't lost in fog
@@ -156,7 +211,34 @@ public class CivView extends Application implements Observer {
 				ev.consume();
 			}
 		});
+		stage.setOnCloseRequest(new EventHandler<WindowEvent>() { // handle WindowClose event
+			@Override
+			public void handle(WindowEvent e) {
+				boolean saved = controller.close(); // serialize board
+				String msg;
+				if (saved) {
+					msg = "Game state was sucessfully saved.";
+				}
+				else {
+					msg = "Game state was not saved";
+				}
+				Alert endgame = new Alert(Alert.AlertType.INFORMATION);
+				endgame.setContentText(msg);
+				endgame.showAndWait();
+				Platform.exit();
+				System.exit(0);
+			}
+		});
 		controller.startGame(); // begin the game
+		mapCanvas.setOnMouseClicked(ev -> handleMapClick(ev));
+		mapCanvas.setOnMouseMoved(ev -> handleMapHover(ev));
+		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
+			if (ev.getCode() == KeyCode.ESCAPE) {
+				deselect();
+				ev.consume();
+			}
+		});
+
 		stage.show();
 	}
 
@@ -203,7 +285,7 @@ public class CivView extends Application implements Observer {
 	@Override
 	public void update(Observable observable, Object o) {
 		renderAllSprites();
-		renderFog();
+		// renderFog();
 
 		// update selectedUnit/selectedCity if they died in previous turn
 		if (selectedUnit != null) {
@@ -226,6 +308,8 @@ public class CivView extends Application implements Observer {
 			Alert endgame = new Alert(Alert.AlertType.INFORMATION);
 			endgame.setContentText("game over");
 			endgame.showAndWait();
+			File oldGame = new File("save_game.dat");
+			oldGame.delete();
 			System.exit(0);
 		}
 	}
@@ -1165,5 +1249,446 @@ public class CivView extends Application implements Observer {
 	private int getRandInt(int min, int max) {
 		return (int) (Math.random() * (max - min + 1) + min);
 	}
+	
+	private void buildMenu(Stage stage) {
+		BorderPane Window = new BorderPane();
+		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
+		scene.getStylesheets().add("assets/CivView.css");
+		stage.setScene(scene);
+		stage.setTitle("Sid Meier's Civilization 0.5");
+		
+		VBox garbageLeft = new VBox();
+		VBox garbageTop = new VBox();
+		VBox MenuOptions = new VBox();
+		Text title = new Text("Civilization 0.5");
+		Button newGame = new Button("New Game");
+		//newGame.setOnAction(new EventHandler);
+		newGame.getStyleClass().addAll("button", "detail-pane__button");
+		newGame.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				isNewGame = true;
+				newGameMapSelection(stage);
+			}
+		});
+		Button loadGame = new Button("Load Game");
+		loadGame.getStyleClass().addAll("button", "detail-pane__button");
+		loadGame.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				isNewGame = false;
+				attemptLoadGame(stage);
+			}
+		});
+		Button exit = new Button("Exit");
+		exit.getStyleClass().addAll("button", "detail-pane__button");
+		exit.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				Platform.exit();
+				System.exit(0);
+			}
+		});
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
+		          BackgroundSize.DEFAULT);
+		MenuOptions.setBackground(new Background(myBI));
+	
+		Window.setBackground(new Background(myBI));
+		MenuOptions.setSpacing(20);
+		MenuOptions.getChildren().addAll(title, newGame, loadGame, exit);
+		garbageLeft.setMinWidth(441);
+		garbageTop.setMinHeight(150);
+		Window.setCenter(MenuOptions);
+		Window.setLeft(garbageLeft);
+		Window.setTop(garbageTop);
+		Window.setAlignment(MenuOptions, Pos.CENTER);
 
+		stage.setScene(scene);
+		stage.show();
+	}
+	
+	private void newGameMapSelection(Stage stage) {
+		BorderPane Window = new BorderPane();
+		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
+		scene.getStylesheets().add("assets/CivView.css");
+		stage.setScene(scene);
+		stage.setTitle("Sid Meier's Civilization 0.5");
+		HBox mapSelection = new HBox();
+		mapSelection.setPadding(new Insets(40, 40, 40, 40));
+		mapSelection.setSpacing(40);
+		VBox col1 = new VBox();
+		VBox garbageLeft = new VBox();
+		VBox garbageTop = new VBox();
+		Window.setLeft(garbageLeft);
+		Window.setTop(garbageTop);
+		garbageLeft.setMinWidth(190);
+		garbageTop.setMinHeight(160);
+		Button map1 = new Button("Map 1");
+		Text label1 = new Text("  2-4 Players");
+		Image image1 = new Image("file:./src/views/Map1.PNG", 110, 110, false, true);
+		Canvas canvas1 = new Canvas(110, 110);
+		GraphicsContext context1 = canvas1.getGraphicsContext2D();
+		context1.drawImage(image1, 0, 0);
+		map1.getStyleClass().addAll("button", "detail-pane__button");
+		map1.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				mapNum = 1;
+				mapSize = 0;
+				queryPlayerCount4(stage);
+			}
+		});
+		col1.getChildren().addAll(canvas1, map1, label1);
+		VBox col2 = new VBox();
+		Button map2 = new Button("Map 2");
+		Text label2 = new Text("  2-3 Players");
+		Image image2 = new Image("file:./src/views/Map2.PNG", 110, 110, false, true);
+		Canvas canvas2 = new Canvas(110, 110);
+		GraphicsContext context2 = canvas2.getGraphicsContext2D();
+		context2.drawImage(image2, 0, 0);
+		map2.getStyleClass().addAll("button", "detail-pane__button");
+		map2.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				mapNum = 2;
+				mapSize = 0;
+				queryPlayerCount3(stage);
+			}
+		});
+		col2.getChildren().addAll(canvas2, map2, label2);
+		VBox col3 = new VBox();
+		Button map3 = new Button("Map 3");
+		Text label3 = new Text("   2 Players ");
+		Image image3 = new Image("file:./src/views/Map3.PNG", 110, 110, false, true);
+		Canvas canvas3 = new Canvas(110,110);
+		GraphicsContext context3 = canvas3.getGraphicsContext2D();
+		context3.drawImage(image3, 0, 0);
+		map3.getStyleClass().addAll("button", "detail-pane__button");
+		map3.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				mapNum = 3;
+				mapSize = 0;
+				queryPlayerCount2(stage);
+			}
+		});
+		col3.getChildren().addAll(canvas3, map3, label3);
+		VBox col4 = new VBox();
+		Button map4 = new Button("Map 4");
+		Text label4 = new Text("  2-4 Players");
+		Image image4 = new Image("file:./src/views/Map4.PNG", 110, 110, false, true);
+		Canvas canvas4 = new Canvas(110,110);
+		GraphicsContext context4 = canvas4.getGraphicsContext2D();
+		context4.drawImage(image4, 0, 0);
+		map4.getStyleClass().addAll("button", "detail-pane__button");
+		map4.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				mapNum = 4;
+				queryMapSize(stage);
+			}
+		});
+		col4.getChildren().addAll(canvas4, map4, label4);
+		col1.setSpacing(10);
+		col2.setSpacing(10);
+		col3.setSpacing(10);
+		col4.setSpacing(10);
+		mapSelection.getChildren().addAll(col1, col2, col3, col4);
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
+		          BackgroundSize.DEFAULT);
+		Window.setBackground(new Background(myBI));
+		Window.setCenter(mapSelection);
+		Button mainMenu = new Button("Return to Menu");
+		mainMenu.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				buildMenu(stage);
+			}
+		});
+		Window.setAlignment(mainMenu, Pos.CENTER);
+		Window.setMargin(mainMenu, new Insets(25,25,25,25));
+		Window.setBottom(mainMenu);
+		stage.setScene(scene);
+		stage.show();
+	}
+	private void attemptLoadGame(Stage stage) {
+		try {
+			this.model = new CivModel();
+			startGame(stage);
+		} catch (NullPointerException e) {
+			Alert noGame = new Alert(Alert.AlertType.INFORMATION);
+			noGame.setContentText("No saved game state was found.");
+			noGame.showAndWait();
+		}
+	}
+	private void queryMapSize(Stage stage) {
+		BorderPane Window = new BorderPane();
+		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
+		scene.getStylesheets().add("assets/CivView.css");
+		stage.setScene(scene);
+		stage.setTitle("Sid Meier's Civilization 0.5");
+		HBox playerCountSelection = new HBox();
+		playerCountSelection.setPadding(new Insets(20, 20, 20, 20));
+		playerCountSelection.setSpacing(20);
+		// VBox col1 = new VBox();
+		VBox garbageLeft = new VBox();
+		VBox garbageTop = new VBox();
+		garbageLeft.setMinWidth(205);
+		garbageTop.setMinHeight(250);
+		Window.setLeft(garbageLeft);
+		Window.setTop(garbageTop);
+		Button button1 = new Button("Map: 20 x 20");
+		//button1.getStyleClass().addAll("button", "detail-pane__button");
+		button1.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				mapSize = 20;
+				queryPlayerCount4(stage);
+			}
+		});
+		Button button2 = new Button("Map: 30 x 30");
+		//button2.getStyleClass().addAll("button", "detail-pane__button");
+		button2.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				mapSize = 30;
+				queryPlayerCount4(stage);
+			}
+		});
+		Button button3 = new Button("Map: 40 x 40");
+		//button3.getStyleClass().addAll("button", "detail-pane__button");
+		button3.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				mapSize = 40;
+				queryPlayerCount4(stage);
+			}
+		});
+		Button button4 = new Button("Map: 50 x 50");
+		//button4.getStyleClass().addAll("button", "detail-pane__button");
+		button4.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				mapSize = 50;
+				queryPlayerCount4(stage);
+			}
+		});
+		playerCountSelection.getChildren().addAll(button1, button2, button3, button4);
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
+		          BackgroundSize.DEFAULT);
+		Window.setBackground(new Background(myBI));		
+		Window.setCenter(playerCountSelection);
+		Button mainMenu = new Button("Return to Menu");
+		mainMenu.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				buildMenu(stage);
+			}
+		});
+		Window.setAlignment(mainMenu, Pos.CENTER);
+		Window.setMargin(mainMenu, new Insets(25,25,25,25));
+		Window.setBottom(mainMenu);
+		stage.setScene(scene);
+		stage.show();
+	}
+	private void queryPlayerCount4(Stage stage) {
+		BorderPane Window = new BorderPane();
+		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
+		scene.getStylesheets().add("assets/CivView.css");
+		stage.setScene(scene);
+		stage.setTitle("Sid Meier's Civilization 0.5");
+		HBox playerCountSelection = new HBox();
+		playerCountSelection.setPadding(new Insets(20, 20, 20, 20));
+		playerCountSelection.setSpacing(20);
+		// VBox col1 = new VBox();
+		VBox garbageLeft = new VBox();
+		VBox garbageTop = new VBox();
+		garbageLeft.setMinWidth(130);
+		garbageTop.setMinHeight(250);
+		Window.setLeft(garbageLeft);
+		Window.setTop(garbageTop);
+		Button button1 = new Button("Player v. CPU Player");
+		//button1.getStyleClass().addAll("button", "detail-pane__button");
+		button1.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				numPlayers = 1;
+				model = new CivModel(numPlayers, mapNum, mapSize);
+				startGame(stage);
+			}
+		});
+		Button button2 = new Button("Player v. Player (2)");
+		//button2.getStyleClass().addAll("button", "detail-pane__button");
+		button2.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				numPlayers = 2;
+				model = new CivModel(numPlayers, mapNum, mapSize);
+				startGame(stage);
+			}
+		});
+		Button button3 = new Button("Player v. Player (3)");
+		//button3.getStyleClass().addAll("button", "detail-pane__button");
+		button3.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				numPlayers = 3;
+				model = new CivModel(numPlayers, mapNum, mapSize);
+				startGame(stage);
+			}
+		});
+		Button button4 = new Button("Player v. Player (4)");
+		//button4.getStyleClass().addAll("button", "detail-pane__button");
+		button4.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				numPlayers = 4;
+				model = new CivModel(numPlayers, mapNum, mapSize);
+				startGame(stage);
+			}
+		});
+		playerCountSelection.getChildren().addAll(button1, button2, button3, button4);
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
+		          BackgroundSize.DEFAULT);
+		Window.setBackground(new Background(myBI));		
+		Window.setCenter(playerCountSelection);
+		Button mainMenu = new Button("Return to Menu");
+		mainMenu.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				buildMenu(stage);
+			}
+		});
+		Window.setAlignment(mainMenu, Pos.CENTER);
+		Window.setMargin(mainMenu, new Insets(25,25,25,25));
+		Window.setBottom(mainMenu);
+		stage.setScene(scene);
+		stage.show();
+	}
+	
+	private void queryPlayerCount3(Stage stage) {
+		BorderPane Window = new BorderPane();
+		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
+		scene.getStylesheets().add("assets/CivView.css");
+		stage.setScene(scene);
+		stage.setTitle("Sid Meier's Civilization 0.5");
+		HBox playerCountSelection = new HBox();
+		playerCountSelection.setPadding(new Insets(20, 20, 20, 20));
+		playerCountSelection.setSpacing(20);
+		// VBox col1 = new VBox();
+		VBox garbageLeft = new VBox();
+		VBox garbageTop = new VBox();
+		garbageLeft.setMinWidth(212);
+		garbageTop.setMinHeight(250);
+		Window.setLeft(garbageLeft);
+		Window.setTop(garbageTop);
+		Button button1 = new Button("Player v. CPU Player");
+		//button1.getStyleClass().addAll("button", "detail-pane__button");
+		button1.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				numPlayers = 1;
+				model = new CivModel(numPlayers, mapNum, mapSize);
+				startGame(stage);
+			}
+		});
+		Button button2 = new Button("Player v. Player (2)");
+		//button2.getStyleClass().addAll("button", "detail-pane__button");
+		button2.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				numPlayers = 2;
+				model = new CivModel(numPlayers, mapNum, mapSize);
+				startGame(stage);
+			}
+		});
+		Button button3 = new Button("Player v. Player (3)");
+		//button3.getStyleClass().addAll("button", "detail-pane__button");
+		button3.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				numPlayers = 3;
+				model = new CivModel(numPlayers, mapNum, mapSize);
+				startGame(stage);
+			}
+		});
+		playerCountSelection.getChildren().addAll(button1, button2, button3);
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
+		          BackgroundSize.DEFAULT);
+		Window.setBackground(new Background(myBI));		
+		Window.setCenter(playerCountSelection);
+		Button mainMenu = new Button("Return to Menu");
+		mainMenu.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				buildMenu(stage);
+			}
+		});
+		Window.setAlignment(mainMenu, Pos.CENTER);
+		Window.setMargin(mainMenu, new Insets(25,25,25,25));
+		Window.setBottom(mainMenu);
+		stage.setScene(scene);
+		stage.show();
+	}
+	
+	private void queryPlayerCount2(Stage stage) {
+		BorderPane Window = new BorderPane();
+		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
+		scene.getStylesheets().add("assets/CivView.css");
+		stage.setScene(scene);
+		stage.setTitle("Sid Meier's Civilization 0.5");
+		HBox playerCountSelection = new HBox();
+		playerCountSelection.setPadding(new Insets(20, 20, 20, 20));
+		playerCountSelection.setSpacing(20);
+		// VBox col1 = new VBox();
+		VBox garbageLeft = new VBox();
+		VBox garbageTop = new VBox();
+		garbageLeft.setMinWidth(300);
+		garbageTop.setMinHeight(250);
+		Window.setLeft(garbageLeft);
+		Window.setTop(garbageTop);
+		Button button1 = new Button("Player v. CPU Player");
+		//button1.getStyleClass().addAll("button", "detail-pane__button");
+		button1.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				numPlayers = 1;
+				model = new CivModel(numPlayers, mapNum, mapSize);
+				startGame(stage);
+			}
+		});
+		Button button2 = new Button("Player v. Player (2)");
+		//button2.getStyleClass().addAll("button", "detail-pane__button");
+		button2.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				numPlayers = 2;
+				model = new CivModel(numPlayers, mapNum, mapSize);
+				startGame(stage);
+			}
+		});
+		playerCountSelection.getChildren().addAll(button1, button2);
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
+		          BackgroundSize.DEFAULT);
+		Window.setBackground(new Background(myBI));		
+		Window.setCenter(playerCountSelection);
+		Button mainMenu = new Button("Return to Menu");
+		mainMenu.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				buildMenu(stage);
+			}
+		});
+		Window.setAlignment(mainMenu, Pos.CENTER);
+		Window.setMargin(mainMenu, new Insets(25,25,25,25));
+		Window.setBottom(mainMenu);
+		stage.setScene(scene);
+		stage.show();
+	}
 }
