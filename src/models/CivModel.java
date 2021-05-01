@@ -1,6 +1,10 @@
 package models;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Observable;
@@ -59,6 +63,33 @@ public class CivModel extends Observable implements Serializable {
 		}
 		curPlayer = head;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public CivModel() {
+		try {
+			FileInputStream fileStream = new FileInputStream("save_game.dat");
+			ObjectInputStream ois = new ObjectInputStream(fileStream);
+			this.board = new CivBoard(ois);
+			this.head = (Node) ois.readObject();
+			this.singlePlayer = (boolean) ois.readObject();
+			this.round = (int) ois.readObject();
+			this.numPlayers = (int) ois.readObject();
+			this.playerStartingCoords = (ArrayList<int[]>) ois.readObject();
+			this.curPlayer = (Node) ois.readObject();
+			Node endIter = (Node) ois.readObject();
+			curPlayer.next = endIter;
+			int i = 0;
+			while (i < numPlayers - 2) {
+				endIter.next = (Node) ois.readObject();
+				endIter = endIter.next;
+			}
+			endIter.next = curPlayer;
+			
+			
+		} catch (Exception e) {
+			throw new NullPointerException();
+		}
+	}
 
 	/**
 	 * getter method for the tile held at row, col in our Board
@@ -108,15 +139,27 @@ public class CivModel extends Observable implements Serializable {
 		}
 		// System.out.println(curPlayer.getPlayer().getID());
 	}
-
+	/**
+	 * Allows the controller to know whether to execute Player Turn logic 
+	 * 	or Computer Turn logic.
+	 * @return If CurPlayer isComputer
+	 */
 	public boolean isComputer() {
 		return !curPlayer.getPlayer().isHuman();
 	}
-
+	/**
+	 * Keep track of which round it is by counting how many times we go through all the players
+	 * 	Allows the model to know when to level-up cities and more.
+	 * @return an int specifying how many times we have made it through all of the players
+	 */
 	public int roundNumber() {
 		return round;
 	}
-
+	/**
+	 * Remove a player who has no more cities left from the game
+	 * @param deadGuy The player whose city was just killed
+	 * @return true if it worked, false if it didn't
+	 */
 	public boolean removePlayer(Player deadGuy) {
 		Node prev = head;
 		Node cur = head.next;
@@ -132,11 +175,20 @@ public class CivModel extends Observable implements Serializable {
 		prev.next = next;
 		return true;
 	}
-
+	/**
+	 * Provides controller access to however many players are in the game
+	 * @return an int of the number of players in the game 
+	 */
 	public int numPlayers() {
 		return numPlayers;
 	}
 	
+	/**
+	 * Initialize player starting coordinates based on map and number of players
+	 * @param map int specifying which map the user has selected (1-4)
+	 * @param size int specifying the size of the map (only applicable if map 4)
+	 * @return a String that will be the location of the map to open, unless map == 4
+	 */
 	private String initPlayerStartingCoords(int map, int size) {
 		ArrayList<int[]> allStartingCoords = new ArrayList<int[]>();
 		this.playerStartingCoords = new ArrayList<int[]>();
@@ -172,12 +224,46 @@ public class CivModel extends Observable implements Serializable {
 		return mapName;
 		
 	}
+	/**
+	 * Provide access to the list of starting coordinates for the controller to place 
+	 * 	starting units
+	 * @return an ArrayList of length-2 int arrays, each containing a starting coordinate
+	 */
 	public ArrayList<int[]> getPlayerStartingCoords() {
 		return this.playerStartingCoords;
 	}
-	
+	/**
+	 * returns "Player 1" Player object for controller
+	 * @return "Player 1" object
+	 */
 	public Player getHead() {
 		return this.head.getPlayer();
+	}
+	
+	public boolean done() {
+		try {
+			FileOutputStream fileStream = new FileOutputStream("save_game.dat");
+			ObjectOutputStream oos = new ObjectOutputStream(fileStream);
+			this.board.serializeBoard(oos);
+			oos.writeObject(this.head);
+			oos.writeObject(this.singlePlayer);
+			oos.writeObject(this.round);
+			oos.writeObject(this.numPlayers);
+			oos.writeObject(this.playerStartingCoords);
+			Node playerWhoseTurnItIs = curPlayer;
+			oos.writeObject(curPlayer);
+			nextPlayer();
+			while (!(curPlayer.equals(playerWhoseTurnItIs))) {
+				oos.writeObject(curPlayer);
+				nextPlayer();
+			}
+			oos.close();
+			return true;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	/**

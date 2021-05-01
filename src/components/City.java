@@ -1,6 +1,7 @@
 package components;
 
 import java.awt.Point;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,7 +16,7 @@ import models.Player;
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
  */
-public class City {
+public class City implements Serializable{
 
 	private final Player owner;
 	private final Point coord;

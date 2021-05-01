@@ -1,5 +1,6 @@
 package components;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import models.Player;
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
  */
-public class Tile {
+public class Tile implements Serializable {
 
 	public enum terrainTypes {
 		FIELD, HILL, SWAMP, WATER, MOUNTAIN

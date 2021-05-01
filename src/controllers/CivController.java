@@ -639,5 +639,9 @@ public class CivController {
 		}
 		return moves;
 	}
+	
+	public boolean close() {
+		return this.model.done();
+	}
 
 }

@@ -1,11 +1,12 @@
 package models;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import components.City;
 import components.Unit;
 
-public class Player {
+public class Player implements Serializable {
 	private ArrayList<Unit> units;
 	private ArrayList<City> cities;
 	private boolean isHuman;
