@@ -534,7 +534,7 @@ public class CivController {
 				&& city.getProducableUnits().contains(unitType)) {
 			Unit newUnit = city.produceUnit(unitType);
 			tile.setUnit(newUnit);
-			curPlayer.addUnit(newUnit);
+			city.getOwner().addUnit(newUnit);
 			model.changeAndNotify();
 			return true;
 		}

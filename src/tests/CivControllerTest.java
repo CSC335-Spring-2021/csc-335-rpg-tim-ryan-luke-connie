@@ -63,6 +63,9 @@ public class CivControllerTest {
 		controller.endTurn();
 		// scout attacked and should eventually be killed by a defending unit
 		// insert enemy unit and move it onto the city
+
+		// TODO: This line is fucking everything up but its the only way to make it the
+		// AI's turn so i can insert a settler.
 		model.nextPlayer();
 		for (int i = 0; i < 40; i++) {
 			controller.getTileAt(15, 9).getOwnerCity().cityIncrement();
@@ -74,14 +77,16 @@ public class CivControllerTest {
 		// create new warriors and defend so the AI can exercise its logic
 		for (int i = 6; i < 12; i++) {
 			controller.getTileAt(6, i).setUnit(new Warrior(model.getCurPlayer(), new Point(6, i)));
+			model.getCurPlayer().addUnit(model.getTileAt(6, i).getUnit());
 			controller.getTileAt(7, i).setUnit(new Warrior(model.getCurPlayer(), new Point(7, i)));
+			model.getCurPlayer().addUnit(model.getTileAt(7, i).getUnit());
 		}
 
 		assertFalse(controller.gameOver());
 		// TODO: This is supposed to exercise the enemy AI, and should bring us to 90%
 		// coverage, but the AI doesnt do anything. Not sure why.
 		// make myself die
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 50; i++) {
 			controller.endTurn();
 		}
 		// assertTrue(controller.gameOver());
