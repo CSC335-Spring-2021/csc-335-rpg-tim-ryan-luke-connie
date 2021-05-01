@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import models.CivBoard;
 import models.CivModel;
+import models.Player;
 
 /**
  * Tests the methods of CivModel.
@@ -48,11 +49,14 @@ public class CivModelTest {
 		model = new CivModel(3);
 		assertEquals(model.numPlayers(), 3);
 		// how to make removePlayer return false?
+		// ^ by trying to remove a player that doesn't exist
+		Player notInList = new Player(1);
+		assertFalse(model.removePlayer(notInList));
+
 		assertTrue(model.removePlayer(model.getCurPlayer()));
 		model.nextPlayer();
 		assertTrue(model.removePlayer(model.getCurPlayer()));
 		model.nextPlayer();
 		assertTrue(model.removePlayer(model.getCurPlayer()));
-		model.nextPlayer();
 	}
 }
