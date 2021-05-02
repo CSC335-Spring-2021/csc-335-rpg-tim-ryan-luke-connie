@@ -548,9 +548,7 @@ public class CivController {
 	}
 
 	/**
-=======
->>>>>>> refs/remotes/origin/component_updates
-	 * Unit on attakcerTile attacks the Unit on defenderTile.
+	 * Unit on attackerTile attacks the Unit on defenderTile.
 	 *
 	 * Unit gets attack modifier based on its current terrain; defender gets to
 	 * counterattack. Movement for attacker Unit is set to 0, as attack can only
