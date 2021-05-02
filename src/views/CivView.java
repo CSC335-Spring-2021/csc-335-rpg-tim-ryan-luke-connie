@@ -184,30 +184,16 @@ public class CivView extends Application implements Observer {
 		spriteImages = new HashMap<>();
 		markerImages = new HashMap<>();
 		fogImages = new HashMap<>();
+
+		String[] playerStrings = { "player-1", "player-2", "player-3", "player-4", "cpu-player" };
+
 		try {
-			spriteImages.put("City-player-1", new Image(new FileInputStream("src/assets/sprites/city-player-1.png")));
-			spriteImages.put("City-player-2", new Image(new FileInputStream("src/assets/sprites/city-player-2.png")));
-			spriteImages.put("City-player-3", new Image(new FileInputStream("src/assets/sprites/city-player-3.png")));
-			spriteImages.put("City-player-4", new Image(new FileInputStream("src/assets/sprites/city-player-4.png")));
-			spriteImages.put("City-cpu-player", new Image(new FileInputStream("src/assets/sprites/city-cpu-player.png")));
-
-			spriteImages.put("Scout-player-1", new Image(new FileInputStream("src/assets/sprites/scout-player-1.png")));
-			spriteImages.put("Scout-player-2", new Image(new FileInputStream("src/assets/sprites/scout-player-2.png")));
-			spriteImages.put("Scout-player-3", new Image(new FileInputStream("src/assets/sprites/scout-player-3.png")));
-			spriteImages.put("Scout-player-4", new Image(new FileInputStream("src/assets/sprites/scout-player-4.png")));
-			spriteImages.put("Scout-cpu-player", new Image(new FileInputStream("src/assets/sprites/scout-cpu-player.png")));
-
-			spriteImages.put("Settler-player-1", new Image(new FileInputStream("src/assets/sprites/settler-player-1.png")));
-			spriteImages.put("Settler-player-2", new Image(new FileInputStream("src/assets/sprites/settler-player-2.png")));
-			spriteImages.put("Settler-player-3", new Image(new FileInputStream("src/assets/sprites/settler-player-3.png")));
-			spriteImages.put("Settler-player-4", new Image(new FileInputStream("src/assets/sprites/settler-player-4.png")));
-			spriteImages.put("Settler-cpu-player", new Image(new FileInputStream("src/assets/sprites/settler-cpu-player.png")));
-
-			spriteImages.put("Warrior-player-1", new Image(new FileInputStream("src/assets/sprites/warrior-player-1.png")));
-			spriteImages.put("Warrior-player-2", new Image(new FileInputStream("src/assets/sprites/warrior-player-2.png")));
-			spriteImages.put("Warrior-player-3", new Image(new FileInputStream("src/assets/sprites/warrior-player-3.png")));
-			spriteImages.put("Warrior-player-4", new Image(new FileInputStream("src/assets/sprites/warrior-player-4.png")));
-			spriteImages.put("Warrior-cpu-player", new Image(new FileInputStream("src/assets/sprites/warrior-cpu-player.png")));
+			for (String p : playerStrings) {
+				spriteImages.put("City-" + p, new Image(new FileInputStream("src/assets/sprites/city-" + p + ".png")));
+				spriteImages.put("Scout-" + p, new Image(new FileInputStream("src/assets/sprites/scout-" + p + ".png")));
+				spriteImages.put("Settler-" + p, new Image(new FileInputStream("src/assets/sprites/settler-" + p + ".png")));
+				spriteImages.put("Warrior-" + p, new Image(new FileInputStream("src/assets/sprites/warrior-" + p + ".png")));
+			}
 
 			markerImages.put("attackable", new Image(new FileInputStream("src/assets/tiles/attackable.png")));
 			markerImages.put("costly", new Image(new FileInputStream("src/assets/tiles/costly.png")));
