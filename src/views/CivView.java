@@ -1305,7 +1305,8 @@ public class CivView extends Application implements Observer {
 	/**
 	 * buildMenu() builds our Main Menu for our game. This menu includes
 	 * 	a New Game, Load Game and Exit button
-	 * @param stage our primary stage for our javafx environment
+	 * @param stage our primary stage for our javafx environment 
+	 * @param stage our stage for our javafx environment
 	 */
 	private void buildMenu(Stage stage) {
 		BorderPane Window = new BorderPane();
@@ -1675,7 +1676,7 @@ public class CivView extends Application implements Observer {
 	 * @param stage our primary stage for our javafx environment
 	 */
 	private void queryPlayerCount2(Stage stage) {
-		BorderPane Window = new BorderPane();
+		BorderPane Window = new BorderPane(); 
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
 		scene.getStylesheets().add("assets/CivView.css");
 		stage.setScene(scene);
