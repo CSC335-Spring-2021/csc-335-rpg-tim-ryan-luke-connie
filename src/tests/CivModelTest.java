@@ -1,14 +1,11 @@
 package tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.Test;
-
 import models.CivBoard;
 import models.CivModel;
 import models.Player;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the methods of CivModel.
@@ -46,11 +43,11 @@ public class CivModelTest {
 		assertEquals(model.numPlayers(), 1);
 
 		// new game with 3 players
-		model = new CivModel(3);
+		model = new CivModel(3, 2, 0);
 		assertEquals(model.numPlayers(), 3);
 		// how to make removePlayer return false?
 		// ^ by trying to remove a player that doesn't exist
-		Player notInList = new Player(1);
+		Player notInList = new Player(1, "Player 1");
 		assertFalse(model.removePlayer(notInList));
 
 		assertTrue(model.removePlayer(model.getCurPlayer()));
