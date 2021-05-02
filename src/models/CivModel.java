@@ -64,9 +64,16 @@ public class CivModel extends Observable implements Serializable {
 		}
 		curPlayer = head;
 	}
-
-	@SuppressWarnings("unchecked")
-	public CivModel() {
+	/**
+	 * CivModel is another constructor that will be called
+	 * 	if the user wants to load a previous game state
+	 * 
+	 * 	CivModel() unserializes a previously existing game state
+	 * 		and sets appropriate attributes of all relevant classes.
+	 * 
+	 *  @throws NullPointerException if the file save_game.dat does not exist/ can't be opened
+	 */
+	public CivModel() throws NullPointerException {
 		try {
 			FileInputStream fileStream = new FileInputStream("save_game.dat");
 			ObjectInputStream ois = new ObjectInputStream(fileStream);
@@ -101,6 +108,13 @@ public class CivModel extends Observable implements Serializable {
 	 */
 	public Tile getTileAt(int x, int y) {
 		return this.board.getTile(x, y);
+	}
+
+	/**
+	 * for JUnit testing
+	 */
+	public CivBoard getCivBoard() {
+		return this.board;
 	}
 
 	/**
@@ -272,7 +286,11 @@ public class CivModel extends Observable implements Serializable {
 	public Player getHead() {
 		return this.head.getPlayer();
 	}
-
+	/**
+	 * Controller calls done in its close() method. done() saves the whole game state
+	 * 	by writing it to an ObjectOutputStream.
+	 * @return true if the save was successful, false if it failed. 
+	 */
 	public boolean done() {
 		try {
 			FileOutputStream fileStream = new FileOutputStream("save_game.dat");
