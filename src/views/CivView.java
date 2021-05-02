@@ -685,9 +685,6 @@ public class CivView extends Application implements Observer {
 		int[] space = isoToGrid(ev.getX(), ev.getY());
 		Tile tile = controller.getTileAt(space[0], space[1]);
 
-		System.out.print("x: " + space[0] + "  ");
-		System.out.println("y: " + space[1]);
-
 		// reject clicks in the negative space left by the iso view
 		if (tile == null)
 			return;
@@ -1304,7 +1301,7 @@ public class CivView extends Application implements Observer {
 	private int getRandInt(int min, int max) {
 		return (int) (Math.random() * (max - min + 1) + min);
 	}
-	
+
 	/**
 	 * buildMenu() builds our Main Menu for our game. This menu includes
 	 * 	a New Game, Load Game and Exit button
@@ -1360,8 +1357,8 @@ public class CivView extends Application implements Observer {
 	}
 	/**
 	 * newGameMapSelection builds the menu for map selection when the user selects
-	 * 	New Game from the Main Menu. This includes .png previews of our Maps, a button for 
-	 * 	each map and a text element informing the User how many players each Map supports. 
+	 * 	New Game from the Main Menu. This includes .png previews of our Maps, a button for
+	 * 	each map and a text element informing the User how many players each Map supports.
 	 * 	It also includes a "return to menu" button that will redraw our Main Menu.
 	 * @param stage our primary stage for our javafx environment
 	 */
@@ -1462,7 +1459,7 @@ public class CivView extends Application implements Observer {
 	 * attemptLoadGame() is called when the User clicks the "Load Game" button on
 	 * 	our Main Menu. If it cannot load a game, it displays an Alert indicating
 	 * 	that no saved game was found and allows the user to select a different option.
-	 * 	If it can load  a game, it loads the game and starts it. 
+	 * 	If it can load  a game, it loads the game and starts it.
 	 * @param stage our primary stage for our javafx environment
 	 */
 	private void attemptLoadGame(Stage stage) {
@@ -1477,10 +1474,10 @@ public class CivView extends Application implements Observer {
 	}
 	/**
 	 * queryMapSize draws a Menu screen with four menu options. Map4 is variably sized and
-	 * 	can be one of the four options that the user wants: 20x20, 30x30, 40x40, 50x50. 
+	 * 	can be one of the four options that the user wants: 20x20, 30x30, 40x40, 50x50.
 	 * 	This Menu includes buttons for all four of these options and, upon clicking, sets
 	 * 	the View's mapSize field. This menu also includes a "Return to Menu" button that
-	 * 	redraws our Main Menu when clicked. 
+	 * 	redraws our Main Menu when clicked.
 	 * @param stage our primary stage for our javafx environment
 	 */
 	private void queryMapSize(Stage stage) {
@@ -1545,7 +1542,7 @@ public class CivView extends Application implements Observer {
 	/**
 	 * queryPlayerCount4() builds a menu for the User to select how many players
 	 * 	they'd like in their game. Map1 and Map4 support 1-4 human players, so this
-	 * 	menu contains four options and will set the view's numPlayers field when clicked. 
+	 * 	menu contains four options and will set the view's numPlayers field when clicked.
 	 * 	Also contains our Return to Menu Button
 	 * @param stage our primary stage for our javafx environment
 	 */
@@ -1615,7 +1612,7 @@ public class CivView extends Application implements Observer {
 	/**
 	 * queryPlayerCount3() builds a menu for the User to select how many players
 	 * 	they'd like in their game. Map2 supports 1-3 human players, so this
-	 * 	menu contains three options and will set the view's numPlayers field when clicked. 
+	 * 	menu contains three options and will set the view's numPlayers field when clicked.
 	 *  Also contains our Return to Menu Button
 	 * @param stage our primary stage for our javafx environment
 	 */
@@ -1673,7 +1670,7 @@ public class CivView extends Application implements Observer {
 	/**
 	 * queryPlayerCount2() builds a menu for the User to select how many players
 	 * 	they'd like in their game. Map3 supports 1-2 human players, so this
-	 * 	menu contains two options and will set the view's numPlayers field when clicked. 
+	 * 	menu contains two options and will set the view's numPlayers field when clicked.
 	 *  Also contains our Return to Menu Button
 	 * @param stage our primary stage for our javafx environment
 	 */
