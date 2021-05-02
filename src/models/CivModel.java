@@ -195,12 +195,12 @@ public class CivModel extends Observable implements Serializable {
 		List<Player> result = new ArrayList<>();
 
 		Node cur = head;
-		result.add(cur.getPlayer());
-		cur = cur.next;
+		int i = 0;
 
-		while (cur != null && cur != head) {
+		while (cur != null && i < numPlayers) {
 			result.add(cur.getPlayer());
 			cur = cur.next;
+			i++;
 		}
 
 		return result;
