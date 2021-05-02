@@ -207,6 +207,16 @@ public class CivModel extends Observable implements Serializable {
 	}
 
 	/**
+	 * Determine whether this is a single-player game (one with a human vs a
+	 * CPU player).
+	 *
+	 * @return True if this is a single-player game, false otherwise
+	 */
+	public boolean isSinglePlayer() {
+		return singlePlayer;
+	}
+
+	/**
 	 * Initialize player starting coordinates based on map and number of players
 	 * @param map int specifying which map the user has selected (1-4)
 	 * @param size int specifying the size of the map (only applicable if map 4)

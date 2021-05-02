@@ -51,6 +51,7 @@ public class CivView extends Application implements Observer {
 	private int numPlayers;
 	private int mapSize;
 	private boolean isNewGame;
+	private Player prevPlayer;
 
 	// map hooks
 	private ScrollPane mapScrollContainer;
@@ -120,16 +121,9 @@ public class CivView extends Application implements Observer {
 			controller.placeStartingUnits();
 		renderAllSprites();
 
-		// focus the map on any friendly unit so the player isn't lost in fog
-		if (model.getCurPlayer().getUnits().size() > 0) {
-			Unit unit = model.getCurPlayer().getUnits().get(0);
-			focusMap(unit.getX(), unit.getY(), false);
-		} else if (model.getCurPlayer().getCities().size() > 0) {
-			City city = model.getCurPlayer().getCities().get(0);
-			focusMap(city.getX(), city.getY(), false);
-		} else {
-			focusMap(model.getSize() / 2, model.getSize() / 2, false);
-		}
+		// focus the map on any friendly unit so the starting player isn't lost
+		// in fog
+		focusFirstPlayerUnit(model.getCurPlayer(), true);
 
 		// build the application window
 		Scene scene = new Scene(window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -233,6 +227,18 @@ public class CivView extends Application implements Observer {
 		}
 		if (selectedCity != null && selectedCity.getRemainingHP() <= 0) {
 			deselect();
+		}
+
+		// determine if control has changed hands to another human player. If
+		// so, deselect the prior player's stuff and refocus the map
+		if (!model.isSinglePlayer()) {
+			if (prevPlayer == null) {
+				prevPlayer = model.getCurPlayer();
+			} else if (prevPlayer != model.getCurPlayer()) {
+				deselect();
+				prevPlayer = model.getCurPlayer();
+				focusFirstPlayerUnit(model.getCurPlayer(), false);
+			}
 		}
 
 		// refresh any open detail panes, as the selected unit's values may have changed
@@ -640,6 +646,28 @@ public class CivView extends Application implements Observer {
 		} else {
 			mapScrollContainer.setHvalue(targetH);
 			mapScrollContainer.setVvalue(targetV);
+		}
+	}
+
+	/**
+	 * Given a player, focus on a unit or city associated with that player.
+	 * This doesn't guarantee focus on any particular unit, only the first
+	 * found. Prefers units over cities.
+	 *
+	 * @param player The player to focus on
+	 * @param useFallback If true, focus on the center of the map if no units
+	 *                    or cities could be found. If false, don't refocus
+	 *                    the map if no units or cities could be found
+	 */
+	private void focusFirstPlayerUnit(Player player, boolean useFallback) {
+		if (player.getUnits().size() > 0) {
+			Unit unit = player.getUnits().get(0);
+			focusMap(unit.getX(), unit.getY(), false);
+		} else if (player.getCities().size() > 0) {
+			City city = player.getCities().get(0);
+			focusMap(city.getX(), city.getY(), false);
+		} else if (useFallback) {
+			focusMap(model.getSize() / 2, model.getSize() / 2, false);
 		}
 	}
 
