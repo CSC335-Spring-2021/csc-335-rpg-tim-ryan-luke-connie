@@ -1214,11 +1214,17 @@ public class CivView extends Application implements Observer {
 	private int getRandInt(int min, int max) {
 		return (int) (Math.random() * (max - min + 1) + min);
 	}
-	
 	/**
 	 * buildMenu() builds our Main Menu for our game. This menu includes
 	 * 	a New Game, Load Game and Exit button
 	 * @param stage our primary stage for our javafx environment
+	/**
+	 * buildMenu builds the main menu of our game with 
+	 * 	New Game
+	 * 	Load Game
+	 * 	Exit
+	 * 		options. 
+	 * @param stage our stage for our javafx environment
 	 */
 	private void buildMenu(Stage stage) {
 		BorderPane Window = new BorderPane();
