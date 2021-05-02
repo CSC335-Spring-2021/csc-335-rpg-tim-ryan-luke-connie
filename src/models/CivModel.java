@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 
 import components.Tile;
@@ -28,7 +29,7 @@ public class CivModel extends Observable implements Serializable {
 	private ArrayList<int[]> playerStartingCoords;
 	/**
 	 * Initialize a new model.
-	 * 
+	 *
 	 * @param playerCount indicates how many players this game will have
 	 */
 	public CivModel(int playerCount, int map, int size) {
@@ -51,7 +52,7 @@ public class CivModel extends Observable implements Serializable {
 					curPlayer = curPlayer.next; // iter
 				}
 				curPlayer.next = head; // have it wrap around
-		} 
+		}
 		String mapStr = initPlayerStartingCoords(map, size);
 		round = 0;
 		// System.out.println(mapStr);
@@ -63,7 +64,7 @@ public class CivModel extends Observable implements Serializable {
 		}
 		curPlayer = head;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public CivModel() {
 		try {
@@ -84,8 +85,8 @@ public class CivModel extends Observable implements Serializable {
 				endIter = endIter.next;
 			}
 			endIter.next = curPlayer;
-			
-			
+
+
 		} catch (Exception e) {
 			throw new NullPointerException();
 		}
@@ -93,7 +94,7 @@ public class CivModel extends Observable implements Serializable {
 
 	/**
 	 * getter method for the tile held at row, col in our Board
-	 * 
+	 *
 	 * @param row integer representing the outer index into our 2D array board
 	 * @param col integer representing the inner index into our 2D array board
 	 * @return Tile object contained at row, col loc in our board
@@ -104,7 +105,7 @@ public class CivModel extends Observable implements Serializable {
 
 	/**
 	 * getter method for the size of the board for move validity checking
-	 * 
+	 *
 	 * @return integer specifying the height and width of our board
 	 */
 	public int getSize() {
@@ -122,7 +123,7 @@ public class CivModel extends Observable implements Serializable {
 
 	/**
 	 * getter for Model's current player
-	 * 
+	 *
 	 * @return Player object whose turn it is
 	 */
 	public Player getCurPlayer() {
@@ -140,7 +141,7 @@ public class CivModel extends Observable implements Serializable {
 		// System.out.println(curPlayer.getPlayer().getID());
 	}
 	/**
-	 * Allows the controller to know whether to execute Player Turn logic 
+	 * Allows the controller to know whether to execute Player Turn logic
 	 * 	or Computer Turn logic.
 	 * @return If CurPlayer isComputer
 	 */
@@ -179,10 +180,30 @@ public class CivModel extends Observable implements Serializable {
 	}
 	/**
 	 * Provides controller access to however many players are in the game
-	 * @return an int of the number of players in the game 
+	 * @return an int of the number of players in the game
 	 */
 	public int numPlayers() {
 		return numPlayers;
+	}
+
+	/**
+	 * Get a list of all players in the model.
+	 *
+	 * @return A flat list of all this model's Player objects
+	 */
+	public List<Player> getAllPlayers() {
+		List<Player> result = new ArrayList<>();
+
+		Node cur = head;
+		result.add(cur.getPlayer());
+		cur = cur.next;
+
+		while (cur != null && cur != head) {
+			result.add(cur.getPlayer());
+			cur = cur.next;
+		}
+
+		return result;
 	}
 
 	/**
@@ -224,10 +245,10 @@ public class CivModel extends Observable implements Serializable {
 			playerStartingCoords.add(allStartingCoords.get(i));
 		}
 		return mapName;
-		
+
 	}
 	/**
-	 * Provide access to the list of starting coordinates for the controller to place 
+	 * Provide access to the list of starting coordinates for the controller to place
 	 * 	starting units
 	 * @return an ArrayList of length-2 int arrays, each containing a starting coordinate
 	 */
@@ -241,7 +262,7 @@ public class CivModel extends Observable implements Serializable {
 	public Player getHead() {
 		return this.head.getPlayer();
 	}
-	
+
 	public boolean done() {
 		try {
 			FileOutputStream fileStream = new FileOutputStream("save_game.dat");
@@ -270,7 +291,7 @@ public class CivModel extends Observable implements Serializable {
 
 	/**
 	 * Node class for keeping a wrapped list of players
-	 * 
+	 *
 	 * @author Luke
 	 * @field player Player object associated with this node
 	 * @field next Next node that contains the player whose turn it is next
@@ -281,7 +302,7 @@ public class CivModel extends Observable implements Serializable {
 
 		/**
 		 * constructor takes a Player and creates a new node containing that player
-		 * 
+		 *
 		 * @param player Player object that is the player
 		 */
 		private Node(Player player) {
@@ -291,12 +312,12 @@ public class CivModel extends Observable implements Serializable {
 
 		/**
 		 * getter for Node's player object
-		 * 
+		 *
 		 * @return Node's player object
 		 */
 		private Player getPlayer() {
 			return this.player;
 		}
 	}
-	
+
 }

@@ -72,7 +72,7 @@ public class CivView extends Application implements Observer {
 	private Unit selectedUnit;
 	private VBox cityPane;
 	private City selectedCity;
-	private Button endTurnButton;
+	private GridPane playersContainer;
 
 	// viz constants
 	private static final int WINDOW_WIDTH = 1024;
@@ -140,11 +140,6 @@ public class CivView extends Application implements Observer {
 		// add global events
 		mapCanvas.setOnMouseClicked(this::handleMapClick);
 		mapCanvas.setOnMouseMoved(this::handleMapHover);
-		endTurnButton.setOnMouseClicked(ev -> {
-			if (controller.isHumanTurn()) {
-				controller.endTurn();
-			}
-		});
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
 			if (ev.getCode() == KeyCode.ESCAPE) {
 				deselect();
@@ -167,7 +162,7 @@ public class CivView extends Application implements Observer {
 			Platform.exit();
 			System.exit(0);
 		});
-		controller.startGame(); // begin the game
+		controller.startTurn(); // begin the game
 		mapCanvas.setOnMouseClicked(this::handleMapClick);
 		mapCanvas.setOnMouseMoved(this::handleMapHover);
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
@@ -225,6 +220,7 @@ public class CivView extends Application implements Observer {
 	public void update(Observable observable, Object o) {
 		renderAllSprites();
 		renderFog();
+		updatePlayers();
 
 		// update selectedUnit/selectedCity if they died in previous turn
 		if (selectedUnit != null && selectedUnit.getHP() <= 0) {
@@ -359,12 +355,12 @@ public class CivView extends Application implements Observer {
 		cityPane.setVisible(false);
 		window.getChildren().add(cityPane);
 
-		// 'end turn' button
-		endTurnButton = new Button("End Turn");
-		endTurnButton.getStyleClass().addAll("button", "end-turn-button");
-		endTurnButton.setLayoutX((WINDOW_WIDTH - 100) / 2.0); // getWidth() doesn't work
-		endTurnButton.setLayoutY(WINDOW_HEIGHT - 36 - 24); // nor does getHeight()
-		window.getChildren().add(endTurnButton);
+		// container to house player readouts
+		playersContainer = new GridPane();
+		playersContainer.setLayoutX(24);
+		playersContainer.setLayoutY(WINDOW_HEIGHT - 126);
+		playersContainer.getStyleClass().add("players");
+		window.getChildren().add(playersContainer);
 	}
 
 	/**
@@ -553,6 +549,63 @@ public class CivView extends Application implements Observer {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Render an overlay with readouts of all current players. These readouts
+	 * act as a key, mapping players to colors that are then reflected on units
+	 * and cities, and also provide some quick data about each player's
+	 * remaining units and cities.
+	 */
+	private void updatePlayers() {
+		playersContainer.getChildren().clear();
+
+		int i = 0;
+		for (Player player : model.getAllPlayers()) {
+
+			// add the 'end turn' button above the current human player
+			if (player == model.getCurPlayer()) {
+				Button endTurnButton = new Button("End Turn");
+				endTurnButton.getStyleClass().addAll("button", "end-turn-button");
+				playersContainer.add(endTurnButton, i, 0);
+				endTurnButton.setOnMouseClicked(ev -> {
+					if (controller.isHumanTurn()) {
+						controller.endTurn();
+					}
+				});
+			}
+
+			// add player name readout
+			VBox playerBox = new VBox();
+			playerBox.getStyleClass().addAll("player", cssClassFrom(player.getID()));
+			playersContainer.add(playerBox, i, 1);
+
+			Text playerName = new Text(player.getID());
+			playerName.getStyleClass().add("player__name");
+			playerBox.getChildren().add(playerName);
+
+			int cities = player.getCities().size();
+			int units = player.getUnits().size();
+			Text playerStats = new Text(
+					"" + cities + (cities == 1 ? " city" : " cities") +
+					"   " + units + (units == 1 ? " unit" : " units")
+			);
+			playerStats.getStyleClass().add("player__stats");
+			playerBox.getChildren().add(playerStats);
+
+			i++;
+		}
+	}
+
+	/**
+	 * Normalize a string into a form more suitable for a css class by
+	 * lowercasing it and replacing spaces with dashes
+	 *
+	 * @param str The string to classname-ify
+	 * @return A suitable css classname
+	 */
+	private String cssClassFrom(String str) {
+		return str.toLowerCase().replace(' ', '-');
 	}
 
 	/**
