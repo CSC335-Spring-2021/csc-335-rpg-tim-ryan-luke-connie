@@ -186,6 +186,11 @@ public class CivView extends Application implements Observer {
 		fogImages = new HashMap<>();
 		try {
 			spriteImages.put("City", new Image(new FileInputStream("src/assets/sprites/city.png")));
+			spriteImages.put("City-player-1", new Image(new FileInputStream("src/assets/sprites/city-player-1.png")));
+			spriteImages.put("City-player-2", new Image(new FileInputStream("src/assets/sprites/city-player-2.png")));
+			spriteImages.put("City-player-3", new Image(new FileInputStream("src/assets/sprites/city-player-3.png")));
+			spriteImages.put("City-player-4", new Image(new FileInputStream("src/assets/sprites/city-player-4.png")));
+			spriteImages.put("City-cpu-player", new Image(new FileInputStream("src/assets/sprites/city-cpu-player.png")));
 			spriteImages.put("Scout", new Image(new FileInputStream("src/assets/sprites/scout.png")));
 			spriteImages.put("Settler", new Image(new FileInputStream("src/assets/sprites/settler.png")));
 			spriteImages.put("Warrior", new Image(new FileInputStream("src/assets/sprites/warrior.png")));
@@ -393,7 +398,10 @@ public class CivView extends Application implements Observer {
 	 */
 	private void renderCity(City city) {
 		int[] coords = gridToIso(city.getX(), city.getY());
-		ImageView cityImageView = new ImageView(spriteImages.get("City"));
+
+		ImageView cityImageView = new ImageView(
+				spriteImages.get("City-" + cssClassFrom(city.getOwner().getID()))
+		);
 		cityImageView.setFitWidth(CITY_SIZE);
 		cityImageView.setFitHeight(CITY_SIZE);
 		cityImageView.setMouseTransparent(true);
