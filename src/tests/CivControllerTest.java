@@ -98,7 +98,7 @@ public class CivControllerTest {
 	// game over should work just fine
 	@Test
 	void testComputerDestroyCity() {
-		CivModel model = new CivModel(1);
+		CivModel model = new CivModel(1, 2, 0);
 		CivController controller = new CivController(model);
 		City city = new City(model.getCurPlayer(), 5, 9);
 		model.getCurPlayer().addCity(city);
