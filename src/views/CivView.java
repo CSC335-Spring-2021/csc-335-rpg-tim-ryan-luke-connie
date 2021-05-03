@@ -179,14 +179,21 @@ public class CivView extends Application implements Observer {
 		markerImages = new HashMap<>();
 		fogImages = new HashMap<>();
 
-		String[] playerStrings = { "player-1", "player-2", "player-3", "player-4", "cpu-player" };
+		String[] players = { "player-1", "player-2", "player-3", "player-4", "cpu-player" };
+		String[] resources = { "horses", "iron", "wheat" };
 
 		try {
-			for (String p : playerStrings) {
+			for (String p : players) {
 				spriteImages.put("City-" + p, new Image(new FileInputStream("src/assets/sprites/city-" + p + ".png")));
 				spriteImages.put("Scout-" + p, new Image(new FileInputStream("src/assets/sprites/scout-" + p + ".png")));
 				spriteImages.put("Settler-" + p, new Image(new FileInputStream("src/assets/sprites/settler-" + p + ".png")));
 				spriteImages.put("Warrior-" + p, new Image(new FileInputStream("src/assets/sprites/warrior-" + p + ".png")));
+			}
+
+			for (String r : resources) {
+				spriteImages.put(r, new Image(new FileInputStream("src/assets/resources/" + r + ".png")));
+				spriteImages.put(r + "-tile", new Image(new FileInputStream("src/assets/resources/" + r + "-tile.png")));
+				spriteImages.put(r + "-claimed", new Image(new FileInputStream("src/assets/resources/" + r + "-claimed.png")));
 			}
 
 			markerImages.put("attackable", new Image(new FileInputStream("src/assets/tiles/attackable.png")));
@@ -1305,7 +1312,7 @@ public class CivView extends Application implements Observer {
 	/**
 	 * buildMenu() builds our Main Menu for our game. This menu includes
 	 * 	a New Game, Load Game and Exit button
-	 * @param stage our primary stage for our javafx environment 
+	 * @param stage our primary stage for our javafx environment
 	 * @param stage our stage for our javafx environment
 	 */
 	private void buildMenu(Stage stage) {
@@ -1676,7 +1683,7 @@ public class CivView extends Application implements Observer {
 	 * @param stage our primary stage for our javafx environment
 	 */
 	private void queryPlayerCount2(Stage stage) {
-		BorderPane Window = new BorderPane(); 
+		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
 		scene.getStylesheets().add("assets/CivView.css");
 		stage.setScene(scene);
