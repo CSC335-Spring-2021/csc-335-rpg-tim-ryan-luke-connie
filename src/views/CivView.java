@@ -1,8 +1,29 @@
 package views;
 
-import components.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+
+import components.City;
+import components.Scout;
+import components.Settler;
+import components.Tile;
+import components.Unit;
+import components.Warrior;
 import controllers.CivController;
-import javafx.animation.*;
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -21,7 +42,17 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -30,11 +61,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import models.CivModel;
 import models.Player;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
 
 /**
  * A GUI, eventually.
@@ -252,7 +278,7 @@ public class CivView extends Application implements Observer {
 		// add endgame
 		if (controller.gameOver()) {
 			Alert endgame = new Alert(Alert.AlertType.INFORMATION);
-			endgame.setContentText("game over");
+			endgame.setContentText("Game Over!");
 			endgame.showAndWait();
 			File oldGame = new File("save_game.dat");
 			oldGame.delete();

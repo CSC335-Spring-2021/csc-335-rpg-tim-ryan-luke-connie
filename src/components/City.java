@@ -8,10 +8,7 @@ import java.util.Set;
 import models.Player;
 
 /**
- * TODO: What happens if city HP reaches 0 - I currently think that the city and
- * any unit within should be destroyed. Maybe units garrisoned in a city can
- * have infinite hp until they leave? Either way garrisoned units need some sort
- * of bonus which I am unsure of rn.
+ * TODO: make scouts do things,
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
@@ -36,7 +33,8 @@ public class City implements Serializable{
 		this.coord = new Point(row, col);
 
 		this.production = 50;
-		this.productionReserve = 0;
+		// set initial production reserve for scout creation
+		this.productionReserve = 400;
 		this.turnsBeforeGrowth = 5;
 		this.population = 1;
 		this.controlRadius = 0;
