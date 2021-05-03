@@ -230,7 +230,7 @@ public class CivView extends Application implements Observer {
 	@Override
 	public void update(Observable observable, Object o) {
 		renderAllSprites();
-//		renderFog();
+		renderFog();
 		updatePlayers();
 
 		// update selectedUnit/selectedCity if they died in previous turn
@@ -1114,6 +1114,7 @@ public class CivView extends Application implements Observer {
 	private void addOwnershipIndicators(City city) {
 		for (int[] space : getDrawTraversal()) {
 			Tile tile = controller.getTileAt(space[0], space[1]);
+
 			if (tile.getOwnerCity() == city) {
 				int[] coords = gridToIso(space[0], space[1]);
 				ImageView markerView = new ImageView(markerImages.get("owned"));
@@ -1121,6 +1122,19 @@ public class CivView extends Application implements Observer {
 				markerView.setY(coords[1]);
 				markerView.setMouseTransparent(true);
 				mapOverlayContainer.getChildren().add(markerView);
+
+				if (tile.getResourceType().length() > 0) {
+					Image resourceImage = spriteImages.get(tile.getResourceType() + "-tile");
+					if (resourceImage != null) {
+						ImageView resourceView = new ImageView(resourceImage);
+						resourceView.setFitWidth(RESOURCE_SIZE);
+						resourceView.setFitHeight(RESOURCE_SIZE * ISO_FACTOR);
+						resourceView.setLayoutX(coords[0] + TILE_SIZE / 10.0);
+						resourceView.setLayoutY(coords[1] + (TILE_SIZE - RESOURCE_SIZE) / 2.0 * ISO_FACTOR);
+						resourceView.setMouseTransparent(true);
+						mapOverlayContainer.getChildren().add(resourceView);
+					}
+				}
 			}
 		}
 	}
