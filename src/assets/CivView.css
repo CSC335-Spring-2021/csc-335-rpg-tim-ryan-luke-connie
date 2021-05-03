@@ -8,8 +8,10 @@
   -fx-line-spacing: 6px;
 }
 
-.ui {
+.ui,
+.map {
   -fx-background: #000;
+  -fx-background-color: #000;
 }
 .map > .viewport {
   -fx-background-color: transparent;
@@ -31,6 +33,12 @@
   -fx-background-color: #222;
 }
 
+.city-pane-scroll-wrapper {
+  -fx-border-width: 0;
+  -fx-background-color: transparent;
+  -fx-background: transparent;
+}
+
 .detail-pane {
   -fx-pref-width: 200;
   -fx-padding: 24 24 30;
@@ -41,7 +49,7 @@
   -fx-background-insets: 2;
 }
 .detail-pane--city {
-  -fx-pref-width: 240;
+  -fx-border-width: 0;
 }
 .detail-pane__name {
   -fx-fill: #fff;

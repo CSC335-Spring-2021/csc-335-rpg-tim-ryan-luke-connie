@@ -71,7 +71,7 @@ public class CivView extends Application implements Observer {
 	// ui hooks
 	private VBox unitPane;
 	private Unit selectedUnit;
-	private VBox cityPane;
+	private ScrollPane cityPane;
 	private City selectedCity;
 	private GridPane playersContainer;
 
@@ -84,6 +84,7 @@ public class CivView extends Application implements Observer {
 	private static final int RESOURCE_SIZE = 56;
 	private static final double ISO_FACTOR = 0.6;
 	private static final int SCROLL_GUTTER = 240;
+	private static final int CITY_PANE_WIDTH = 240;
 
 	// viz derived constants (for convenience)
 	private int isoBoardWidth;
@@ -386,10 +387,16 @@ public class CivView extends Application implements Observer {
 		window.getChildren().add(unitPane);
 
 		// city detail pane
-		cityPane = new VBox();
-		cityPane.getStyleClass().addAll("detail-pane", "detail-pane--city");
-		cityPane.setLayoutX(WINDOW_WIDTH - 240 - 24);
+		cityPane = new ScrollPane();
+		cityPane.getStyleClass().add("city-pane-scroll-wrapper");
+		cityPane.setPrefWidth(CITY_PANE_WIDTH);
+		cityPane.setFitToWidth(true);
+		cityPane.setPrefHeight(WINDOW_HEIGHT);
+		cityPane.setLayoutX(WINDOW_WIDTH - CITY_PANE_WIDTH + 1);
+		cityPane.setLayoutY(0);
 		cityPane.setVisible(false);
+		cityPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		cityPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 		window.getChildren().add(cityPane);
 
 		// container to house player readouts
@@ -797,7 +804,7 @@ public class CivView extends Application implements Observer {
 		unitPane.setVisible(false);
 		unitPane.getChildren().clear();
 		cityPane.setVisible(false);
-		cityPane.getChildren().clear();
+		cityPane.setContent(null);
 
 		mapSelectedCursor.setVisible(false);
 		mapSelectedTransition.pause();
@@ -917,10 +924,16 @@ public class CivView extends Application implements Observer {
 
 		selectedCity = city;
 
-		cityPane.getChildren().clear();
+		cityPane.setContent(null);
+
+		VBox cityPaneContent = new VBox();
+		cityPaneContent.getStyleClass().addAll("detail-pane", "detail-pane--city");
+		cityPaneContent.setPrefWidth(CITY_PANE_WIDTH);
+		cityPaneContent.setMinHeight(WINDOW_HEIGHT - 2);
 
 		// pane info: labeling row (name and resources)
 		HBox labelRow = new HBox();
+		labelRow.setAlignment(Pos.CENTER_LEFT);
 
 		// name
 		Text name = new Text("City");
@@ -946,7 +959,7 @@ public class CivView extends Application implements Observer {
 		resources.getChildren().addAll(horseView, ironView, wheatView);
 
 		labelRow.getChildren().addAll(name, titleSpacer, resources);
-		cityPane.getChildren().add(labelRow);
+		cityPaneContent.getChildren().add(labelRow);
 
 		// pane info: HP
 		String hpDisp = "positive";
@@ -956,7 +969,8 @@ public class CivView extends Application implements Observer {
 			hpDisp = "negative";
 		TextFlow hpFlow = createLabeledFigure("HP", (int) city.getRemainingHP(), (int) city.getMaxHP(), hpDisp);
 		GridPane hpBar = createHPBar(city.getRemainingHP(), city.getMaxHP());
-		cityPane.getChildren().addAll(hpFlow, hpBar);
+		hpBar.setPrefWidth(CITY_PANE_WIDTH - 50);
+		cityPaneContent.getChildren().addAll(hpFlow, hpBar);
 
 		// pane info: population
 		HBox popCount = new HBox();
@@ -969,7 +983,7 @@ public class CivView extends Application implements Observer {
 		Text popLabel = new Text("population (grows in " + city.getTurnsBeforeGrowth()
 				+ (city.getTurnsBeforeGrowth() == 1 ? " turn)" : " turns)"));
 		popLabel.getStyleClass().add("detail-pane__label");
-		cityPane.getChildren().addAll(popCount, popLabel);
+		cityPaneContent.getChildren().addAll(popCount, popLabel);
 
 		// pane info: production points
 		TextFlow prodFlow = createLabeledFigure("production points", (int) city.getProductionReserve(), -1, "");
@@ -980,7 +994,7 @@ public class CivView extends Application implements Observer {
 		prodRate.getStyleClass().add("positive");
 		Text prodRateLabel = new Text(" per turn");
 		prodRateFlow.getChildren().addAll(prodRate, prodRateLabel);
-		cityPane.getChildren().addAll(prodFlow, prodRateFlow);
+		cityPaneContent.getChildren().addAll(prodFlow, prodRateFlow);
 
 		// pane actions
 		Pane spacer = new Pane(); // text nodes can't take padding, so we'll space with this
@@ -999,7 +1013,9 @@ public class CivView extends Application implements Observer {
 		settlerRow[1].setOnMouseClicked(ev -> controller.createUnit(
 				selectedCity.getX(), selectedCity.getY(), "Settler"
 		));
-		cityPane.getChildren().addAll(spacer, buildLabel, scoutRow[0], warriorRow[0], settlerRow[0]);
+		cityPaneContent.getChildren().addAll(
+				spacer, buildLabel, scoutRow[0], warriorRow[0], settlerRow[0]
+		);
 
 		// additional unlockable units
 		if (city.getProducableUnits().contains("Cavalry")) {
@@ -1009,7 +1025,7 @@ public class CivView extends Application implements Observer {
 			cavalryRow[1].setOnMouseClicked(ev -> controller.createUnit(
 					selectedCity.getX(), selectedCity.getY(), "Cavalry"
 			));
-			cityPane.getChildren().add(cavalryRow[0]);
+			cityPaneContent.getChildren().add(cavalryRow[0]);
 		}
 		if (city.getProducableUnits().contains("Militia")) {
 			Node[] militiaRow = createCityBuildButton(
@@ -1018,7 +1034,7 @@ public class CivView extends Application implements Observer {
 			militiaRow[1].setOnMouseClicked(ev -> controller.createUnit(
 					selectedCity.getX(), selectedCity.getY(), "Militia"
 			));
-			cityPane.getChildren().add(militiaRow[0]);
+			cityPaneContent.getChildren().add(militiaRow[0]);
 		}
 		if (city.getProducableUnits().contains("Swordsman")) {
 			Node[] swordsmanRow = createCityBuildButton(
@@ -1027,12 +1043,12 @@ public class CivView extends Application implements Observer {
 			swordsmanRow[1].setOnMouseClicked(ev -> controller.createUnit(
 					selectedCity.getX(), selectedCity.getY(), "Swordsman"
 			));
-			cityPane.getChildren().add(swordsmanRow[0]);
+			cityPaneContent.getChildren().add(swordsmanRow[0]);
 		}
 
 		// show pane
+		cityPane.setContent(cityPaneContent);
 		cityPane.setVisible(true);
-		cityPane.setLayoutY((WINDOW_HEIGHT - 470) / 2.0);
 
 		// add selection indicator
 		selectTile(city.getX(), city.getY());
