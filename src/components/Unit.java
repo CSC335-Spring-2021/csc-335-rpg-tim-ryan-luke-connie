@@ -25,7 +25,7 @@ public class Unit implements Serializable {
 		unitCosts.put("Warrior", 600);
 		unitCosts.put("Cavalry", 1100);
 		unitCosts.put("Swordsman", 900);
-		unitCosts.put("Milita", 200);
+		unitCosts.put("Militia", 200);
 		// add more as we add different types of Units
 	}
 

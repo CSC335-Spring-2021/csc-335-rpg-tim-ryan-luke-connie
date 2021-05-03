@@ -8,10 +8,7 @@ import java.util.Set;
 import models.Player;
 
 /**
- * TODO: What happens if city HP reaches 0 - I currently think that the city and
- * any unit within should be destroyed. Maybe units garrisoned in a city can
- * have infinite hp until they leave? Either way garrisoned units need some sort
- * of bonus which I am unsure of rn.
+ * TODO: make scouts do things,
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
@@ -36,7 +33,8 @@ public class City implements Serializable{
 		this.coord = new Point(row, col);
 
 		this.production = 50;
-		this.productionReserve = 0;
+		// set initial production reserve for scout creation
+		this.productionReserve = 400;
 		this.turnsBeforeGrowth = 5;
 		this.population = 1;
 		this.controlRadius = 0;
@@ -77,7 +75,7 @@ public class City implements Serializable{
 		} else if (unitType.equals("Warrior")) {
 			retUnit = new Warrior(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Militia")) {
-			retUnit = new Milita(owner, new Point(coord.x, coord.y));
+			retUnit = new Militia(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Cavalry")) {
 			retUnit = new Cavalry(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Swordsman")) {
@@ -203,7 +201,7 @@ public class City implements Serializable{
 	/**
 <<<<<<< HEAD
 	 * retrieve a set of all units that can be made in this city
-	 * 
+	 *
 	 * @return a set containing strings which represent the unit names
 	 */
 	public Set<String> getProducableUnits() {
@@ -215,11 +213,11 @@ public class City implements Serializable{
 	 * resource.
 	 */
 	public void unlockUnit(String resource) {
-		if (resource.equals("Wheat"))
-			producableUnits.add("Milita");
-		if (resource.equals("Iron"))
+		if (resource.equals("wheat"))
+			producableUnits.add("Militia");
+		if (resource.equals("iron"))
 			producableUnits.add("Swordsman");
-		if (resource.equals("Horses"))
+		if (resource.equals("horse"))
 			producableUnits.add("Cavalry");
 	}
 

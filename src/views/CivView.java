@@ -1,8 +1,29 @@
 package views;
 
-import components.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+
+import components.City;
+import components.Scout;
+import components.Settler;
+import components.Tile;
+import components.Unit;
+import components.Warrior;
 import controllers.CivController;
-import javafx.animation.*;
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -21,7 +42,17 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -30,11 +61,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import models.CivModel;
 import models.Player;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
 
 /**
  * A GUI, eventually.
@@ -71,7 +97,7 @@ public class CivView extends Application implements Observer {
 	// ui hooks
 	private VBox unitPane;
 	private Unit selectedUnit;
-	private VBox cityPane;
+	private ScrollPane cityPane;
 	private City selectedCity;
 	private GridPane playersContainer;
 
@@ -81,8 +107,10 @@ public class CivView extends Application implements Observer {
 	private static final int TILE_SIZE = 120;
 	private static final int CITY_SIZE = 100;
 	private static final int SPRITE_SIZE = 60;
+	private static final int RESOURCE_SIZE = 56;
 	private static final double ISO_FACTOR = 0.6;
 	private static final int SCROLL_GUTTER = 240;
+	private static final int CITY_PANE_WIDTH = 240;
 
 	// viz derived constants (for convenience)
 	private int isoBoardWidth;
@@ -179,14 +207,24 @@ public class CivView extends Application implements Observer {
 		markerImages = new HashMap<>();
 		fogImages = new HashMap<>();
 
-		String[] playerStrings = { "player-1", "player-2", "player-3", "player-4", "cpu-player" };
+		String[] players = { "player-1", "player-2", "player-3", "player-4", "cpu-player" };
+		String[] units = { "city", "scout", "settler", "warrior", "militia", "swordsman", "cavalry" };
+		String[] resources = { "horse", "iron", "wheat" };
 
 		try {
-			for (String p : playerStrings) {
-				spriteImages.put("City-" + p, new Image(new FileInputStream("src/assets/sprites/city-" + p + ".png")));
-				spriteImages.put("Scout-" + p, new Image(new FileInputStream("src/assets/sprites/scout-" + p + ".png")));
-				spriteImages.put("Settler-" + p, new Image(new FileInputStream("src/assets/sprites/settler-" + p + ".png")));
-				spriteImages.put("Warrior-" + p, new Image(new FileInputStream("src/assets/sprites/warrior-" + p + ".png")));
+			for (String p : players) {
+				for (String u : units) {
+					spriteImages.put(u + "-" + p, new Image(new FileInputStream(
+							"src/assets/sprites/" + u + "-" + p + ".png"
+					)));
+				}
+			}
+
+			for (String r : resources) {
+				spriteImages.put(r, new Image(new FileInputStream("src/assets/resources/" + r + ".png")));
+				spriteImages.put(r + "-absent", new Image(new FileInputStream("src/assets/resources/" + r + "-absent.png")));
+				spriteImages.put(r + "-tile", new Image(new FileInputStream("src/assets/resources/" + r + "-tile.png")));
+				spriteImages.put(r + "-claimed", new Image(new FileInputStream("src/assets/resources/" + r + "-claimed.png")));
 			}
 
 			markerImages.put("attackable", new Image(new FileInputStream("src/assets/tiles/attackable.png")));
@@ -252,7 +290,7 @@ public class CivView extends Application implements Observer {
 		// add endgame
 		if (controller.gameOver()) {
 			Alert endgame = new Alert(Alert.AlertType.INFORMATION);
-			endgame.setContentText("game over");
+			endgame.setContentText("Game Over!");
 			endgame.showAndWait();
 			File oldGame = new File("save_game.dat");
 			oldGame.delete();
@@ -299,9 +337,24 @@ public class CivView extends Application implements Observer {
 			Tile tile = model.getTileAt(coords[0], coords[1]);
 			if (tile == null)
 				continue;
+
 			Image tileImage = getTileImage(tile.getTerrainType());
 			int[] isoCoords = gridToIso(coords[0], coords[1]);
+
 			context.drawImage(tileImage, isoCoords[0], isoCoords[1], TILE_SIZE, TILE_SIZE * ISO_FACTOR);
+
+			if (tile.getResourceType().length() > 0) {
+				Image resourceImage = spriteImages.get(tile.getResourceType() + "-tile");
+				if (resourceImage != null) {
+					context.drawImage(
+							resourceImage,
+							isoCoords[0] + TILE_SIZE / 10.0,
+							isoCoords[1] + (TILE_SIZE - RESOURCE_SIZE) / 2.0 * ISO_FACTOR,
+							RESOURCE_SIZE,
+							RESOURCE_SIZE * ISO_FACTOR
+					);
+				}
+			}
 		}
 
 		// claim a layer for tile indicators
@@ -360,10 +413,16 @@ public class CivView extends Application implements Observer {
 		window.getChildren().add(unitPane);
 
 		// city detail pane
-		cityPane = new VBox();
-		cityPane.getStyleClass().addAll("detail-pane", "detail-pane--city");
-		cityPane.setLayoutX(WINDOW_WIDTH - 240 - 24);
+		cityPane = new ScrollPane();
+		cityPane.getStyleClass().add("city-pane-scroll-wrapper");
+		cityPane.setPrefWidth(CITY_PANE_WIDTH);
+		cityPane.setFitToWidth(true);
+		cityPane.setPrefHeight(WINDOW_HEIGHT);
+		cityPane.setLayoutX(WINDOW_WIDTH - CITY_PANE_WIDTH + 1);
+		cityPane.setLayoutY(0);
 		cityPane.setVisible(false);
+		cityPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		cityPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 		window.getChildren().add(cityPane);
 
 		// container to house player readouts
@@ -406,7 +465,7 @@ public class CivView extends Application implements Observer {
 		int[] coords = gridToIso(city.getX(), city.getY());
 
 		ImageView cityImageView = new ImageView(
-				spriteImages.get("City-" + cssClassFrom(city.getOwner().getID()))
+				spriteImages.get("city-" + cssClassFrom(city.getOwner().getID()))
 		);
 		cityImageView.setFitWidth(CITY_SIZE);
 		cityImageView.setFitHeight(CITY_SIZE);
@@ -425,16 +484,22 @@ public class CivView extends Application implements Observer {
 	 *             stored coords
 	 */
 	private void renderUnit(Unit unit) {
-		ImageView unitImageView;
 		String player = cssClassFrom(unit.getOwner().getID());
 		int[] coords = gridToIso(unit.getX(), unit.getY());
 
-		if (unit instanceof Scout) {
-			unitImageView = new ImageView(spriteImages.get("Scout-" + player));
-		} else if (unit instanceof Warrior) {
-			unitImageView = new ImageView(spriteImages.get("Warrior-" + player));
+		ImageView unitImageView;
+		if (unit instanceof Cavalry) {
+			unitImageView = new ImageView(spriteImages.get("cavalry-" + player));
+		} else if (unit instanceof Militia) {
+			unitImageView = new ImageView(spriteImages.get("militia-" + player));
+		} else if (unit instanceof Scout) {
+			unitImageView = new ImageView(spriteImages.get("scout-" + player));
+		} else if (unit instanceof Settler){
+			unitImageView = new ImageView(spriteImages.get("settler-" + player));
+		} else if (unit instanceof Swordsman) {
+			unitImageView = new ImageView(spriteImages.get("swordsman-" + player));
 		} else {
-			unitImageView = new ImageView(spriteImages.get("Settler-" + player));
+			unitImageView = new ImageView(spriteImages.get("warrior-" + player));
 		}
 
 		unitImageView.setFitWidth(SPRITE_SIZE);
@@ -765,7 +830,7 @@ public class CivView extends Application implements Observer {
 		unitPane.setVisible(false);
 		unitPane.getChildren().clear();
 		cityPane.setVisible(false);
-		cityPane.getChildren().clear();
+		cityPane.setContent(null);
 
 		mapSelectedCursor.setVisible(false);
 		mapSelectedTransition.pause();
@@ -885,11 +950,42 @@ public class CivView extends Application implements Observer {
 
 		selectedCity = city;
 
-		cityPane.getChildren().clear();
+		cityPane.setContent(null);
 
-		// pane info: label
+		VBox cityPaneContent = new VBox();
+		cityPaneContent.getStyleClass().addAll("detail-pane", "detail-pane--city");
+		cityPaneContent.setPrefWidth(CITY_PANE_WIDTH);
+		cityPaneContent.setMinHeight(WINDOW_HEIGHT - 2);
+
+		// pane info: labeling row (name and resources)
+		HBox labelRow = new HBox();
+		labelRow.setAlignment(Pos.CENTER_LEFT);
+
+		// name
 		Text name = new Text("City");
 		name.getStyleClass().add("detail-pane__name");
+
+		// maximally distribute space between title and resources
+		// https://stackoverflow.com/questions/40883858/how-to-evenly-distribute-elements-of-a-javafx-vbox
+		Region titleSpacer = new Region();
+		HBox.setHgrow(titleSpacer, Priority.ALWAYS);
+
+		// resources
+		HBox resources = new HBox();
+		ImageView horseView = new ImageView(spriteImages.get(
+				city.getProducableUnits().contains("Cavalry") ? "horse" : "horse-absent"
+		));
+		ImageView ironView = new ImageView(spriteImages.get(
+				city.getProducableUnits().contains("Swordsman") ? "iron" : "iron-absent"
+		));
+		ImageView wheatView = new ImageView(spriteImages.get(
+				city.getProducableUnits().contains("Militia") ? "wheat" : "wheat-absent"
+		));
+		resources.getStyleClass().add("detail-pane__resources");
+		resources.getChildren().addAll(horseView, ironView, wheatView);
+
+		labelRow.getChildren().addAll(name, titleSpacer, resources);
+		cityPaneContent.getChildren().add(labelRow);
 
 		// pane info: HP
 		String hpDisp = "positive";
@@ -899,6 +995,8 @@ public class CivView extends Application implements Observer {
 			hpDisp = "negative";
 		TextFlow hpFlow = createLabeledFigure("HP", (int) city.getRemainingHP(), (int) city.getMaxHP(), hpDisp);
 		GridPane hpBar = createHPBar(city.getRemainingHP(), city.getMaxHP());
+		hpBar.setPrefWidth(CITY_PANE_WIDTH - 50);
+		cityPaneContent.getChildren().addAll(hpFlow, hpBar);
 
 		// pane info: population
 		HBox popCount = new HBox();
@@ -911,6 +1009,7 @@ public class CivView extends Application implements Observer {
 		Text popLabel = new Text("population (grows in " + city.getTurnsBeforeGrowth()
 				+ (city.getTurnsBeforeGrowth() == 1 ? " turn)" : " turns)"));
 		popLabel.getStyleClass().add("detail-pane__label");
+		cityPaneContent.getChildren().addAll(popCount, popLabel);
 
 		// pane info: production points
 		TextFlow prodFlow = createLabeledFigure("production points", (int) city.getProductionReserve(), -1, "");
@@ -921,15 +1020,16 @@ public class CivView extends Application implements Observer {
 		prodRate.getStyleClass().add("positive");
 		Text prodRateLabel = new Text(" per turn");
 		prodRateFlow.getChildren().addAll(prodRate, prodRateLabel);
+		cityPaneContent.getChildren().addAll(prodFlow, prodRateFlow);
 
 		// pane actions
 		Pane spacer = new Pane(); // text nodes can't take padding, so we'll space with this
 		spacer.getStyleClass().add("detail-pane__space-above");
 		Text buildLabel = new Text("Build:");
 		buildLabel.getStyleClass().add("detail-pane__label");
-		Node[] scoutRow = createCityBuildButton(city, "Scout", 1, Unit.unitCosts.get("Scout"));
-		Node[] warriorRow = createCityBuildButton(city, "Warrior", 1, Unit.unitCosts.get("Warrior"));
-		Node[] settlerRow = createCityBuildButton(city, "Settler", 1, Unit.unitCosts.get("Settler"));
+		Node[] scoutRow = createCityBuildButton(city, "Scout", Unit.unitCosts.get("Scout"), null);
+		Node[] warriorRow = createCityBuildButton(city, "Warrior", Unit.unitCosts.get("Warrior"), null);
+		Node[] settlerRow = createCityBuildButton(city, "Settler", Unit.unitCosts.get("Settler"), null);
 		scoutRow[1].setOnMouseClicked(ev -> controller.createUnit(
 				selectedCity.getX(), selectedCity.getY(), "Scout"
 		));
@@ -939,13 +1039,42 @@ public class CivView extends Application implements Observer {
 		settlerRow[1].setOnMouseClicked(ev -> controller.createUnit(
 				selectedCity.getX(), selectedCity.getY(), "Settler"
 		));
+		cityPaneContent.getChildren().addAll(
+				spacer, buildLabel, scoutRow[0], warriorRow[0], settlerRow[0]
+		);
 
-		// populate and show pane
-		cityPane.getChildren().addAll(name, hpFlow, hpBar, popCount, popLabel, prodFlow, prodRateFlow, spacer,
-				buildLabel, scoutRow[0], warriorRow[0], settlerRow[0]);
+		// additional unlockable units
+		if (city.getProducableUnits().contains("Cavalry")) {
+			Node[] cavalryRow = createCityBuildButton(
+					city, "Cavalry", Unit.unitCosts.get("Cavalry"), spriteImages.get("horse")
+			);
+			cavalryRow[1].setOnMouseClicked(ev -> controller.createUnit(
+					selectedCity.getX(), selectedCity.getY(), "Cavalry"
+			));
+			cityPaneContent.getChildren().add(cavalryRow[0]);
+		}
+		if (city.getProducableUnits().contains("Militia")) {
+			Node[] militiaRow = createCityBuildButton(
+					city, "Militia", Unit.unitCosts.get("Militia"), spriteImages.get("wheat")
+			);
+			militiaRow[1].setOnMouseClicked(ev -> controller.createUnit(
+					selectedCity.getX(), selectedCity.getY(), "Militia"
+			));
+			cityPaneContent.getChildren().add(militiaRow[0]);
+		}
+		if (city.getProducableUnits().contains("Swordsman")) {
+			Node[] swordsmanRow = createCityBuildButton(
+					city, "Swordsman", Unit.unitCosts.get("Swordsman"), spriteImages.get("iron")
+			);
+			swordsmanRow[1].setOnMouseClicked(ev -> controller.createUnit(
+					selectedCity.getX(), selectedCity.getY(), "Swordsman"
+			));
+			cityPaneContent.getChildren().add(swordsmanRow[0]);
+		}
+
+		// show pane
+		cityPane.setContent(cityPaneContent);
 		cityPane.setVisible(true);
-		// another magic number because HBox.getHeight() is incorrect
-		cityPane.setLayoutY((WINDOW_HEIGHT - 470) / 2.0);
 
 		// add selection indicator
 		selectTile(city.getX(), city.getY());
@@ -1011,6 +1140,7 @@ public class CivView extends Application implements Observer {
 	private void addOwnershipIndicators(City city) {
 		for (int[] space : getDrawTraversal()) {
 			Tile tile = controller.getTileAt(space[0], space[1]);
+
 			if (tile.getOwnerCity() == city) {
 				int[] coords = gridToIso(space[0], space[1]);
 				ImageView markerView = new ImageView(markerImages.get("owned"));
@@ -1018,6 +1148,19 @@ public class CivView extends Application implements Observer {
 				markerView.setY(coords[1]);
 				markerView.setMouseTransparent(true);
 				mapOverlayContainer.getChildren().add(markerView);
+
+				if (tile.getResourceType().length() > 0) {
+					Image resourceImage = spriteImages.get(tile.getResourceType() + "-tile");
+					if (resourceImage != null) {
+						ImageView resourceView = new ImageView(resourceImage);
+						resourceView.setFitWidth(RESOURCE_SIZE);
+						resourceView.setFitHeight(RESOURCE_SIZE * ISO_FACTOR);
+						resourceView.setLayoutX(coords[0] + TILE_SIZE / 10.0);
+						resourceView.setLayoutY(coords[1] + (TILE_SIZE - RESOURCE_SIZE) / 2.0 * ISO_FACTOR);
+						resourceView.setMouseTransparent(true);
+						mapOverlayContainer.getChildren().add(resourceView);
+					}
+				}
 			}
 		}
 	}
@@ -1094,36 +1237,48 @@ public class CivView extends Application implements Observer {
 	 *
 	 * @param city      The city this would build to
 	 * @param label     The label to add to the button
-	 * @param popCost   The population cost that building this unit requires
 	 * @param pointCost The production point cost that building this unit requires
 	 * @return A two-element node array. The first element is the containing
 	 *         GridPane for the entire row so it can be added to the layout. The
 	 *         second element is the created Button so the calling method can attach
 	 *         an event listener to it
 	 */
-	private Node[] createCityBuildButton(City city, String label, int popCost, double pointCost) {
+	private Node[] createCityBuildButton(City city, String label, double pointCost, Image resource) {
 		GridPane container = new GridPane();
 		container.getStyleClass().add("detail-pane__build-row");
 
+		// the 'build' button itself
 		Button button = new Button(label);
 		button.getStyleClass().addAll("button", "detail-pane__button");
-		if (popCost > city.getPopulation() || pointCost > city.getProductionReserve()
+		if (1 > city.getPopulation() || pointCost > city.getProductionReserve()
 				|| controller.getTileAt(city.getX(), city.getY()).getUnit() != null) {
 			button.setDisable(true);
 			button.getStyleClass().add("detail-pane__button--disabled");
 		}
 		container.add(button, 0, 0);
 
+		// costs: population and resources
 		HBox popCostNode = new HBox();
-		for (int i = 0; i < popCost; i++) {
-			Rectangle icon = new Rectangle(9, 12);
-			icon.getStyleClass().add("population-icon");
-			if (i >= city.getPopulation()) {
-				icon.getStyleClass().add("population-icon--unavailable");
-			}
-			popCostNode.getChildren().add(icon);
+		popCostNode.setAlignment(Pos.CENTER_LEFT);
+		popCostNode.getStyleClass().add("detail-pane__cost-icons");
+
+		// population
+		Rectangle icon = new Rectangle(9, 12);
+		icon.getStyleClass().add("population-icon");
+		if (city.getPopulation() < 1) {
+			icon.getStyleClass().add("population-icon--unavailable");
+		}
+		popCostNode.getChildren().add(icon);
+
+		// resources
+		if (resource != null) {
+			ImageView resourceView = new ImageView(resource);
+			resourceView.setFitWidth(18);
+			resourceView.setFitHeight(18);
+			popCostNode.getChildren().add(resourceView);
 		}
 
+		// production points
 		TextFlow pointCostNode = new TextFlow();
 		pointCostNode.getStyleClass().add("detail-pane__help");
 		Text pointCostFigure = new Text("" + (int) pointCost);
@@ -1131,6 +1286,7 @@ public class CivView extends Application implements Observer {
 		Text pointCostLabel = new Text(" pp");
 		pointCostNode.getChildren().addAll(pointCostFigure, pointCostLabel);
 
+		// stack costs on top of each other
 		VBox costs = new VBox();
 		costs.getStyleClass().add("detail-pane__build-costs");
 		costs.getChildren().addAll(popCostNode, pointCostNode);

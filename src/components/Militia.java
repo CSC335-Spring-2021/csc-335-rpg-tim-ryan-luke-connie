@@ -4,11 +4,11 @@ import java.awt.Point;
 
 import models.Player;
 
-public class Milita extends Unit {
+public class Militia extends Unit {
 
-	public Milita(Player player, Point coord) {
+	public Militia(Player player, Point coord) {
 		super(player, coord);
-		label = "Milita";
+		label = "Militia";
 		HP = 50;
 		maxHP = HP;
 		maxMovement = 1;
