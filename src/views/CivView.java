@@ -81,6 +81,7 @@ public class CivView extends Application implements Observer {
 	private static final int TILE_SIZE = 120;
 	private static final int CITY_SIZE = 100;
 	private static final int SPRITE_SIZE = 60;
+	private static final int RESOURCE_SIZE = 82;
 	private static final double ISO_FACTOR = 0.6;
 	private static final int SCROLL_GUTTER = 240;
 
@@ -179,14 +180,21 @@ public class CivView extends Application implements Observer {
 		markerImages = new HashMap<>();
 		fogImages = new HashMap<>();
 
-		String[] playerStrings = { "player-1", "player-2", "player-3", "player-4", "cpu-player" };
+		String[] players = { "player-1", "player-2", "player-3", "player-4", "cpu-player" };
+		String[] resources = { "horse", "iron", "wheat" };
 
 		try {
-			for (String p : playerStrings) {
+			for (String p : players) {
 				spriteImages.put("City-" + p, new Image(new FileInputStream("src/assets/sprites/city-" + p + ".png")));
 				spriteImages.put("Scout-" + p, new Image(new FileInputStream("src/assets/sprites/scout-" + p + ".png")));
 				spriteImages.put("Settler-" + p, new Image(new FileInputStream("src/assets/sprites/settler-" + p + ".png")));
 				spriteImages.put("Warrior-" + p, new Image(new FileInputStream("src/assets/sprites/warrior-" + p + ".png")));
+			}
+
+			for (String r : resources) {
+				spriteImages.put(r, new Image(new FileInputStream("src/assets/resources/" + r + ".png")));
+				spriteImages.put(r + "-tile", new Image(new FileInputStream("src/assets/resources/" + r + "-tile.png")));
+				spriteImages.put(r + "-claimed", new Image(new FileInputStream("src/assets/resources/" + r + "-claimed.png")));
 			}
 
 			markerImages.put("attackable", new Image(new FileInputStream("src/assets/tiles/attackable.png")));
@@ -218,7 +226,7 @@ public class CivView extends Application implements Observer {
 	@Override
 	public void update(Observable observable, Object o) {
 		renderAllSprites();
-		renderFog();
+//		renderFog();
 		updatePlayers();
 
 		// update selectedUnit/selectedCity if they died in previous turn
@@ -299,9 +307,24 @@ public class CivView extends Application implements Observer {
 			Tile tile = model.getTileAt(coords[0], coords[1]);
 			if (tile == null)
 				continue;
+
 			Image tileImage = getTileImage(tile.getTerrainType());
 			int[] isoCoords = gridToIso(coords[0], coords[1]);
+
 			context.drawImage(tileImage, isoCoords[0], isoCoords[1], TILE_SIZE, TILE_SIZE * ISO_FACTOR);
+
+			if (tile.getResourceType().length() > 0) {
+				Image resourceImage = spriteImages.get(tile.getResourceType() + "-tile");
+				if (resourceImage != null) {
+					context.drawImage(
+							resourceImage,
+							isoCoords[0] + (TILE_SIZE - RESOURCE_SIZE) / 2.0,
+							isoCoords[1] + (TILE_SIZE - RESOURCE_SIZE) / 2.0 * ISO_FACTOR,
+							RESOURCE_SIZE,
+							RESOURCE_SIZE * ISO_FACTOR
+					);
+				}
+			}
 		}
 
 		// claim a layer for tile indicators
@@ -1305,7 +1328,7 @@ public class CivView extends Application implements Observer {
 	/**
 	 * buildMenu() builds our Main Menu for our game. This menu includes
 	 * 	a New Game, Load Game and Exit button
-	 * @param stage our primary stage for our javafx environment 
+	 * @param stage our primary stage for our javafx environment
 	 * @param stage our stage for our javafx environment
 	 */
 	private void buildMenu(Stage stage) {
@@ -1676,7 +1699,7 @@ public class CivView extends Application implements Observer {
 	 * @param stage our primary stage for our javafx environment
 	 */
 	private void queryPlayerCount2(Stage stage) {
-		BorderPane Window = new BorderPane(); 
+		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
 		scene.getStylesheets().add("assets/CivView.css");
 		stage.setScene(scene);
