@@ -75,7 +75,7 @@ public class City implements Serializable{
 		} else if (unitType.equals("Warrior")) {
 			retUnit = new Warrior(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Militia")) {
-			retUnit = new Milita(owner, new Point(coord.x, coord.y));
+			retUnit = new Militia(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Cavalry")) {
 			retUnit = new Cavalry(owner, new Point(coord.x, coord.y));
 		} else if (unitType.equals("Swordsman")) {
@@ -201,7 +201,7 @@ public class City implements Serializable{
 	/**
 <<<<<<< HEAD
 	 * retrieve a set of all units that can be made in this city
-	 * 
+	 *
 	 * @return a set containing strings which represent the unit names
 	 */
 	public Set<String> getProducableUnits() {
@@ -213,11 +213,11 @@ public class City implements Serializable{
 	 * resource.
 	 */
 	public void unlockUnit(String resource) {
-		if (resource.equals("Wheat"))
-			producableUnits.add("Milita");
-		if (resource.equals("Iron"))
+		if (resource.equals("wheat"))
+			producableUnits.add("Militia");
+		if (resource.equals("iron"))
 			producableUnits.add("Swordsman");
-		if (resource.equals("Horses"))
+		if (resource.equals("horse"))
 			producableUnits.add("Cavalry");
 	}
 

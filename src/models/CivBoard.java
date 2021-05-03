@@ -57,7 +57,7 @@ public class CivBoard implements Serializable {
 				int coordSum = i + j;
 				boolean isMiddleStrip = (coordSum < (size + oneThird)) && (coordSum > (size - oneThird));
 				int type = rng.nextInt(10);
-				boolean resource = (type == 4 || type == 7);
+				boolean resource = (type == 4 && (i % 2 == 1) && (j % 2 == 1));
 				if (type > 2  && (isTopCorner || isBottomCorner)){// top left and bot. right
 					if (resource) 
 						board[i][j] = new Tile(Tile.terrainTypes.SWAMP,"horse"); // corners are swamp or water
@@ -170,7 +170,7 @@ public class CivBoard implements Serializable {
 			else if (type_res[1].equals("i"))
 				resource = "iron";
 			else
-				resource = "wheat";
+				resource = "";
 			board[j][i] = new Tile(type, resource);
 			j++;
 			if (j == size) {

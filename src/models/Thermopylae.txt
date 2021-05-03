@@ -29,7 +29,7 @@ field n
 field n
 hill n
 hill i
-hill i
+hill n
 hill n
 hill n
 field n
@@ -48,7 +48,7 @@ field n
 field n
 field n
 hill n
-hill i
+hill n
 hill n
 hill n
 field n
@@ -66,7 +66,7 @@ field n
 field n
 hill n
 hill i
-hill i
+hill n
 hill n
 hill n
 hill n
@@ -129,7 +129,7 @@ hill n
 field n
 hill n
 hill n
-hill i
+hill n
 hill n
 hill n
 mountain n
@@ -149,7 +149,7 @@ hill n
 hill n
 hill n
 hill n
-hill w
+hill n
 hill n
 field n
 mountain n
@@ -169,7 +169,7 @@ mountain n
 hill n
 hill n
 hill i
-hill i
+hill n
 hill n
 mountain n
 mountain n
