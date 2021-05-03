@@ -38,22 +38,12 @@ public class CivController {
 	 * Configure the map with the units that should exist at the start of a new
 	 * game.
 	 *
-	 * Note that for testing, you have to add each unit/city to the current player.
-	 *
-	 * For testing -- delete this later Returns the Tile located at the board
-	 * location row, col
-	 *
-	 * @param row int for row of board positionn
-	 * @param col int for col of board position
-	 *
-	 * @return the Tile at row,col on the board
-	 *
 	 */
 	public void placeStartingUnits() {
 		ArrayList<int[]> startingCoords = model.getPlayerStartingCoords();
 		for (int i = 0; i < startingCoords.size(); i++) {
+			curPlayer = model.getCurPlayer();
 			int[] coord = startingCoords.get(i);
-			// System.out.println((coord[0] + " " + coord[1]));
 			Settler settler = new Settler(model.getCurPlayer(), new Point(coord[0], coord[1]));
 			model.getTileAt(coord[0], coord[1]).setUnit(settler);
 			model.getCurPlayer().addUnit(settler);
@@ -492,9 +482,7 @@ public class CivController {
 	}
 
 	/**
-	 * <<<<<<< HEAD ======= >>>>>>> refs/remotes/origin/component_updates Unit on
-	 * attakcerTile attacks the Unit on defenderTile. ======= Unit on attackerTile
-	 * attacks the Unit on defenderTile. >>>>>>> refs/remotes/origin/master
+	 * Unit on attackerTile attacks the Unit on defenderTile.
 	 *
 	 * Unit gets attack modifier based on its current terrain; defender gets to
 	 * counterattack. Movement for attacker Unit is set to 0, as attack can only
