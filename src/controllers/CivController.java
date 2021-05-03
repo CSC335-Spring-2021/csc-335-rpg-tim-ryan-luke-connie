@@ -2,7 +2,6 @@ package controllers;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -10,11 +9,8 @@ import components.City;
 import components.Settler;
 import components.Tile;
 import components.Unit;
-import components.*;
 import models.CivModel;
 import models.Player;
-
-import java.awt.*;
 
 /**
  * Provides methods to calculate data about game state or act as a computer
@@ -38,79 +34,23 @@ public class CivController {
 		curPlayer = model.getCurPlayer();
 	}
 
-
-	/**
-	 * Configure the map with the units that should exist at the start of a new game.
-	 */
-	
 	/**
 	 * Configure the map with the units that should exist at the start of a new
 	 * game.
 	 *
-	 * Note that for testing, you have to add each unit/city to the current player.
-	 *
-	 * For testing -- delete this later
-	 * Returns the Tile located at the board location row, col
-	 *
-	 * @param row int for row of board positionn
-	 * @param col int for col of board position
-	 *
-	 * @return the Tile at row,col on the board
-	 *
 	 */
 	public void placeStartingUnits() {
-//		Scout scout = new Scout(model.getCurPlayer(), new Point(13, 8));
-//		model.getTileAt(13, 8).setUnit(scout);
-//		curPlayer.addUnit(scout);
-//		revealTiles(scout);
-
-		// Warrior warrior = new Warrior(model.getCurPlayer(), new Point(16, 7));
-		// model.getTileAt(16, 7).setUnit(warrior);
-		// curPlayer.addUnit(warrior);
-		// revealTiles(warrior);
-
-		// Settler settler = new Settler(model.getCurPlayer(), new Point(5, 9));
-		// model.getTileAt(5, 9).setUnit(settler);
-		// curPlayer.addUnit(settler);
-		// revealTiles(settler);
-
-		// second player
-		// model.nextPlayer();
-		// curPlayer = model.getCurPlayer();
-
-//		Warrior warrior2 = new Warrior(model.getCurPlayer(), new Point(16, 5));
-//		model.getTileAt(16, 5).setUnit(warrior2);
-//		curPlayer.addUnit(warrior2);
-//		revealTiles(warrior2);
-
-		// Settler settler2 = new Settler(model.getCurPlayer(), new Point(15, 9));
-		// model.getTileAt(15, 9).setUnit(settler2);
-		// curPlayer.addUnit(settler2);
-		// revealTiles(settler2);
-
-//		Warrior warrior3 = new Warrior(model.getCurPlayer(), new Point(17, 6));
-//		model.getTileAt(17, 6).setUnit(warrior3);
-//		curPlayer.addUnit(warrior3);
-//		revealTiles(warrior3);
-//
 		ArrayList<int[]> startingCoords = model.getPlayerStartingCoords();
 		for (int i = 0; i < startingCoords.size(); i++) {
+			curPlayer = model.getCurPlayer();
 			int[] coord = startingCoords.get(i);
-			// System.out.println((coord[0] + " " + coord[1]));
 			Settler settler = new Settler(model.getCurPlayer(), new Point(coord[0], coord[1]));
-			model.getTileAt(coord[0],  coord[1]).setUnit(settler);
-			// System.out.println(model.getCurPlayer().getID());
+			model.getTileAt(coord[0], coord[1]).setUnit(settler);
 			model.getCurPlayer().addUnit(settler);
 			revealTiles(settler);
 			model.nextPlayer();
 			// curPlayer = model.getCurPlayer();
 		}
-		
-//		Warrior warrior4 = new Warrior(model.getCurPlayer(), new Point(16, 4));
-//		model.getTileAt(16, 4).setUnit(warrior4);
-//		curPlayer.addUnit(warrior4);
-//		revealTiles(warrior4);
-
 		// go back to player 1 to start the game
 		curPlayer = model.getHead();
 	}
@@ -128,19 +68,13 @@ public class CivController {
 		return model.getTileAt(x, y);
 	}
 
-	public void startGame() {
-		// place starting Settlers using model getStartingCoords
-		// remember to loop through the players until back to #1
-		startTurn();
-		model.changeAndNotify();
-	}
-
 	/**
 	 * Starts a player's turn by doing all of the "housekeeping" automatic game
 	 * events for a player turn
 	 *
 	 * All Units have their movement reset, all Cities owned by a Player are
 	 * incremented and updated. Do computer turn if it is the computer's turn.
+	 * 
 	 * @param player
 	 */
 	public void startTurn() {
@@ -162,9 +96,8 @@ public class CivController {
 	 * Player ends their turn, the model moves on to the next player. This will
 	 * update the curPlayer in model to be retrieved by controller for when the next
 	 * turn begins. Notify the model if the game is over so that view is updated
-	 * accordingly.
-	 * Human player ends their turn, the model moves on to the next player. This
-	 * will update the curPlayer for when the next turn begins.
+	 * accordingly. Human player ends their turn, the model moves on to the next
+	 * player. This will update the curPlayer for when the next turn begins.
 	 */
 	public void endTurn() {
 		if (gameOver()) {
@@ -210,7 +143,7 @@ public class CivController {
 		}
 		int firstFew = 2;
 		int i = 0;
-		while (!gameOver() && i < curPlayer.getUnits().size()) {
+		while (i < curPlayer.getUnits().size()) {
 			int oldSize = curPlayer.getUnits().size();
 			Unit u = curPlayer.getUnits().get(i);
 			if (u instanceof Settler) {
@@ -237,10 +170,10 @@ public class CivController {
 	 * computer is producing settlers, as these new settlers must move out of the
 	 * city radius of control to found a new city).
 	 *
-	 * @param s a Settler owned by the computer player
-	 * Moves a unit from its old location to the new player-specified location.
+	 * @param s    a Settler owned by the computer player Moves a unit from its old
+	 *             location to the new player-specified location.
 	 *
-	 * Unit moves one tile at a time
+	 *             Unit moves one tile at a time
 	 *
 	 * @param oldx int of old row location of unit
 	 * @param oldy int of old col location of unit
@@ -264,9 +197,9 @@ public class CivController {
 				}
 				validMoves = getValidMoves(s);
 			}
-		} //POSSIBLE BRACKETING ISSUE
+		} // POSSIBLE BRACKETING ISSUE
 	}
-				
+
 	public boolean moveUnit(int oldX, int oldY, int newX, int newY) {
 		Tile moveFrom = getTileAt(oldX, oldY);
 		Unit unit = moveFrom.getUnit(); // unit to move
@@ -287,8 +220,7 @@ public class CivController {
 			cost = unit.getMovement() - 1; // have to deplete to if successful move
 		}
 		// eventually have to change the city check to isCityTile()
-		else if (moveTo.getOwnerCity() != null
-				&& !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
+		else if (moveTo.getOwnerCity() != null && !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
 			movesOnto = attack(moveFrom, moveTo.getOwnerCity());
 		if (movesOnto) {
 			moveFrom.setUnit(null); // unit gone
@@ -585,8 +517,6 @@ public class CivController {
 		return false;
 	}
 
-
-
 	/**
 	 * Overloaded method, to be called when attacking a City
 	 *
@@ -597,7 +527,7 @@ public class CivController {
 	 * @param attackerTile
 	 * @param defender
 	 * @return
-	*/
+	 */
 	private boolean attack(Tile attackerTile, City defender) {
 		Unit attacker = attackerTile.getUnit();
 		double attack = attacker.getAttackValue();
@@ -634,6 +564,7 @@ public class CivController {
 				&& city.getProducableUnits().contains(unitType)) {
 			Unit newUnit = city.produceUnit(unitType);
 			tile.setUnit(newUnit);
+			newUnit.move(newUnit.getMovement(), x, y);
 			city.getOwner().addUnit(newUnit);
 			model.changeAndNotify();
 			return true;
@@ -724,7 +655,7 @@ public class CivController {
 		}
 		return moves;
 	}
-	
+
 	public boolean close() {
 		return this.model.done();
 	}
