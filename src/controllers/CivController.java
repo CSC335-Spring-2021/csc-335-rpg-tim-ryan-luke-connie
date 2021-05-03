@@ -200,57 +200,6 @@ public class CivController {
 		} // POSSIBLE BRACKETING ISSUE
 	}
 
-	public boolean moveUnit(int oldX, int oldY, int newX, int newY) {
-		Tile moveFrom = getTileAt(oldX, oldY);
-		Unit unit = moveFrom.getUnit(); // unit to move
-		if (unit == null)
-			return false;
-		int movement = unit.getMovement();
-		// this conditional checks that the unit is only moving 1 space
-		if (Math.abs(newX - oldX) > 1 || Math.abs(newY - oldY) > 1)
-			return false;
-		Tile moveTo = getTileAt(newX, newY);
-		int cost = moveTo.getMovementModifier();
-		if (cost + 1 > movement)
-			return false;
-		Unit onTile = moveTo.getUnit();
-		boolean movesOnto = true;
-		if (onTile != null) { // unit exists here, attack it
-			movesOnto = attack(moveFrom, moveTo);
-			cost = unit.getMovement() - 1; // have to deplete to if successful move
-		}
-		// eventually have to change the city check to isCityTile()
-		else if (moveTo.getOwnerCity() != null && !moveTo.getOwnerCity().getOwner().equals(curPlayer)) // city, atatck
-			movesOnto = attack(moveFrom, moveTo.getOwnerCity());
-		if (movesOnto) {
-			moveFrom.setUnit(null); // unit gone
-			moveTo.setUnit(unit); // successfully moves to new tile
-			unit.move(cost + 1, newX, newY); // update costs and unit location
-			revealTiles(newX, newY); // reveal tiles around unit
-		}
-		model.changeAndNotify();
-		return true;
-	}
-
-	/**
-	 * Set all the tiles in a 1-tile radius around the given location as revealed
-	 * for the current player.
-	 *
-	 * @param row int of row location middle tile
-	 * @param col int of col location middle tile
-	 */
-	private void revealTiles(int x, int y) {
-		for (int i = -1; i < 2; i++) {
-			for (int j = -1; j < 2; j++) {
-				int toRevealRow = x + i;
-				int toRevealCol = y + j;
-				Tile toRevealTile = getTileAt(toRevealRow, toRevealCol);
-				if (!toRevealTile.canSeeTile(curPlayer))
-					toRevealTile.revealTile(curPlayer);
-			}
-		}
-	}
-
 	/**
 	 * Actions that the computer takes for the first two non-settler units. These
 	 * units remain close to the city and defend it against attackers. They move out
