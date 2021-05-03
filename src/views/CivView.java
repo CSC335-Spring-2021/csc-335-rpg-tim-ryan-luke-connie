@@ -81,6 +81,7 @@ public class CivView extends Application implements Observer {
 	private static final int TILE_SIZE = 120;
 	private static final int CITY_SIZE = 100;
 	private static final int SPRITE_SIZE = 60;
+	private static final int RESOURCE_SIZE = 82;
 	private static final double ISO_FACTOR = 0.6;
 	private static final int SCROLL_GUTTER = 240;
 
@@ -180,7 +181,7 @@ public class CivView extends Application implements Observer {
 		fogImages = new HashMap<>();
 
 		String[] players = { "player-1", "player-2", "player-3", "player-4", "cpu-player" };
-		String[] resources = { "horses", "iron", "wheat" };
+		String[] resources = { "horse", "iron", "wheat" };
 
 		try {
 			for (String p : players) {
@@ -225,7 +226,7 @@ public class CivView extends Application implements Observer {
 	@Override
 	public void update(Observable observable, Object o) {
 		renderAllSprites();
-		renderFog();
+//		renderFog();
 		updatePlayers();
 
 		// update selectedUnit/selectedCity if they died in previous turn
@@ -306,9 +307,24 @@ public class CivView extends Application implements Observer {
 			Tile tile = model.getTileAt(coords[0], coords[1]);
 			if (tile == null)
 				continue;
+
 			Image tileImage = getTileImage(tile.getTerrainType());
 			int[] isoCoords = gridToIso(coords[0], coords[1]);
+
 			context.drawImage(tileImage, isoCoords[0], isoCoords[1], TILE_SIZE, TILE_SIZE * ISO_FACTOR);
+
+			if (tile.getResourceType().length() > 0) {
+				Image resourceImage = spriteImages.get(tile.getResourceType() + "-tile");
+				if (resourceImage != null) {
+					context.drawImage(
+							resourceImage,
+							isoCoords[0] + (TILE_SIZE - RESOURCE_SIZE) / 2.0,
+							isoCoords[1] + (TILE_SIZE - RESOURCE_SIZE) / 2.0 * ISO_FACTOR,
+							RESOURCE_SIZE,
+							RESOURCE_SIZE * ISO_FACTOR
+					);
+				}
+			}
 		}
 
 		// claim a layer for tile indicators
