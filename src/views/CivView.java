@@ -51,6 +51,7 @@ public class CivView extends Application implements Observer {
 	private int numPlayers;
 	private int mapSize;
 	private boolean isNewGame;
+	private Player prevPlayer;
 
 	// map hooks
 	private ScrollPane mapScrollContainer;
@@ -72,7 +73,7 @@ public class CivView extends Application implements Observer {
 	private Unit selectedUnit;
 	private VBox cityPane;
 	private City selectedCity;
-	private Button endTurnButton;
+	private GridPane playersContainer;
 
 	// viz constants
 	private static final int WINDOW_WIDTH = 1024;
@@ -120,16 +121,9 @@ public class CivView extends Application implements Observer {
 			controller.placeStartingUnits();
 		renderAllSprites();
 
-		// focus the map on any friendly unit so the player isn't lost in fog
-		if (model.getCurPlayer().getUnits().size() > 0) {
-			Unit unit = model.getCurPlayer().getUnits().get(0);
-			focusMap(unit.getX(), unit.getY(), false);
-		} else if (model.getCurPlayer().getCities().size() > 0) {
-			City city = model.getCurPlayer().getCities().get(0);
-			focusMap(city.getX(), city.getY(), false);
-		} else {
-			focusMap(model.getSize() / 2, model.getSize() / 2, false);
-		}
+		// focus the map on any friendly unit so the starting player isn't lost
+		// in fog
+		focusFirstPlayerUnit(model.getCurPlayer(), true);
 
 		// build the application window
 		Scene scene = new Scene(window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -140,11 +134,6 @@ public class CivView extends Application implements Observer {
 		// add global events
 		mapCanvas.setOnMouseClicked(this::handleMapClick);
 		mapCanvas.setOnMouseMoved(this::handleMapHover);
-		endTurnButton.setOnMouseClicked(ev -> {
-			if (controller.isHumanTurn()) {
-				controller.endTurn();
-			}
-		});
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
 			if (ev.getCode() == KeyCode.ESCAPE) {
 				deselect();
@@ -167,7 +156,7 @@ public class CivView extends Application implements Observer {
 			Platform.exit();
 			System.exit(0);
 		});
-		controller.startGame(); // begin the game
+		controller.startTurn(); // begin the game
 		mapCanvas.setOnMouseClicked(this::handleMapClick);
 		mapCanvas.setOnMouseMoved(this::handleMapHover);
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent ev) -> {
@@ -189,11 +178,16 @@ public class CivView extends Application implements Observer {
 		spriteImages = new HashMap<>();
 		markerImages = new HashMap<>();
 		fogImages = new HashMap<>();
+
+		String[] playerStrings = { "player-1", "player-2", "player-3", "player-4", "cpu-player" };
+
 		try {
-			spriteImages.put("City", new Image(new FileInputStream("src/assets/sprites/city.png")));
-			spriteImages.put("Scout", new Image(new FileInputStream("src/assets/sprites/scout.png")));
-			spriteImages.put("Settler", new Image(new FileInputStream("src/assets/sprites/settler.png")));
-			spriteImages.put("Warrior", new Image(new FileInputStream("src/assets/sprites/warrior.png")));
+			for (String p : playerStrings) {
+				spriteImages.put("City-" + p, new Image(new FileInputStream("src/assets/sprites/city-" + p + ".png")));
+				spriteImages.put("Scout-" + p, new Image(new FileInputStream("src/assets/sprites/scout-" + p + ".png")));
+				spriteImages.put("Settler-" + p, new Image(new FileInputStream("src/assets/sprites/settler-" + p + ".png")));
+				spriteImages.put("Warrior-" + p, new Image(new FileInputStream("src/assets/sprites/warrior-" + p + ".png")));
+			}
 
 			markerImages.put("attackable", new Image(new FileInputStream("src/assets/tiles/attackable.png")));
 			markerImages.put("costly", new Image(new FileInputStream("src/assets/tiles/costly.png")));
@@ -225,6 +219,7 @@ public class CivView extends Application implements Observer {
 	public void update(Observable observable, Object o) {
 		renderAllSprites();
 		renderFog();
+		updatePlayers();
 
 		// update selectedUnit/selectedCity if they died in previous turn
 		if (selectedUnit != null && selectedUnit.getHP() <= 0) {
@@ -232,6 +227,18 @@ public class CivView extends Application implements Observer {
 		}
 		if (selectedCity != null && selectedCity.getRemainingHP() <= 0) {
 			deselect();
+		}
+
+		// determine if control has changed hands to another human player. If
+		// so, deselect the prior player's stuff and refocus the map
+		if (!model.isSinglePlayer()) {
+			if (prevPlayer == null) {
+				prevPlayer = model.getCurPlayer();
+			} else if (prevPlayer != model.getCurPlayer()) {
+				deselect();
+				prevPlayer = model.getCurPlayer();
+				focusFirstPlayerUnit(model.getCurPlayer(), false);
+			}
 		}
 
 		// refresh any open detail panes, as the selected unit's values may have changed
@@ -359,12 +366,12 @@ public class CivView extends Application implements Observer {
 		cityPane.setVisible(false);
 		window.getChildren().add(cityPane);
 
-		// 'end turn' button
-		endTurnButton = new Button("End Turn");
-		endTurnButton.getStyleClass().addAll("button", "end-turn-button");
-		endTurnButton.setLayoutX((WINDOW_WIDTH - 100) / 2.0); // getWidth() doesn't work
-		endTurnButton.setLayoutY(WINDOW_HEIGHT - 36 - 24); // nor does getHeight()
-		window.getChildren().add(endTurnButton);
+		// container to house player readouts
+		playersContainer = new GridPane();
+		playersContainer.setLayoutX(24);
+		playersContainer.setLayoutY(WINDOW_HEIGHT - 126);
+		playersContainer.getStyleClass().add("players");
+		window.getChildren().add(playersContainer);
 	}
 
 	/**
@@ -397,7 +404,10 @@ public class CivView extends Application implements Observer {
 	 */
 	private void renderCity(City city) {
 		int[] coords = gridToIso(city.getX(), city.getY());
-		ImageView cityImageView = new ImageView(spriteImages.get("City"));
+
+		ImageView cityImageView = new ImageView(
+				spriteImages.get("City-" + cssClassFrom(city.getOwner().getID()))
+		);
 		cityImageView.setFitWidth(CITY_SIZE);
 		cityImageView.setFitHeight(CITY_SIZE);
 		cityImageView.setMouseTransparent(true);
@@ -416,14 +426,15 @@ public class CivView extends Application implements Observer {
 	 */
 	private void renderUnit(Unit unit) {
 		ImageView unitImageView;
+		String player = cssClassFrom(unit.getOwner().getID());
 		int[] coords = gridToIso(unit.getX(), unit.getY());
 
 		if (unit instanceof Scout) {
-			unitImageView = new ImageView(spriteImages.get("Scout"));
+			unitImageView = new ImageView(spriteImages.get("Scout-" + player));
 		} else if (unit instanceof Warrior) {
-			unitImageView = new ImageView(spriteImages.get("Warrior"));
+			unitImageView = new ImageView(spriteImages.get("Warrior-" + player));
 		} else {
-			unitImageView = new ImageView(spriteImages.get("Settler"));
+			unitImageView = new ImageView(spriteImages.get("Settler-" + player));
 		}
 
 		unitImageView.setFitWidth(SPRITE_SIZE);
@@ -556,6 +567,63 @@ public class CivView extends Application implements Observer {
 	}
 
 	/**
+	 * Render an overlay with readouts of all current players. These readouts
+	 * act as a key, mapping players to colors that are then reflected on units
+	 * and cities, and also provide some quick data about each player's
+	 * remaining units and cities.
+	 */
+	private void updatePlayers() {
+		playersContainer.getChildren().clear();
+
+		int i = 0;
+		for (Player player : model.getAllPlayers()) {
+
+			// add the 'end turn' button above the current human player
+			if (player == model.getCurPlayer()) {
+				Button endTurnButton = new Button("End Turn");
+				endTurnButton.getStyleClass().addAll("button", "end-turn-button");
+				playersContainer.add(endTurnButton, i, 0);
+				endTurnButton.setOnMouseClicked(ev -> {
+					if (controller.isHumanTurn()) {
+						controller.endTurn();
+					}
+				});
+			}
+
+			// add player name readout
+			VBox playerBox = new VBox();
+			playerBox.getStyleClass().addAll("player", cssClassFrom(player.getID()));
+			playersContainer.add(playerBox, i, 1);
+
+			Text playerName = new Text(player.getID());
+			playerName.getStyleClass().add("player__name");
+			playerBox.getChildren().add(playerName);
+
+			int cities = player.getCities().size();
+			int units = player.getUnits().size();
+			Text playerStats = new Text(
+					"" + cities + (cities == 1 ? " city" : " cities") +
+					"   " + units + (units == 1 ? " unit" : " units")
+			);
+			playerStats.getStyleClass().add("player__stats");
+			playerBox.getChildren().add(playerStats);
+
+			i++;
+		}
+	}
+
+	/**
+	 * Normalize a string into a form more suitable for a css class by
+	 * lowercasing it and replacing spaces with dashes
+	 *
+	 * @param str The string to classname-ify
+	 * @return A suitable css classname
+	 */
+	private String cssClassFrom(String str) {
+		return str.toLowerCase().replace(' ', '-');
+	}
+
+	/**
 	 * Center the map on a particular board index.
 	 *
 	 * @param x       The x index of the board grid to center on
@@ -578,6 +646,28 @@ public class CivView extends Application implements Observer {
 		} else {
 			mapScrollContainer.setHvalue(targetH);
 			mapScrollContainer.setVvalue(targetV);
+		}
+	}
+
+	/**
+	 * Given a player, focus on a unit or city associated with that player.
+	 * This doesn't guarantee focus on any particular unit, only the first
+	 * found. Prefers units over cities.
+	 *
+	 * @param player The player to focus on
+	 * @param useFallback If true, focus on the center of the map if no units
+	 *                    or cities could be found. If false, don't refocus
+	 *                    the map if no units or cities could be found
+	 */
+	private void focusFirstPlayerUnit(Player player, boolean useFallback) {
+		if (player.getUnits().size() > 0) {
+			Unit unit = player.getUnits().get(0);
+			focusMap(unit.getX(), unit.getY(), false);
+		} else if (player.getCities().size() > 0) {
+			City city = player.getCities().get(0);
+			focusMap(city.getX(), city.getY(), false);
+		} else if (useFallback) {
+			focusMap(model.getSize() / 2, model.getSize() / 2, false);
 		}
 	}
 
@@ -1212,6 +1302,12 @@ public class CivView extends Application implements Observer {
 		return (int) (Math.random() * (max - min + 1) + min);
 	}
 
+	/**
+	 * buildMenu() builds our Main Menu for our game. This menu includes
+	 * 	a New Game, Load Game and Exit button
+	 * @param stage our primary stage for our javafx environment 
+	 * @param stage our stage for our javafx environment
+	 */
 	private void buildMenu(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1260,7 +1356,13 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
-
+	/**
+	 * newGameMapSelection builds the menu for map selection when the user selects
+	 * 	New Game from the Main Menu. This includes .png previews of our Maps, a button for
+	 * 	each map and a text element informing the User how many players each Map supports.
+	 * 	It also includes a "return to menu" button that will redraw our Main Menu.
+	 * @param stage our primary stage for our javafx environment
+	 */
 	private void newGameMapSelection(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1354,6 +1456,13 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
+	/**
+	 * attemptLoadGame() is called when the User clicks the "Load Game" button on
+	 * 	our Main Menu. If it cannot load a game, it displays an Alert indicating
+	 * 	that no saved game was found and allows the user to select a different option.
+	 * 	If it can load  a game, it loads the game and starts it.
+	 * @param stage our primary stage for our javafx environment
+	 */
 	private void attemptLoadGame(Stage stage) {
 		try {
 			this.model = new CivModel();
@@ -1364,6 +1473,14 @@ public class CivView extends Application implements Observer {
 			noGame.showAndWait();
 		}
 	}
+	/**
+	 * queryMapSize draws a Menu screen with four menu options. Map4 is variably sized and
+	 * 	can be one of the four options that the user wants: 20x20, 30x30, 40x40, 50x50.
+	 * 	This Menu includes buttons for all four of these options and, upon clicking, sets
+	 * 	the View's mapSize field. This menu also includes a "Return to Menu" button that
+	 * 	redraws our Main Menu when clicked.
+	 * @param stage our primary stage for our javafx environment
+	 */
 	private void queryMapSize(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1423,6 +1540,13 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
+	/**
+	 * queryPlayerCount4() builds a menu for the User to select how many players
+	 * 	they'd like in their game. Map1 and Map4 support 1-4 human players, so this
+	 * 	menu contains four options and will set the view's numPlayers field when clicked.
+	 * 	Also contains our Return to Menu Button
+	 * @param stage our primary stage for our javafx environment
+	 */
 	private void queryPlayerCount4(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1486,7 +1610,13 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
-
+	/**
+	 * queryPlayerCount3() builds a menu for the User to select how many players
+	 * 	they'd like in their game. Map2 supports 1-3 human players, so this
+	 * 	menu contains three options and will set the view's numPlayers field when clicked.
+	 *  Also contains our Return to Menu Button
+	 * @param stage our primary stage for our javafx environment
+	 */
 	private void queryPlayerCount3(Stage stage) {
 		BorderPane Window = new BorderPane();
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -1538,9 +1668,15 @@ public class CivView extends Application implements Observer {
 		stage.setScene(scene);
 		stage.show();
 	}
-
+	/**
+	 * queryPlayerCount2() builds a menu for the User to select how many players
+	 * 	they'd like in their game. Map3 supports 1-2 human players, so this
+	 * 	menu contains two options and will set the view's numPlayers field when clicked.
+	 *  Also contains our Return to Menu Button
+	 * @param stage our primary stage for our javafx environment
+	 */
 	private void queryPlayerCount2(Stage stage) {
-		BorderPane Window = new BorderPane();
+		BorderPane Window = new BorderPane(); 
 		Scene scene = new Scene(Window, WINDOW_WIDTH, WINDOW_HEIGHT);
 		scene.getStylesheets().add("assets/CivView.css");
 		stage.setScene(scene);
