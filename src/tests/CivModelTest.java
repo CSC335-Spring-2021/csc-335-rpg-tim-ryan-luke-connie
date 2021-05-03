@@ -1,11 +1,14 @@
 package tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
 import models.CivBoard;
 import models.CivModel;
 import models.Player;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the methods of CivModel.
@@ -20,7 +23,7 @@ public class CivModelTest {
 	 * coverage. Does not mess with player and board completely yet.
 	 */
 	void testBasics() {
-		CivModel model = new CivModel(2,2, 0);
+		CivModel model = new CivModel(1, 2, 0);
 		CivBoard board = model.getCivBoard(); // maybe make tests using a new board as well
 
 		// model and board are looking at same tiles
@@ -56,4 +59,5 @@ public class CivModelTest {
 		model.nextPlayer();
 		assertTrue(model.removePlayer(model.getCurPlayer()));
 	}
+
 }
