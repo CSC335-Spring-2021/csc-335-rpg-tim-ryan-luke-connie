@@ -274,7 +274,7 @@ water n
 water n
 water n
 swamp n
-field h
+field w
 swamp n
 water n
 swamp n
