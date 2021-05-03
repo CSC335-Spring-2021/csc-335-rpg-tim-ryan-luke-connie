@@ -184,6 +184,59 @@
   -fx-background-color: #17e313;
 }
 
+.end-turn-button {
+  /* fill grid space */
+  -fx-max-width: Infinity;
+}
+
+.players {
+  -fx-hgap: 18;
+  -fx-vgap: 6;
+}
+.player {
+  -fx-spacing: 4;
+  -fx-padding: 12 24 12 18;
+  -fx-border-width: 2 2 2 4;
+  -fx-border-style: solid;
+  -fx-border-color: rgba(255,255,255,0.2);
+  -fx-background-color: rgba(0,0,0,0.7);
+  -fx-background-insets: 2 2 2 4;
+}
+.player.player-1 {
+  -fx-border-color: rgba(255,255,255,0.2)
+                    rgba(255,255,255,0.2)
+                    rgba(255,255,255,0.2)
+                    #0cacf0;
+}
+.player.player-2,
+.player.cpu-player{
+  -fx-border-color: rgba(255,255,255,0.2)
+                    rgba(255,255,255,0.2)
+                    rgba(255,255,255,0.2)
+                    #d28e0a;
+}
+.player.player-3 {
+  -fx-border-color: rgba(255,255,255,0.2)
+                    rgba(255,255,255,0.2)
+                    rgba(255,255,255,0.2)
+                    #bb15d7;
+}
+.player.player-4 {
+  -fx-border-color: rgba(255,255,255,0.2)
+                    rgba(255,255,255,0.2)
+                    rgba(255,255,255,0.2)
+                    #55be24;
+}
+.player__name {
+  -fx-font-size: 18;
+  -fx-font-weight: bold;
+  -fx-fill: #fff;
+}
+.player__stats {
+  -fx-font-size: 13;
+  -fx-fill: rgba(255,255,255,0.9);
+}
+
 .positive {
   -fx-fill: #17e313;
   -fx-font-weight: bold;
