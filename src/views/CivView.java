@@ -81,7 +81,7 @@ public class CivView extends Application implements Observer {
 	private static final int TILE_SIZE = 120;
 	private static final int CITY_SIZE = 100;
 	private static final int SPRITE_SIZE = 60;
-	private static final int RESOURCE_SIZE = 82;
+	private static final int RESOURCE_SIZE = 56;
 	private static final double ISO_FACTOR = 0.6;
 	private static final int SCROLL_GUTTER = 240;
 
@@ -318,7 +318,7 @@ public class CivView extends Application implements Observer {
 				if (resourceImage != null) {
 					context.drawImage(
 							resourceImage,
-							isoCoords[0] + (TILE_SIZE - RESOURCE_SIZE) / 2.0,
+							isoCoords[0] + TILE_SIZE / 10.0,
 							isoCoords[1] + (TILE_SIZE - RESOURCE_SIZE) / 2.0 * ISO_FACTOR,
 							RESOURCE_SIZE,
 							RESOURCE_SIZE * ISO_FACTOR
