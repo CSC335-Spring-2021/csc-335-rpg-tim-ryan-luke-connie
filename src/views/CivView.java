@@ -987,9 +987,9 @@ public class CivView extends Application implements Observer {
 		spacer.getStyleClass().add("detail-pane__space-above");
 		Text buildLabel = new Text("Build:");
 		buildLabel.getStyleClass().add("detail-pane__label");
-		Node[] scoutRow = createCityBuildButton(city, "Scout", 1, Unit.unitCosts.get("Scout"));
-		Node[] warriorRow = createCityBuildButton(city, "Warrior", 1, Unit.unitCosts.get("Warrior"));
-		Node[] settlerRow = createCityBuildButton(city, "Settler", 1, Unit.unitCosts.get("Settler"));
+		Node[] scoutRow = createCityBuildButton(city, "Scout", Unit.unitCosts.get("Scout"), null);
+		Node[] warriorRow = createCityBuildButton(city, "Warrior", Unit.unitCosts.get("Warrior"), null);
+		Node[] settlerRow = createCityBuildButton(city, "Settler", Unit.unitCosts.get("Settler"), null);
 		scoutRow[1].setOnMouseClicked(ev -> controller.createUnit(
 				selectedCity.getX(), selectedCity.getY(), "Scout"
 		));
@@ -1003,21 +1003,27 @@ public class CivView extends Application implements Observer {
 
 		// additional unlockable units
 		if (city.getProducableUnits().contains("Cavalry")) {
-			Node[] cavalryRow = createCityBuildButton(city, "Cavalry", 1, Unit.unitCosts.get("Cavalry"));
+			Node[] cavalryRow = createCityBuildButton(
+					city, "Cavalry", Unit.unitCosts.get("Cavalry"), spriteImages.get("horse")
+			);
 			cavalryRow[1].setOnMouseClicked(ev -> controller.createUnit(
 					selectedCity.getX(), selectedCity.getY(), "Cavalry"
 			));
 			cityPane.getChildren().add(cavalryRow[0]);
 		}
 		if (city.getProducableUnits().contains("Militia")) {
-			Node[] militiaRow = createCityBuildButton(city, "Militia", 1, Unit.unitCosts.get("Militia"));
+			Node[] militiaRow = createCityBuildButton(
+					city, "Militia", Unit.unitCosts.get("Militia"), spriteImages.get("wheat")
+			);
 			militiaRow[1].setOnMouseClicked(ev -> controller.createUnit(
 					selectedCity.getX(), selectedCity.getY(), "Militia"
 			));
 			cityPane.getChildren().add(militiaRow[0]);
 		}
 		if (city.getProducableUnits().contains("Swordsman")) {
-			Node[] swordsmanRow = createCityBuildButton(city, "Swordsman", 1, Unit.unitCosts.get("Swordsman"));
+			Node[] swordsmanRow = createCityBuildButton(
+					city, "Swordsman", Unit.unitCosts.get("Swordsman"), spriteImages.get("iron")
+			);
 			swordsmanRow[1].setOnMouseClicked(ev -> controller.createUnit(
 					selectedCity.getX(), selectedCity.getY(), "Swordsman"
 			));
@@ -1175,36 +1181,48 @@ public class CivView extends Application implements Observer {
 	 *
 	 * @param city      The city this would build to
 	 * @param label     The label to add to the button
-	 * @param popCost   The population cost that building this unit requires
 	 * @param pointCost The production point cost that building this unit requires
 	 * @return A two-element node array. The first element is the containing
 	 *         GridPane for the entire row so it can be added to the layout. The
 	 *         second element is the created Button so the calling method can attach
 	 *         an event listener to it
 	 */
-	private Node[] createCityBuildButton(City city, String label, int popCost, double pointCost) {
+	private Node[] createCityBuildButton(City city, String label, double pointCost, Image resource) {
 		GridPane container = new GridPane();
 		container.getStyleClass().add("detail-pane__build-row");
 
+		// the 'build' button itself
 		Button button = new Button(label);
 		button.getStyleClass().addAll("button", "detail-pane__button");
-		if (popCost > city.getPopulation() || pointCost > city.getProductionReserve()
+		if (1 > city.getPopulation() || pointCost > city.getProductionReserve()
 				|| controller.getTileAt(city.getX(), city.getY()).getUnit() != null) {
 			button.setDisable(true);
 			button.getStyleClass().add("detail-pane__button--disabled");
 		}
 		container.add(button, 0, 0);
 
+		// costs: population and resources
 		HBox popCostNode = new HBox();
-		for (int i = 0; i < popCost; i++) {
-			Rectangle icon = new Rectangle(9, 12);
-			icon.getStyleClass().add("population-icon");
-			if (i >= city.getPopulation()) {
-				icon.getStyleClass().add("population-icon--unavailable");
-			}
-			popCostNode.getChildren().add(icon);
+		popCostNode.setAlignment(Pos.CENTER_LEFT);
+		popCostNode.getStyleClass().add("detail-pane__cost-icons");
+
+		// population
+		Rectangle icon = new Rectangle(9, 12);
+		icon.getStyleClass().add("population-icon");
+		if (city.getPopulation() < 1) {
+			icon.getStyleClass().add("population-icon--unavailable");
+		}
+		popCostNode.getChildren().add(icon);
+
+		// resources
+		if (resource != null) {
+			ImageView resourceView = new ImageView(resource);
+			resourceView.setFitWidth(18);
+			resourceView.setFitHeight(18);
+			popCostNode.getChildren().add(resourceView);
 		}
 
+		// production points
 		TextFlow pointCostNode = new TextFlow();
 		pointCostNode.getStyleClass().add("detail-pane__help");
 		Text pointCostFigure = new Text("" + (int) pointCost);
@@ -1212,6 +1230,7 @@ public class CivView extends Application implements Observer {
 		Text pointCostLabel = new Text(" pp");
 		pointCostNode.getChildren().addAll(pointCostFigure, pointCostLabel);
 
+		// stack costs on top of each other
 		VBox costs = new VBox();
 		costs.getStyleClass().add("detail-pane__build-costs");
 		costs.getChildren().addAll(popCostNode, pointCostNode);
