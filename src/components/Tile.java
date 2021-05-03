@@ -84,10 +84,10 @@ public class Tile implements Serializable {
 	/**
 	 * Check if a city owns this tile, and this tile owns a resource, so the city
 	 * should have access to the resource.
-	 * 
+	 *
 	 */
 	public void checkForNewResource() {
-		if (this.ownerCity != null && resourceType != "" && resourceType != null) {
+		if (this.ownerCity != null && !resourceType.equals("")) {
 			ownerCity.unlockUnit(resourceType);
 		}
 	}
@@ -149,7 +149,7 @@ public class Tile implements Serializable {
 <<<<<<< HEAD
 	 * If a city has expanded its radius to encompass this tile, make that city the
 	 * owner
-	 * 
+	 *
 	 * @param city which now owns the tile
 	 */
 	public void setOwnerCity(City city) {
@@ -159,15 +159,15 @@ public class Tile implements Serializable {
 	/**
 	 * Getter for if this tile is a city tile, not to be confused with being owned
 	 * by a city
-	 * 
+	 *
 	 * @return boolean representing if this tile contains a city.
 	 */
-	public boolean isCityTile() { 
+	public boolean isCityTile() {
 		return this.isCityTile;
 	}
 	/**
 	 * Determine if this tile contains the city itself
-	 * 
+	 *
 	 * @return boolean representing it this tile contains a city object
 	 */
 	public boolean isThisACity() {

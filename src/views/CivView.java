@@ -181,18 +181,21 @@ public class CivView extends Application implements Observer {
 		fogImages = new HashMap<>();
 
 		String[] players = { "player-1", "player-2", "player-3", "player-4", "cpu-player" };
+		String[] units = { "city", "scout", "settler", "warrior", "militia", "swordsman", "cavalry" };
 		String[] resources = { "horse", "iron", "wheat" };
 
 		try {
 			for (String p : players) {
-				spriteImages.put("City-" + p, new Image(new FileInputStream("src/assets/sprites/city-" + p + ".png")));
-				spriteImages.put("Scout-" + p, new Image(new FileInputStream("src/assets/sprites/scout-" + p + ".png")));
-				spriteImages.put("Settler-" + p, new Image(new FileInputStream("src/assets/sprites/settler-" + p + ".png")));
-				spriteImages.put("Warrior-" + p, new Image(new FileInputStream("src/assets/sprites/warrior-" + p + ".png")));
+				for (String u : units) {
+					spriteImages.put(u + "-" + p, new Image(new FileInputStream(
+							"src/assets/sprites/" + u + "-" + p + ".png"
+					)));
+				}
 			}
 
 			for (String r : resources) {
 				spriteImages.put(r, new Image(new FileInputStream("src/assets/resources/" + r + ".png")));
+				spriteImages.put(r + "-absent", new Image(new FileInputStream("src/assets/resources/" + r + "-absent.png")));
 				spriteImages.put(r + "-tile", new Image(new FileInputStream("src/assets/resources/" + r + "-tile.png")));
 				spriteImages.put(r + "-claimed", new Image(new FileInputStream("src/assets/resources/" + r + "-claimed.png")));
 			}
@@ -429,7 +432,7 @@ public class CivView extends Application implements Observer {
 		int[] coords = gridToIso(city.getX(), city.getY());
 
 		ImageView cityImageView = new ImageView(
-				spriteImages.get("City-" + cssClassFrom(city.getOwner().getID()))
+				spriteImages.get("city-" + cssClassFrom(city.getOwner().getID()))
 		);
 		cityImageView.setFitWidth(CITY_SIZE);
 		cityImageView.setFitHeight(CITY_SIZE);
@@ -448,16 +451,22 @@ public class CivView extends Application implements Observer {
 	 *             stored coords
 	 */
 	private void renderUnit(Unit unit) {
-		ImageView unitImageView;
 		String player = cssClassFrom(unit.getOwner().getID());
 		int[] coords = gridToIso(unit.getX(), unit.getY());
 
-		if (unit instanceof Scout) {
-			unitImageView = new ImageView(spriteImages.get("Scout-" + player));
-		} else if (unit instanceof Warrior) {
-			unitImageView = new ImageView(spriteImages.get("Warrior-" + player));
+		ImageView unitImageView;
+		if (unit instanceof Cavalry) {
+			unitImageView = new ImageView(spriteImages.get("cavalry-" + player));
+		} else if (unit instanceof Militia) {
+			unitImageView = new ImageView(spriteImages.get("militia-" + player));
+		} else if (unit instanceof Scout) {
+			unitImageView = new ImageView(spriteImages.get("scout-" + player));
+		} else if (unit instanceof Settler){
+			unitImageView = new ImageView(spriteImages.get("settler-" + player));
+		} else if (unit instanceof Swordsman) {
+			unitImageView = new ImageView(spriteImages.get("swordsman-" + player));
 		} else {
-			unitImageView = new ImageView(spriteImages.get("Settler-" + player));
+			unitImageView = new ImageView(spriteImages.get("warrior-" + player));
 		}
 
 		unitImageView.setFitWidth(SPRITE_SIZE);
@@ -910,9 +919,34 @@ public class CivView extends Application implements Observer {
 
 		cityPane.getChildren().clear();
 
-		// pane info: label
+		// pane info: labeling row (name and resources)
+		HBox labelRow = new HBox();
+
+		// name
 		Text name = new Text("City");
 		name.getStyleClass().add("detail-pane__name");
+
+		// maximally distribute space between title and resources
+		// https://stackoverflow.com/questions/40883858/how-to-evenly-distribute-elements-of-a-javafx-vbox
+		Region titleSpacer = new Region();
+		HBox.setHgrow(titleSpacer, Priority.ALWAYS);
+
+		// resources
+		HBox resources = new HBox();
+		ImageView horseView = new ImageView(spriteImages.get(
+				city.getProducableUnits().contains("Cavalry") ? "horse" : "horse-absent"
+		));
+		ImageView ironView = new ImageView(spriteImages.get(
+				city.getProducableUnits().contains("Swordsman") ? "iron" : "iron-absent"
+		));
+		ImageView wheatView = new ImageView(spriteImages.get(
+				city.getProducableUnits().contains("Militia") ? "wheat" : "wheat-absent"
+		));
+		resources.getStyleClass().add("detail-pane__resources");
+		resources.getChildren().addAll(horseView, ironView, wheatView);
+
+		labelRow.getChildren().addAll(name, titleSpacer, resources);
+		cityPane.getChildren().add(labelRow);
 
 		// pane info: HP
 		String hpDisp = "positive";
@@ -922,6 +956,7 @@ public class CivView extends Application implements Observer {
 			hpDisp = "negative";
 		TextFlow hpFlow = createLabeledFigure("HP", (int) city.getRemainingHP(), (int) city.getMaxHP(), hpDisp);
 		GridPane hpBar = createHPBar(city.getRemainingHP(), city.getMaxHP());
+		cityPane.getChildren().addAll(hpFlow, hpBar);
 
 		// pane info: population
 		HBox popCount = new HBox();
@@ -934,6 +969,7 @@ public class CivView extends Application implements Observer {
 		Text popLabel = new Text("population (grows in " + city.getTurnsBeforeGrowth()
 				+ (city.getTurnsBeforeGrowth() == 1 ? " turn)" : " turns)"));
 		popLabel.getStyleClass().add("detail-pane__label");
+		cityPane.getChildren().addAll(popCount, popLabel);
 
 		// pane info: production points
 		TextFlow prodFlow = createLabeledFigure("production points", (int) city.getProductionReserve(), -1, "");
@@ -944,6 +980,7 @@ public class CivView extends Application implements Observer {
 		prodRate.getStyleClass().add("positive");
 		Text prodRateLabel = new Text(" per turn");
 		prodRateFlow.getChildren().addAll(prodRate, prodRateLabel);
+		cityPane.getChildren().addAll(prodFlow, prodRateFlow);
 
 		// pane actions
 		Pane spacer = new Pane(); // text nodes can't take padding, so we'll space with this
@@ -962,12 +999,33 @@ public class CivView extends Application implements Observer {
 		settlerRow[1].setOnMouseClicked(ev -> controller.createUnit(
 				selectedCity.getX(), selectedCity.getY(), "Settler"
 		));
+		cityPane.getChildren().addAll(spacer, buildLabel, scoutRow[0], warriorRow[0], settlerRow[0]);
 
-		// populate and show pane
-		cityPane.getChildren().addAll(name, hpFlow, hpBar, popCount, popLabel, prodFlow, prodRateFlow, spacer,
-				buildLabel, scoutRow[0], warriorRow[0], settlerRow[0]);
+		// additional unlockable units
+		if (city.getProducableUnits().contains("Cavalry")) {
+			Node[] cavalryRow = createCityBuildButton(city, "Cavalry", 1, Unit.unitCosts.get("Cavalry"));
+			cavalryRow[1].setOnMouseClicked(ev -> controller.createUnit(
+					selectedCity.getX(), selectedCity.getY(), "Cavalry"
+			));
+			cityPane.getChildren().add(cavalryRow[0]);
+		}
+		if (city.getProducableUnits().contains("Militia")) {
+			Node[] militiaRow = createCityBuildButton(city, "Militia", 1, Unit.unitCosts.get("Militia"));
+			militiaRow[1].setOnMouseClicked(ev -> controller.createUnit(
+					selectedCity.getX(), selectedCity.getY(), "Militia"
+			));
+			cityPane.getChildren().add(militiaRow[0]);
+		}
+		if (city.getProducableUnits().contains("Swordsman")) {
+			Node[] swordsmanRow = createCityBuildButton(city, "Swordsman", 1, Unit.unitCosts.get("Swordsman"));
+			swordsmanRow[1].setOnMouseClicked(ev -> controller.createUnit(
+					selectedCity.getX(), selectedCity.getY(), "Swordsman"
+			));
+			cityPane.getChildren().add(swordsmanRow[0]);
+		}
+
+		// show pane
 		cityPane.setVisible(true);
-		// another magic number because HBox.getHeight() is incorrect
 		cityPane.setLayoutY((WINDOW_HEIGHT - 470) / 2.0);
 
 		// add selection indicator
