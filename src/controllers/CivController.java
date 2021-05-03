@@ -539,6 +539,7 @@ public class CivController {
 			tile.foundCity(city);
 			curPlayer.removeUnit(settler);
 			tile.setUnit(null);
+			createUnit(x, y, "Scout");
 			model.changeAndNotify();
 			return true;
 		}
