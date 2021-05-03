@@ -249,13 +249,13 @@ public class CivView extends Application implements Observer {
 			}
 		}
 
-		// refresh any open detail panes, as the selected unit's values may have changed
+		// refresh any open detail panes and ranges, as the selected unit's
+		// values may have changed
+		mapOverlayContainer.getChildren().clear();
 		if (selectedCity != null)
 			selectCity(selectedCity);
 		if (selectedUnit != null)
 			selectUnit(selectedUnit);
-
-		mapOverlayContainer.getChildren().clear();
 
 		// add endgame
 		if (controller.gameOver()) {
