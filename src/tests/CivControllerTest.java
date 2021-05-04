@@ -5,27 +5,42 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.Point;
+import java.io.File;
 
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import components.City;
 import components.Scout;
 import components.Settler;
+import components.Swordsman;
+import components.Tile;
 import components.Unit;
 import components.Warrior;
 import controllers.CivController;
 import models.CivModel;
 import models.Player;
+import resources.Horses;
+import resources.Iron;
+import resources.Wheat;
 
 /**
- * Tests the methods of CivController. This is setup to work with current
- * default map so please dont change it.
+ * Tests the methods of CivController. Also tests some of the components and
+ * resources classes.
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  */
+@TestMethodOrder(OrderAnnotation.class)
 public class CivControllerTest {
 
+	/**
+	 * Tests the basics of the game. Allows the computer to win. Does not test
+	 * resources or unlockable units.
+	 */
 	@Test
+	@Order(1)
 	void testBasics() {
 		CivModel model = new CivModel(1, 2, 0);
 		CivController controller = new CivController(model);
@@ -36,20 +51,21 @@ public class CivControllerTest {
 		assertFalse(controller.gameOver());
 		assertTrue(controller.isHumanTurn());
 		assertTrue(controller.foundCity(3, 2));
-		assertFalse(controller.foundCity(3, 2));
+		assertTrue(controller.getTileAt(3, 2).isThisACity());
 		// give me production now
 		for (int i = 0; i < 8; i++) {
 			controller.getTileAt(3, 2).getOwnerCity().cityIncrement();
 		}
 		// create a scout and advance it forward, enemies will be defending so this is
 		// fine
-		assertTrue(controller.createUnit(3, 2, "Scout"));
+		assertFalse(controller.createUnit(3, 2, "Scout"));
 		assertFalse(controller.createUnit(3, 2, "Warrior"));
 		controller.endTurn();
 		// add a computer city that's easier to get to
 		model.nextPlayer();
 		City c = new City(model.getCurPlayer(), 12, 3);
 		controller.getTileAt(12, 3).foundCity(c);
+		assertFalse(controller.getTileAt(12, 3).foundCity(c));
 		model.getCurPlayer().addCity(c);
 		model.nextPlayer();
 		assertTrue(controller.moveUnit(model.getTileAt(3, 2).getUnit(), 4, 2));
@@ -103,8 +119,11 @@ public class CivControllerTest {
 		controller.close();
 	}
 
-	// game over should work just fine
+	/**
+	 * Tests that a computer player will destroy a city and win
+	 */
 	@Test
+	@Order(2)
 	void testComputerDestroyCity() {
 		CivModel model = new CivModel(1, 2, 0);
 		CivController controller = new CivController(model);
@@ -132,7 +151,13 @@ public class CivControllerTest {
 			controller.endTurn();
 	}
 
+	/**
+	 * Tests that a player is not allowed to attack their own unit. Tests that a
+	 * player can kill an enemy. Also tests that a unit correctly dies in a
+	 * counterattack.
+	 */
 	@Test
+	@Order(3)
 	void attackOwnKillEnemy() {
 		CivModel model = new CivModel(1, 2, 0);
 		CivController controller = new CivController(model);
@@ -169,13 +194,92 @@ public class CivControllerTest {
 			controller.endTurn();
 	}
 
+	/**
+	 * Tests the special units (militia, cavalry, and swordsman) that can be
+	 * unlocked with resources
+	 */
 	@Test
-	void testNicheUnits() {
-		assertFalse(false);
+	@Order(4)
+	void testUnlockableUnits() {
+		CivModel model = new CivModel(2, 4, 30);
+		Player p1 = model.getCurPlayer();
+		assertEquals(p1.getID(), "Player 1");
+		City city = new City(p1, 1, 1);
+		city.unlockUnit("horse");
+		assertEquals(city.getTurnsBeforeGrowth(), 5);
+		assertEquals(city.getMaxHP(), 100);
+		assertEquals(city.getProduction(), 50);
+		assertEquals(city.getPopulation(), 1);
+		city.produceUnit("Militia");
+		city.produceUnit("Cavalry");
+		city.produceUnit("Swordsman");
+		for (int i = 0; i < 200; i++)
+			city.cityIncrement();
+		Tile t = new Tile(Tile.terrainTypes.SWAMP, "wheat");
+		assertEquals(t.getResourceType(), "wheat");
+		assertEquals(t.getTerrainType(), Tile.terrainTypes.SWAMP);
+
 	}
 
+	/**
+	 * Tests that the methods shared by all units work correctly.
+	 */
 	@Test
-	void testResourcesMaybe() {
-		assertFalse(false);
+	@Order(5)
+	void testUnits() {
+		Player p = new Player(1, "1");
+		Scout scout = new Scout(p, new Point(0, 0));
+		assertEquals(scout.getMaxHP(), 50);
+		Settler settler = new Settler(p, new Point(0, 0));
+		assertEquals(settler.getMaxHP(), 1);
+		Warrior warrior = new Warrior(p, new Point(0, 0));
+		assertEquals(warrior.getMaxHP(), 100);
+		assertEquals(warrior.getLabel(), "Warrior");
+		assertEquals(warrior.getCost("Warrior"), 600);
+		Swordsman sword = new Swordsman(p, new Point(0, 0));
+		assertEquals(sword.getMaxHP(), 150);
+	}
+
+	/**
+	 * Tests the three resources classes and that their getters work correctly.
+	 */
+	@Test
+	@Order(6)
+	void testResources() {
+		City c = new City(new Player(1, "1"), 0, 0);
+		Horses horse = new Horses(c);
+		Iron iron = new Iron(c);
+		Wheat wheat = new Wheat(c);
+		assertEquals(horse.getUnitUnlocked(), "Cavalry");
+		assertEquals(iron.getLabel(), "Iron");
+		assertEquals(wheat.getCityInControl(), c);
+		assertEquals(horse.getX(), 0);
+		assertEquals(wheat.getY(), 0);
+	}
+
+	/**
+	 * Tests that the controller's start and end turn methods work correctly.
+	 * Deletes the old saved game state.
+	 */
+	@Test
+	@Order(7)
+	void testGameSave() {
+		File oldGame = new File("save_game.dat");
+		oldGame.delete();
+		CivModel model = new CivModel(2, 3, 0);
+		assertEquals(model.getAllPlayers().size(), 2);
+		CivController controller = new CivController(model);
+		controller.placeStartingUnits();
+		controller.startTurn();
+		controller.endTurn();
+		controller.endTurn();
+		controller.close();
+		CivModel savedModel = new CivModel();
+		savedModel.done();
+		CivModel newModel = new CivModel(2, 1, 0);
+		CivController newController = new CivController(newModel);
+		newController.placeStartingUnits();
+		oldGame = new File("save_game.dat");
+		oldGame.delete();
 	}
 }
