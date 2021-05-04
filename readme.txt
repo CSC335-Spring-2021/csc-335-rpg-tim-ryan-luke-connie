@@ -20,8 +20,8 @@ Maps:
 				  ability to select the size of your map to accommodate for multiple players.
 	- Fog of War: The map will be hidden at the start of the game - explore with your units
 				  to reveal the map and potential enemies.
-	- 2.5D View:  Thanks to the genius of Tim, our lord and savior, the game looks completely EPIC
-				  and makes me AROUSED.
+	- 2.5D View:  The view is a multi-layered isometric 2.5d board with sprites and buttons for 
+				  just about everything you can think of!
 
 Cities:
 	- Population: A city's population increments over time. As the city grows so does it's worth!
