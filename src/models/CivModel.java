@@ -1,6 +1,5 @@
 package models;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
@@ -27,6 +26,7 @@ public class CivModel extends Observable implements Serializable {
 	private int round;
 	private int numPlayers;
 	private ArrayList<int[]> playerStartingCoords;
+
 	/**
 	 * Initialize a new model.
 	 *
@@ -41,37 +41,37 @@ public class CivModel extends Observable implements Serializable {
 			Node cpu = new Node(new Player(0, "CPU Player")); // make a cpu player
 			head.next = cpu;
 			cpu.next = head; // have them wrap around
-		}
-		 else {
-				numPlayers = playerCount;
-				singlePlayer = false;
-				for (int i = 0; i < playerCount - 1; i++) { // if not singleplayer, add playerCount - 1 more players
-					String playerID = "Player " + (i + 2);
-					Node player = new Node(new Player(1, playerID)); // that are human
-					curPlayer.next = player; // set next
-					curPlayer = curPlayer.next; // iter
-				}
-				curPlayer.next = head; // have it wrap around
+		} else {
+			numPlayers = playerCount;
+			singlePlayer = false;
+			for (int i = 0; i < playerCount - 1; i++) { // if not singleplayer, add playerCount - 1 more players
+				String playerID = "Player " + (i + 2);
+				Node player = new Node(new Player(1, playerID)); // that are human
+				curPlayer.next = player; // set next
+				curPlayer = curPlayer.next; // iter
+			}
+			curPlayer.next = head; // have it wrap around
 		}
 		String mapStr = initPlayerStartingCoords(map, size);
 		round = 0;
 		// System.out.println(mapStr);
 		if (map != 4) {
 			this.board = new CivBoard(mapStr);
-		}
-		else {
+		} else {
 			this.board = new CivBoard(size);
 		}
 		curPlayer = head;
 	}
+
 	/**
-	 * CivModel is another constructor that will be called
-	 * 	if the user wants to load a previous game state
+	 * CivModel is another constructor that will be called if the user wants to load
+	 * a previous game state
 	 * 
-	 * 	CivModel() unserializes a previously existing game state
-	 * 		and sets appropriate attributes of all relevant classes.
+	 * CivModel() unserializes a previously existing game state and sets appropriate
+	 * attributes of all relevant classes.
 	 * 
-	 *  @throws NullPointerException if the file save_game.dat does not exist/ can't be opened
+	 * @throws NullPointerException if the file save_game.dat does not exist/ can't
+	 *                              be opened
 	 */
 	public CivModel() throws NullPointerException {
 		try {
@@ -90,9 +90,9 @@ public class CivModel extends Observable implements Serializable {
 			while (i < numPlayers - 2) {
 				endIter.next = (Node) ois.readObject();
 				endIter = endIter.next;
+				i++;
 			}
 			endIter.next = curPlayer;
-
 
 		} catch (Exception e) {
 			throw new NullPointerException();
@@ -154,25 +154,32 @@ public class CivModel extends Observable implements Serializable {
 		}
 		// System.out.println(curPlayer.getPlayer().getID());
 	}
+
 	/**
-	 * Allows the controller to know whether to execute Player Turn logic
-	 * 	or Computer Turn logic.
+	 * Allows the controller to know whether to execute Player Turn logic or
+	 * Computer Turn logic.
+	 * 
 	 * @return If CurPlayer isComputer
 	 */
 	public boolean isComputer() {
 		return !curPlayer.getPlayer().isHuman();
 	}
+
 	/**
-	 * Keep track of which round it is by counting how many times we go through all the players
-	 * 	Allows the model to know when to level-up cities and more.
-	 * @return an int specifying how many times we have made it through all of the players
+	 * Keep track of which round it is by counting how many times we go through all
+	 * the players Allows the model to know when to level-up cities and more.
+	 * 
+	 * @return an int specifying how many times we have made it through all of the
+	 *         players
 	 */
 
 	public int roundNumber() {
 		return round;
 	}
+
 	/**
 	 * Remove a player who has no more cities left from the game
+	 * 
 	 * @param deadGuy The player whose city was just killed
 	 * @return true if it worked, false if it didn't
 	 */
@@ -192,8 +199,10 @@ public class CivModel extends Observable implements Serializable {
 		prev.next = next;
 		return true;
 	}
+
 	/**
 	 * Provides controller access to however many players are in the game
+	 * 
 	 * @return an int of the number of players in the game
 	 */
 	public int numPlayers() {
@@ -221,8 +230,8 @@ public class CivModel extends Observable implements Serializable {
 	}
 
 	/**
-	 * Determine whether this is a single-player game (one with a human vs a
-	 * CPU player).
+	 * Determine whether this is a single-player game (one with a human vs a CPU
+	 * player).
 	 *
 	 * @return True if this is a single-player game, false otherwise
 	 */
@@ -232,37 +241,36 @@ public class CivModel extends Observable implements Serializable {
 
 	/**
 	 * Initialize player starting coordinates based on map and number of players
-	 * @param map int specifying which map the user has selected (1-4)
+	 * 
+	 * @param map  int specifying which map the user has selected (1-4)
 	 * @param size int specifying the size of the map (only applicable if map 4)
-	 * @return a String that will be the location of the map to open, unless map == 4
+	 * @return a String that will be the location of the map to open, unless map ==
+	 *         4
 	 */
 	private String initPlayerStartingCoords(int map, int size) {
 		ArrayList<int[]> allStartingCoords = new ArrayList<int[]>();
 		this.playerStartingCoords = new ArrayList<int[]>();
 		String mapName = "";
 		if (map == 1) { // Map1.txt starting locations
-			allStartingCoords.add(new int[] {1,1});
-			allStartingCoords.add(new int[] {18,18});
-			allStartingCoords.add(new int[] {18,1});
-			allStartingCoords.add(new int[] {1,18});
+			allStartingCoords.add(new int[] { 1, 1 });
+			allStartingCoords.add(new int[] { 18, 18 });
+			allStartingCoords.add(new int[] { 18, 1 });
+			allStartingCoords.add(new int[] { 1, 18 });
 			mapName = "./src/models/Map1.txt";
-		}
-		else if (map == 2) { // Map2.txt starting locations
-			allStartingCoords.add(new int[] {3,2});
-			allStartingCoords.add(new int[] {18,18});
-			allStartingCoords.add(new int[] {18,1});
+		} else if (map == 2) { // Map2.txt starting locations
+			allStartingCoords.add(new int[] { 3, 2 });
+			allStartingCoords.add(new int[] { 18, 18 });
+			allStartingCoords.add(new int[] { 18, 1 });
 			mapName = "./src/models/Map2.txt";
-		}
-		else if (map == 3) {
-			allStartingCoords.add(new int[] {15,2});
-			allStartingCoords.add(new int[] {2,13});
+		} else if (map == 3) {
+			allStartingCoords.add(new int[] { 15, 2 });
+			allStartingCoords.add(new int[] { 2, 13 });
 			mapName = "./src/models/Thermopylae.txt";
-		}
-		else if (map == 4) {
-			allStartingCoords.add(new int[] {1,1});
-			allStartingCoords.add(new int[] {size-2,size-2});
-			allStartingCoords.add(new int[] {size-2,1});
-			allStartingCoords.add(new int[] {1,size-2});
+		} else if (map == 4) {
+			allStartingCoords.add(new int[] { 1, 1 });
+			allStartingCoords.add(new int[] { size - 2, size - 2 });
+			allStartingCoords.add(new int[] { size - 2, 1 });
+			allStartingCoords.add(new int[] { 1, size - 2 });
 			mapName = "";
 		}
 		for (int i = 0; i < numPlayers; i++) {
@@ -271,25 +279,32 @@ public class CivModel extends Observable implements Serializable {
 		return mapName;
 
 	}
+
 	/**
-	 * Provide access to the list of starting coordinates for the controller to place
-	 * 	starting units
-	 * @return an ArrayList of length-2 int arrays, each containing a starting coordinate
+	 * Provide access to the list of starting coordinates for the controller to
+	 * place starting units
+	 * 
+	 * @return an ArrayList of length-2 int arrays, each containing a starting
+	 *         coordinate
 	 */
 	public ArrayList<int[]> getPlayerStartingCoords() {
 		return this.playerStartingCoords;
 	}
+
 	/**
 	 * returns "Player 1" Player object for controller
+	 * 
 	 * @return "Player 1" object
 	 */
 	public Player getHead() {
 		return this.head.getPlayer();
 	}
+
 	/**
-	 * Controller calls done in its close() method. done() saves the whole game state
-	 * 	by writing it to an ObjectOutputStream.
-	 * @return true if the save was successful, false if it failed. 
+	 * Controller calls done in its close() method. done() saves the whole game
+	 * state by writing it to an ObjectOutputStream.
+	 * 
+	 * @return true if the save was successful, false if it failed.
 	 */
 	public boolean done() {
 		try {
@@ -310,8 +325,7 @@ public class CivModel extends Observable implements Serializable {
 			}
 			oos.close();
 			return true;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
