@@ -255,10 +255,10 @@ public class CivModel extends Observable implements Serializable {
 			allStartingCoords.add(new int[] { 1, 1 });
 			allStartingCoords.add(new int[] { 18, 18 });
 			allStartingCoords.add(new int[] { 18, 1 });
-			allStartingCoords.add(new int[] { 1, 18 });
+			allStartingCoords.add(new int[] { 2, 18 });
 			mapName = "./src/models/Map1.txt";
 		} else if (map == 2) { // Map2.txt starting locations
-			allStartingCoords.add(new int[] { 3, 2 });
+			allStartingCoords.add(new int[] { 2, 3 });
 			allStartingCoords.add(new int[] { 18, 18 });
 			allStartingCoords.add(new int[] { 18, 1 });
 			mapName = "./src/models/Map2.txt";
@@ -267,10 +267,10 @@ public class CivModel extends Observable implements Serializable {
 			allStartingCoords.add(new int[] { 2, 13 });
 			mapName = "./src/models/Thermopylae.txt";
 		} else if (map == 4) {
-			allStartingCoords.add(new int[] { 1, 1 });
-			allStartingCoords.add(new int[] { size - 2, size - 2 });
-			allStartingCoords.add(new int[] { size - 2, 1 });
-			allStartingCoords.add(new int[] { 1, size - 2 });
+			allStartingCoords.add(new int[] { 2, 2 });
+			allStartingCoords.add(new int[] { size - 3, size - 3 });
+			allStartingCoords.add(new int[] { size - 3, 2 });
+			allStartingCoords.add(new int[] { 2, size - 3 });
 			mapName = "";
 		}
 		for (int i = 0; i < numPlayers; i++) {

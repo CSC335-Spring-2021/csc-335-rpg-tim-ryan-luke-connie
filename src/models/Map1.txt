@@ -36,7 +36,7 @@ field n
 swamp h
 swamp n
 water n
-water n
+swamp n
 swamp n
 swamp n // end row 2
 field n
@@ -57,7 +57,7 @@ water h
 swamp n
 field n
 swamp n
-water n
+swamp n
 swamp n // end row 3
 field n
 field n
