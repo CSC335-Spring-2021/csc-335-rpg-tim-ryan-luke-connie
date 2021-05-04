@@ -1,5 +1,7 @@
 Welcome to: Sid Meier's Civilization .5
 
+PRESENTATION LINK:    https://youtu.be/uXlkAXaQOzs
+
 Summary:              This civ-esque game takes elements from later civilization games and 
 		      integrates them into a game similar to civilization 1, but less complicated.
 		      Your objective is to destroy all enemy cities! Found cities using a settler, and wait for them 
