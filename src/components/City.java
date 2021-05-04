@@ -8,7 +8,8 @@ import java.util.Set;
 import models.Player;
 
 /**
- * TODO: make scouts do things,
+ * Class which represents a City object and all of its internal components such
+ * as producion, population, etc.
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
@@ -40,7 +41,6 @@ public class City implements Serializable{
 		this.controlRadius = 0;
 		this.cityHPMax = 100;
 		this.cityHPCur = this.cityHPMax;
-		// For use if we want to add more units with conditions later on.
 		this.producableUnits = new HashSet<String>();
 		producableUnits.add("Warrior");
 		producableUnits.add("Scout");
@@ -48,8 +48,6 @@ public class City implements Serializable{
 	}
 
 	/**
-	 * TODO: Should the city delete itself if it is out of health?
-	 *
 	 * Deal damage to the city from a unit
 	 *
 	 * @param damage attack value of unit hitting the city
@@ -167,6 +165,12 @@ public class City implements Serializable{
 		return this.population;
 	}
 
+	/**
+	 * Retrieve the radius of influence of this city
+	 * 
+	 * @return integer representing number of tiles around the city that it
+	 *         controls.
+	 */
 	public int getControlRadius() {
 		return this.controlRadius;
 	}
@@ -181,7 +185,7 @@ public class City implements Serializable{
 	}
 
 	/**
-	 * retrieve the city's remaining HP, for use in the controller and view
+	 * retrieve the city's remaining HP
 	 *
 	 * @return double representing the city's current HP value
 	 */
@@ -199,7 +203,6 @@ public class City implements Serializable{
 	}
 
 	/**
-<<<<<<< HEAD
 	 * retrieve a set of all units that can be made in this city
 	 *
 	 * @return a set containing strings which represent the unit names

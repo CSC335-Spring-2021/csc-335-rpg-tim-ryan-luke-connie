@@ -4,6 +4,12 @@ import java.awt.Point;
 
 import models.Player;
 
+/**
+ * Subclass containing stats for the swordsman unit.
+ * 
+ * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
+ *
+ */
 public class Swordsman extends Unit {
 
 	public Swordsman(Player player, Point coord) {
