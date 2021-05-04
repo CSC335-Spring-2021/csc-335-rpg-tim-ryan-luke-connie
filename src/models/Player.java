@@ -40,14 +40,14 @@ public class Player implements Serializable {
 	}
 	/**
 	 * addCity() adds a new City Object to the list of cities this player owns
-	 * @param city
+	 * @param city the city object to add
 	 */
 	public void addCity(City city) {
 		this.cities.add(city);
 	}
 	/**
 	 * addUnit() adds a new Unit Object to the list of Units this player owns
-	 * @param city
+	 * @param unit the unit object to add
 	 */
 	public void addUnit(Unit unit) {
 		units.add(unit);

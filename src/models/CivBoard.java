@@ -96,10 +96,29 @@ public class CivBoard implements Serializable {
 			board[i][size - 1] = new Tile(Tile.terrainTypes.WATER, "");
 			i++;
 		}
+		
 		board[size-2][size-2] = new Tile(Tile.terrainTypes.FIELD, ""); // guarantee players dont start on water blocks
 		board[1][1] = new Tile(Tile.terrainTypes.FIELD, "");
 		board[size-2][1] = new Tile(Tile.terrainTypes.FIELD, "");
 		board[1][size-2] = new Tile(Tile.terrainTypes.FIELD, "");
+		
+		board[1][2] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[1][3] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[2][1] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[2][2] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[2][3] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[3][1] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[3][2] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[3][3] = new Tile(Tile.terrainTypes.FIELD, "");
+		
+		board[size-2][size-3] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[size-2][size-4] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[size-3][size-2] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[size-3][size-3] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[size-3][size-4] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[size-4][size-2] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[size-4][size-3] = new Tile(Tile.terrainTypes.FIELD, "");
+		board[size-4][size-4] = new Tile(Tile.terrainTypes.FIELD, ""); // spawn coding for AI shenanigans
 		this.tiles = board;
 	}
 	/**
