@@ -9,9 +9,7 @@ import models.Player;
 
 /**
  *
- * TODO: City handling for Tim
- *
- * Unit superclass.
+ * Unit superclass containing costs and fields to be filled by subclasses.
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
@@ -20,13 +18,12 @@ public class Unit implements Serializable {
 
 	public static final Map<String, Integer> unitCosts = new HashMap<String, Integer>();
 	static {
-		unitCosts.put("Scout", 400);
-		unitCosts.put("Settler", 2500);
+		unitCosts.put("Scout", 300);
+		unitCosts.put("Settler", 2000);
 		unitCosts.put("Warrior", 600);
-		unitCosts.put("Cavalry", 1100);
+		unitCosts.put("Cavalry", 1000);
 		unitCosts.put("Swordsman", 900);
-		unitCosts.put("Militia", 200);
-		// add more as we add different types of Units
+		unitCosts.put("Militia", 100);
 	}
 
 	protected final Player owner;
@@ -44,8 +41,8 @@ public class Unit implements Serializable {
 	/**
 	 * Make a new unit for the specified player at the city coordinates
 	 *
-	 * @param player
-	 * @param coord
+	 * @param player player that owns the unit
+	 * @param coord  location the unit will appear
 	 */
 	public Unit(Player player, Point coord) {
 		this.owner = player;
@@ -135,9 +132,6 @@ public class Unit implements Serializable {
 
 	/**
 	 * Decrement this unit's HP from an attack
-	 *
-	 * TODO: This might need to be modifed to make movement 0 after a unit has
-	 * attacked.
 	 *
 	 * @param damage double representing the amount of damage dealt to our unit HP
 	 */

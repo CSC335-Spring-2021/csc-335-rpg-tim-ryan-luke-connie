@@ -53,10 +53,6 @@ public class Tile implements Serializable {
 	/**
 	 * Found a city on this tile. Returns false if failed.
 	 *
-	 * TODO: This code does not interact with settlers correctly and needs to be
-	 * updated depending on how Tim wants cities to work. Should the controller use
-	 * a settler charge then immediately call this, or should the settler do that?
-	 *
 	 * @param city city created by a settler attempting to be made on this tile.
 	 * @return boolean representing whether city founding was a success
 	 */
@@ -72,17 +68,17 @@ public class Tile implements Serializable {
 		return false;
 	}
 
+	/**
+	 * remove a city from this tile
+	 */
 	public void destroyCity() {
 		this.isCityTile = false;
-		// need to loop through every tile on the board and
-		// set owner city to null if owner city == this tile's owner city
 		this.ownerCity = null;
 	}
 
 	/**
 	 * Check if a city owns this tile, and this tile owns a resource, so the city
 	 * should have access to the resource.
-	 *
 	 */
 	public void checkForNewResource() {
 		if (this.ownerCity != null && !resourceType.equals("")) {
@@ -120,13 +116,10 @@ public class Tile implements Serializable {
 	}
 
 	/**
-	 * Return type of resource on this tile, of null if there is no resource. For
-	 * the average tile this should be null, but we have yet to figure out how
-	 * resources are going to work exactly so this is still a TODO
+	 * Return type of resource on this tile, of null if there is no resource.
 	 *
-	 * @return String represeting the resource type on the tile, or null if there is
-	 *         no resrource. We can make a resource class later if that seems like a
-	 *         good idea.
+	 * @return String representing the resource type on the tile, or null if there
+	 *         is no resource.
 	 */
 	public String getResourceType() {
 		return this.resourceType;

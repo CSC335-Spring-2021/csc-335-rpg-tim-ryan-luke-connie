@@ -5,7 +5,7 @@ import java.awt.Point;
 import models.Player;
 
 /**
- * Basic setup for a settler unit, cant attack and founds 1 city
+ * Basic setup for a settler unit, which can only move and found cities.
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
@@ -25,6 +25,11 @@ public class Settler extends Unit {
 		attackValue = 0;
 	}
 
+	/**
+	 * Use charge to found a new city
+	 * 
+	 * @return newly founded City object
+	 */
 	public City foundCity() {
 		City foundedCity = new City(owner, coord.x, coord.y);
 		owner.addCity(foundedCity);

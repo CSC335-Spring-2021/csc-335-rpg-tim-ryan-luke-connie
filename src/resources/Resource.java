@@ -5,9 +5,8 @@ import java.awt.Point;
 import components.City;
 
 /**
- * Resource superclass. Instead of having resources we could also just unlock
- * the two new units upon reaching a certain city level, but I feel like
- * resources enhance the strategic aspect of city founding significantly.
+ * Resource superclass - unlocks new units when a city owns a tile containing
+ * one of these.
  * 
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
@@ -21,10 +20,9 @@ public class Resource {
 	protected String unitUnlocked = "";
 
 	/**
-	 * Make a new unit for the specified player at the city coordinates
-	 *
-	 * @param player
-	 * @param coord
+	 * Construct a new resource with the given city as the owner.
+	 * 
+	 * @param city City that owns the resource.
 	 */
 	public Resource(City city) {
 		this.coord = new Point(city.getX(), city.getY());
@@ -35,7 +33,7 @@ public class Resource {
 	/**
 	 * Retrieve the new unit type that this resource unlocks.
 	 * 
-	 * @return
+	 * @return String representing unit type.
 	 */
 	public String getUnitUnlocked() {
 		return this.unitUnlocked;

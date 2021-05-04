@@ -17,7 +17,6 @@ public class Scout extends Unit {
 		label = "Scout";
 		HP = 50;
 		maxHP = HP;
-		// TODO: Rebalance default values
 		maxMovement = 4;
 		resetMovement();
 		sight = 4;

@@ -3,7 +3,7 @@ package resources;
 import components.City;
 
 /**
- * Wheat resource which boosts production
+ * Wheat resource subclass to unlock the militia unit.
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  */

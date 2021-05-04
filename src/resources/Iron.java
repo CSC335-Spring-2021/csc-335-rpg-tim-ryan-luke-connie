@@ -3,7 +3,7 @@ package resources;
 import components.City;
 
 /**
- * Iron resource which unlocks swordsman
+ * Iron resource which unlocks swordsmen
  * 
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *

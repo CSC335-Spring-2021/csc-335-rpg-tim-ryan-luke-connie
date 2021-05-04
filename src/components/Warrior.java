@@ -5,7 +5,7 @@ import java.awt.Point;
 import models.Player;
 
 /**
- * Basic setup for a warrior unit, the starting attack unit.
+ * Subclass containing stats for the warrior unit.
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  *
