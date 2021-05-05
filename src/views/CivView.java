@@ -1495,7 +1495,7 @@ public class CivView extends Application implements Observer {
 			Platform.exit();
 			System.exit(0);
 		});
-		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/assets/menus/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
 		MenuOptions.setBackground(new Background(myBI));
@@ -1538,7 +1538,7 @@ public class CivView extends Application implements Observer {
 		garbageTop.setMinHeight(160);
 		Button map1 = new Button("Map 1");
 		Text label1 = new Text("  2-4 Players");
-		Image image1 = new Image("file:./src/views/Map1.PNG", 110, 110, false, true);
+		Image image1 = new Image("file:./src/assets/menus/Map1.PNG", 110, 110, false, true);
 		Canvas canvas1 = new Canvas(110, 110);
 		GraphicsContext context1 = canvas1.getGraphicsContext2D();
 		context1.drawImage(image1, 0, 0);
@@ -1552,7 +1552,7 @@ public class CivView extends Application implements Observer {
 		VBox col2 = new VBox();
 		Button map2 = new Button("Map 2");
 		Text label2 = new Text("  2-3 Players");
-		Image image2 = new Image("file:./src/views/Map2.PNG", 110, 110, false, true);
+		Image image2 = new Image("file:./src/assets/menus/Map2.PNG", 110, 110, false, true);
 		Canvas canvas2 = new Canvas(110, 110);
 		GraphicsContext context2 = canvas2.getGraphicsContext2D();
 		context2.drawImage(image2, 0, 0);
@@ -1566,7 +1566,7 @@ public class CivView extends Application implements Observer {
 		VBox col3 = new VBox();
 		Button map3 = new Button("Map 3");
 		Text label3 = new Text("   2 Players ");
-		Image image3 = new Image("file:./src/views/Map3.PNG", 110, 110, false, true);
+		Image image3 = new Image("file:./src/assets/menus/Map3.PNG", 110, 110, false, true);
 		Canvas canvas3 = new Canvas(110,110);
 		GraphicsContext context3 = canvas3.getGraphicsContext2D();
 		context3.drawImage(image3, 0, 0);
@@ -1580,7 +1580,7 @@ public class CivView extends Application implements Observer {
 		VBox col4 = new VBox();
 		Button map4 = new Button("Map 4");
 		Text label4 = new Text("  2-4 Players");
-		Image image4 = new Image("file:./src/views/Map4.PNG", 110, 110, false, true);
+		Image image4 = new Image("file:./src/assets/menus/Map4.PNG", 110, 110, false, true);
 		Canvas canvas4 = new Canvas(110,110);
 		GraphicsContext context4 = canvas4.getGraphicsContext2D();
 		context4.drawImage(image4, 0, 0);
@@ -1595,7 +1595,7 @@ public class CivView extends Application implements Observer {
 		col3.setSpacing(10);
 		col4.setSpacing(10);
 		mapSelection.getChildren().addAll(col1, col2, col3, col4);
-		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/assets/menus/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
 		Window.setBackground(new Background(myBI));
@@ -1679,7 +1679,7 @@ public class CivView extends Application implements Observer {
 			queryPlayerCount4(stage);
 		});
 		playerCountSelection.getChildren().addAll(button1, button2, button3, button4);
-		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/assets/menus/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
 		Window.setBackground(new Background(myBI));
@@ -1749,7 +1749,7 @@ public class CivView extends Application implements Observer {
 			startGame(stage);
 		});
 		playerCountSelection.getChildren().addAll(button1, button2, button3, button4);
-		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/assets/menus/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
 		Window.setBackground(new Background(myBI));
@@ -1812,7 +1812,7 @@ public class CivView extends Application implements Observer {
 			startGame(stage);
 		});
 		playerCountSelection.getChildren().addAll(button1, button2, button3);
-		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/assets/menus/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
 		Window.setBackground(new Background(myBI));
@@ -1863,7 +1863,7 @@ public class CivView extends Application implements Observer {
 			startGame(stage);
 		});
 		playerCountSelection.getChildren().addAll(button1, button2);
-		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/views/background.jpg",32,32,false,true),
+		BackgroundImage myBI = new BackgroundImage(new Image("file:./src/assets/menus/background.jpg",32,32,false,true),
 		        BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
 		          BackgroundSize.DEFAULT);
 		Window.setBackground(new Background(myBI));
