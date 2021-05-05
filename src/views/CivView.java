@@ -48,7 +48,23 @@ import models.CivModel;
 import models.Player;
 
 /**
- * A GUI, eventually.
+ * A GUI for a Civ-like game.
+ *
+ * <p>This interface consists of two main layers: the informational overlay in
+ * the foreground and the map in the background.
+ *
+ * <p>The overlay is populated by a constant readout of the active players and
+ * their statuses, and at times houses detail panes about whatever is focused
+ * on the map below (such as a city or unit).
+ *
+ * <p>The map layer is further subdivided into many sub-layers, all contained
+ * in a scrollable/pannable container. These sub-layers include a map canvas,
+ * a layer for map tile markers (such as hover and valid move indicators), a
+ * layer for sprites (units, cities, HP bars), and another canvas to draw the
+ * fog of war effect. The map itself is backed by a 2D grid in the model,
+ * translated to isometric coordinates for display. It can be panned by click
+ * and drag or standard scroll, and all other interaction is via clicking on
+ * the map or in panels (save for the ability to use esc to close panels).
  *
  * @author Connie Sun, Ryan Smith, Luke Hankins, Tim Gavlick
  */
